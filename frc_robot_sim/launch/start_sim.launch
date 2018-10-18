@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<launch>
+  <!-- Spawn a simulated robot in a Gazebo world -->
+
+  <arg name="robot" default="elijah_2018" />
+  <arg name="debug" default="false" />
+  <arg name="gui" default="true" />
+
+
+  <!-- Optionally set the log level to DEBUG -->
+  <arg name="log_debug" default="false" />
+  <env if="$(arg log_debug)"
+    name="ROSCONSOLE_CONFIG_FILE"
+    value="$(find frc_robot_hw)/config/rosconsole_debug.config"
+  />
+
+
+  <!-- Initial values for joints -->
+  <!-- <arg name="joint_pos" default="
+    -J lknee_joint -0.3
+    -J rknee_joint -0.3
+    -J lhip_joint 0.15
+    -J rhip_joint 0.15"
+  /> -->
+
+  <!-- List joints for the hardware interface -->
+  <rosparam file="$(find react_description)/config/2018_elijah.yaml" command="load" />
+
+  <!-- Load the URDF to the parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find react_description)/urdf/2018_elijah.xacro'" />
+
+  <!-- Load simulation environment -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <!-- <arg name="world_name" value="$(find react_description)/worlds/empty.world"/> -->
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="true"/> <!-- have to start paused to set model parameters -->
+    <arg name="verbose" value="false" />
+  </include>
+
+  <!-- Call to gazebo_ros to spawn a URDF robot with correct joint positions -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="
+    -urdf
+    -model $(arg robot)
+    -param robot_description
+    -unpause"
+  />
+ <!--$(arg joint_pos) -->
+
+    <node name="controller_spawner" pkg="controller_manager" type="controller_manager" respawn="false" output="screen"
+    args="
+    spawn
+    joint_state_controller
+    drive_train_controller
+    shoulder_controller"
+  />
+
+</launch>

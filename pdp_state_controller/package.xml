@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pdp_state_controller</name>
+  <version>0.0.0</version>
+  <description>Controller to publish state of Power Distribution Panels</description>
+
+  <maintainer email="mtreynolds@uwaterloo.ca">Matt Reynolds</maintainer>
+
+  <license>BSD-3</license>
+
+  <url type="website">https://uwreact.ca</url>
+  <!-- <url type="website">http://wiki.ros.org/frc_control</url> -->
+  <url type="bugtracker">https://github.com/uwreact/frc_control/issues</url>
+  <url type="repository">https://github.com/uwreact/frc_control</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>controller_interface</depend>
+  <depend>hardware_interface</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+  <depend>pluginlib</depend>
+  <depend>realtime_tools</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+
+  <export>
+    <controller_interface plugin="${prefix}/pdp_controller_plugins.xml"/>
+  </export>
+</package>

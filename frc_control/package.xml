@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>frc_control</name>
+  <version>0.0.0</version>
+  <description>Set of packages allowing ros_control to be used with FRC robots</description>
+
+  <maintainer email="mtreynolds@uwaterloo.ca">Matt Reynolds</maintainer>
+
+  <license>BSD-3</license>
+
+  <url type="website">https://uwreact.ca</url>
+  <!-- <url type="website">http://wiki.ros.org/frc_control</url> -->
+  <url type="bugtracker">https://github.com/uwreact/frc_control/issues</url>
+  <url type="repository">https://github.com/uwreact/frc_control</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>frc_robot_hw</exec_depend>
+  <exec_depend>frc_robot_sim</exec_depend>
+  <exec_depend>analog_state_controller</exec_depend>
+  <exec_depend>binary_state_controller</exec_depend>
+  <exec_depend>ternary_state_controller</exec_depend>
+  <exec_depend>pdp_state_controller</exec_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>frc_robot_hw</name>
+  <version>0.0.0</version>
+  <description>The frc_robot_hw package</description>
+
+  <maintainer email="mtreynolds@uwaterloo.ca">Matt Reynolds</maintainer>
+
+  <license>BSD-3</license>
+
+  <url type="website">https://uwreact.ca</url>
+  <!-- <url type="website">http://wiki.ros.org/frc_control</url> -->
+  <url type="bugtracker">https://github.com/uwreact/frc_control/issues</url>
+  <url type="repository">https://github.com/uwreact/frc_control</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>controller_manager</depend>
+  <depend>hardware_interface</depend>
+  <depend>realtime_tools</depend>
+  <depend>roscpp</depend>
+  <depend>tinyxml2</depend>
+  <depend>urdf</depend>
+
+  <depend>analog_state_controller</depend>
+  <depend>binary_state_controller</depend>
+  <depend>ternary_state_controller</depend>
+  <depend>pdp_state_controller</depend>
+
+</package>

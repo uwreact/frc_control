@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>binary_state_controller</name>
+  <version>0.0.0</version>
+  <description>Controller to publish the state of binary sensors</description>
+
+  <maintainer email="mtreynolds@uwaterloo.ca">Matt Reynolds</maintainer>
+
+  <license>BSD-3</license>
+
+  <url type="website">https://uwreact.ca</url>
+  <!-- <url type="website">http://wiki.ros.org/frc_control</url> -->
+  <url type="bugtracker">https://github.com/uwreact/frc_control/issues</url>
+  <url type="repository">https://github.com/uwreact/frc_control</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>hardware_interface</depend>
+  <depend>roscpp</depend>
+</package>
