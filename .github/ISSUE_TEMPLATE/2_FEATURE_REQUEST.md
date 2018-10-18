@@ -13,10 +13,4 @@ the scope of this project's current roadmap, please detail why.
 
 # 🚀 Feature Request
 
-<!-- Put an 'x' in the boxes that apply. -->
-
-- [ ] In current roadmap.
-
-## Details
-
 <!-- Provide more details below this comment. -->

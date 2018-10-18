@@ -41,13 +41,13 @@ The easiest way to get started once you've selected an issue is:
 2. Clone your fork:
 
 ```bash
-git clone https://github.com/<your-username>/<project>.git
+git clone https://github.com/<your-username>/frc_control.git
 ```
 
 3. Configure your remotes:
 
 ```bash
-git remote add upstream https://github.com/uwreact/<project>.git
+git remote add upstream https://github.com/uwreact/frc_control.git
 ```
 
 4. Get the latest changes:
@@ -57,7 +57,7 @@ git checkout kinetic-devel
 git pull upstream kinetic-devel
 ```
 
-5. Create a new branch off of kinetic-devel:
+5. Create a new branch off of `kinetic-devel`:
 
 ```bash
 git checkout -b <branch-name>
