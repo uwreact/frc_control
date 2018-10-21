@@ -1,11 +1,7 @@
 <!--
 Thank you for submitting a pull request!
 
-While we look over every pull request, we maintain a focus on
-this project's current roadmap. If your pull request does not
-fit within this project's current roadmap or fix an open issue,
-it may be closed. Please reference any relevant issues, label
-accordingly, and detail your changes as much as possible.
+While we look over every pull request, we maintain a focus on this project's current roadmap. If your pull request does not fit within this project's current roadmap or fix an open issue, it may be closed. Please reference any relevant issues, label accordingly, and detail your changes as much as possible.
 -->
 
 # Pull Request
