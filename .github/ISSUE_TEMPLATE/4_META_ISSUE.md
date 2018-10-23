@@ -13,7 +13,6 @@ You're trying to open a meta issue. This is likely not the type of issue you sho
 
 <!-- Provide more details below this comment. -->
 
-### Tracking
+## Tracking
 
 <!-- Keep track of multiple issues below this comment. -->
-

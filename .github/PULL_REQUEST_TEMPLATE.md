@@ -6,6 +6,8 @@ While we look over every pull request, we maintain a focus on this project's cur
 
 # Pull Request
 
+<!-- Provide more details below this comment. -->
+
 ## Contribution Checklist
 
 <!-- Put an 'x' in the boxes that apply. -->
@@ -17,9 +19,7 @@ While we look over every pull request, we maintain a focus on this project's cur
 
 ## Change Checklist
 
+<!-- Put an 'x' in the boxes that apply. -->
+
 - [ ] I have added tests.
 - [ ] I have added necessary documentation.
-
-## Details
-
-<!-- Provide more details below this comment. -->
