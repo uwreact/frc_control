@@ -5,18 +5,17 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-if [ ! -d "$1" ]; then
-  echo "Please specify a valid ROS workspace"
-  exit 1
-fi
-
 SCRIPT=`realpath "$0"`
 SCRIPTPATH=`dirname "$SCRIPT"`
 WSPATH=`realpath "$1"`
 
-cp "${SCRIPTPATH}/rostoolchain.cmake" "${WSPATH}"
-
 cd "${WSPATH}"
+if [[ $(catkin locate 2>/dev/null) == "" ]]; then
+  echo "Please specify a valid ROS workspace"
+  exit 1
+fi
+
+cp "${SCRIPTPATH}/rostoolchain.cmake" "${WSPATH}"
 
 # Setup the cross-compile profile
 catkin profile add cross

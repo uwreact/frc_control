@@ -44,7 +44,7 @@ include_directories(
 )
 
 # Optionally enable external vendor-specific libraries.
-option(CTRE "Use CTRE Phoenix library (eg. CAN-enabled TalonSRX and VictorSPX)" ON)
+option(CTRE "Use CTRE Phoenix library (eg. CAN-enabled TalonSRX and VictorSPX)" OFF)
 if (CTRE)
   add_definitions(-DUSE_CTRE=1)
 endif()
@@ -93,7 +93,10 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
 
   # List all user libraries for linking
   # NOTE: This will link ALL libraries in the directory, not just the ones enabled by the options
-  file(GLOB USER_LIBS ${WPI_USER_LIB_DIR}/*)
+  file(GLOB USER_LIBS ${WPI_USER_LIB_DIR}/*.a ${WPI_USER_LIB_DIR}/*.so)
+
+  # NOTE: Hack for CTRE. libCTRE_Phoenix.a must be linked before libCTRE_PhoenixCCI.a
+  list(REVERSE USER_LIBS)
 
   add_executable(robot_base_node
     src/frc_robot_hw_real.cpp
