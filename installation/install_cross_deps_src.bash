@@ -6,8 +6,8 @@
 #
 # This script handles the dependencies that must be built from source.
 #
-
-# TODO: Consider building libraries as static to make it easier to install on the RIO
+# As much as possible, libraries are built as static to make it easier to install on the RIO
+#
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 make_args="-S"
@@ -20,7 +20,7 @@ do
         -h|--help)
             echo "Options:"
             echo "-t FILE, --toolchain=FILE   = Specify the location of the toolchain file. If unspecified, default location used (Relative to script)"
-            echo "-j [N], --jobs[=N]          = Specify the number of jobs to use when compiling with make. If unspecified, infinite jobs"
+            echo "-j [N], --jobs[=N]          = Specify the number of jobs to use when compiling with make. If unspecified, 4 jobs"
             echo "-q, --quiet                 = Don't echo make recepies"
             exit 0
             ;;
@@ -66,6 +66,9 @@ done
 ##### Main script #####
 
 # If the user specified a number of jobs, ensure it is a valid integer
+if [ -z "$num_jobs" ]; then
+    num_jobs=4
+fi
 if ! [ -z "$num_jobs" ]; then
     if ! [[ "$num_jobs" =~ ^[0-9]+$ ]] || [ $num_jobs -lt 1 ]; then
     echo "Error: $num_jobs is not a positive integer" >&2
@@ -97,7 +100,7 @@ function install_cmake ()
     mkdir -p ${1}/build
 	tar xzf $archive --strip 1 -C $1
     cd ${1}/build
-    cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi -DCMAKE_BUILD_TYPE=Release ..
+    cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release ..
     make install $make_args -j $num_jobs
     cd ../..
 }
@@ -137,7 +140,7 @@ install_cmake colllada-dom https://github.com/rdiankov/collada-dom/archive/v2.5.
 wget -q --show-progress https://github.com/pocoproject/poco/archive/poco-1.9.0-release.tar.gz
 tar xzf poco-1.9.0-release.tar.gz
 cd poco-poco-1.9.0-release
-CROSS_COMPILE=arm-frc-linux-gnueabi- ./configure --no-tests --no-samples --minimal --prefix=/usr/arm-frc-linux-gnueabi/usr/local
+CROSS_COMPILE=arm-frc-linux-gnueabi- ./configure --no-tests --no-samples --minimal --prefix=/usr/arm-frc-linux-gnueabi/usr/local --static --cflags="-fPIC"
 CROSS_COMPILE=arm-frc-linux-gnueabi- make install $make_args -j $num_jobs --quiet #We get TONS of warnings here if we don't compile quietly
 
 # python_orocos_kdl v1.3.1 (Apr 5 2016) requires SIP. Corresponding SIP version for this date: v4.17
@@ -159,7 +162,7 @@ sed -i "14i  set_target_properties(tinyxml PROPERTIES PUBLIC_HEADER tinyxml.h)" 
 # Since we're installing the header, we also need to ensure the header and the library match. We will override the ENABLE_STL behaviour
 # by forcing STL to be enabled in the header. This ensures that both the library and anyone using the header will have STL enabled
 sed -i "29i#ifndef TIXML_USE_STL\n\t#define TIXML_USE_STL\n#endif\n" tinyxml.h
-cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi -DCMAKE_BUILD_TYPE=Release .
+cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release .
 make install $make_args -j $num_jobs
 
 # bondcpp v1.8.3 (Aug 17 2018) requires uuid. Corresponding version v2.32.1
