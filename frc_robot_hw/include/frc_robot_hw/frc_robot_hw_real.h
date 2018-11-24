@@ -65,7 +65,7 @@
 #endif
 
 #if USE_NAVX
-#include <kauai/navx_mxp/AHRS.h>
+#include <kauai/AHRS.h>
 #endif
 
 #if USE_MINDSENSORS

@@ -111,10 +111,14 @@ When possible, we install ipks that NI has distributed for the RoboRIO. If these
 
 ### 2. To perform a native compilation:
 
-    catkin profile set native
-    catkin build
+    catkin build --profile native
 
 ### 3. To perform a cross compilation:
 
-    catkin profile set cross
-    catkin build
+    catkin build --profile cross
+
+### 4. Enable 3rd party libraries
+frc_control has built-in support for the most common 3rd party libraries; [CTRE Toolsuite](http://www.ctr-electronics.com/control-system/hro.html#product_tabs_technical_resources), [Kauai Labs](https://pdocs.kauailabs.com/navx-mxp/software/), and [Mindsensors](http://www.mindsensors.com/blog/how-to/how-to-use-sd540c-and-canlight-with-roborio). However, since we know not all teams will be using all of these libraries, they are all **disabled** by default. To download and enable these libraries, use the `install_3rd_party_libs.bash` script.
+
+    cd ~/robot_workspace/src/frc_control/installation
+    ./install_3rd_party_libs.bash < --ctre | --kauai | --mindsensors | --all >
