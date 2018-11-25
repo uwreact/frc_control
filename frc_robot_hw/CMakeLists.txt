@@ -9,6 +9,8 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   controller_manager
   hardware_interface
+  joint_limits_interface
+  transmission_interface
   realtime_tools
   roscpp
   #tinyxml2 #TODO: cmake_modules
@@ -27,6 +29,8 @@ catkin_package(
   CATKIN_DEPENDS
     controller_manager
     hardware_interface
+    joint_limits_interface
+    transmission_interface
     realtime_tools
     roscpp
     #tinyxml2
@@ -38,6 +42,7 @@ catkin_package(
     pdp_state_controller
 )
 
+# Specify additional locations of header files
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -117,3 +122,21 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
 else()
   message(STATUS "Performing native compile, NOT linking WPILib")
 endif()
+
+# Install headers
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
+
+# Install libraries
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# Install config files
+install(DIRECTORY config/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)

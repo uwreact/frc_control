@@ -38,7 +38,6 @@
 #include <joint_limits_interface/joint_limits_interface.h>
 #include <realtime_tools/realtime_buffer.h>
 #include <realtime_tools/realtime_publisher.h>
-#include <robot_state_publisher/robot_state_publisher.h>
 #include <transmission_interface/transmission.h>
 #include <transmission_interface/transmission_info.h>
 #include <transmission_interface/transmission_interface.h>
