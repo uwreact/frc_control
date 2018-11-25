@@ -1,8 +1,11 @@
 # frc_control
 
-The `frc_control` project is a ROS metapackage enabling FRC teams to use ROS on their robots.
 
-The project primary consists of tools to interface [ros_control](http://wiki.ros.org/ros_control) with the WPILib tools required to develop FRC-legal robots.
+[![Build Status](https://travis-ci.com/uwreact/frc_control.svg?branch=kinetic-devel)](https://travis-ci.com/uwreact/frc_control)
+
+A set of packages enabling FRC teams to use ROS on their robots.
+
+The project primary consists of tools to interface [ros_control](http://wiki.ros.org/ros_control) with the [WPILib](https://github.com/wpilibsuite/allwpilib) tools required to develop FRC-legal robots, as well as compiling and running ROS on the NI roboRIO.
 We also provide tools to enable running the robot in [Gazebo](http://gazebosim.org/) simulation.
 
 Read the project's design goals in [DESIGN.md](https://github.com/uwreact/frc_control/blob/kinetic-devel/DESIGN.md) for details on the direction and design of the project.
