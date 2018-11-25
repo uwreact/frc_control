@@ -327,8 +327,14 @@ Key|Type|Required?|Value/Description
     up to main controller itself, namely the roboRIO.
  - For all control modes other than voltage, we require an additional PID
     controller be specified to drive the motor with the specified command.
-    **TODO:** This isn't yet implemented, meaning only voltage control is
-    currently available.
+    This cascading PID is handled internally. However, PID gains for each
+    control mode being used (position, velocity, and effort) must be specified.
+    If gains are not specified for one of the control modes, that joint cannot
+    be controlled in that mode.
+ - For each control mode's set of gains, if one of `p`, `i`, `d`, or `f` are
+    not specified, they default to 0. If `i_clamp` is not specified, the integral
+    term is not clamped. Note that there is no feed forward term `f` in position
+    control.
  - **Current->Effort scaling:**
     - Current is proportional to effort (either force or torque), allowing us
       to use the PDP along with the robot geometry/gearing to get effort
@@ -350,8 +356,9 @@ Key|Type|Required?|Value/Description
 `pdp`|string|optional, default='none'|The name of the PDP powering this motor controller **TODO: Default to PDP ID0 rather than none**
 `pdp_ch`|int|optional|The channel of the PDP powering this motor controller
 `k_eff`|float|optional, default=`1.0`|The current to effort scaling
-
-
+`position_gains`|dict|optional|The tunings for position control: `{p: 1.0, i: 0.1, d: 0.1, i_clamp: 1.0}`
+`velocity_gains`|dict|optional|The tunings for velocity control: `{p: 1.0, i: 0.1, d: 0.1, f: 1.0, i_clamp: 1.0}`
+`effort_gains`|dict|optional|The tunings for effort control: `{p: 1.0, i: 0.1, d: 0.1, f: 1.0, i_clamp: 1.0}`
 ### 7.1.1 Nidec Brushless
  - The `NidecBrushless` is identical to the simple speed controllers described
    above, but takes and additional YAML parameter:

@@ -36,6 +36,15 @@
 namespace frc_robot_hw {
 namespace hardware_template {
 
+struct PIDGains {
+  double k_p;
+  double k_i;
+  double k_d;
+  double k_f;
+  double i_clamp;
+  bool   has_i_clamp;
+};
+
 // "Smart" indicates that these controllers have built-in feedback
 // TODO: Might need custom templates for these since they're smart and therefore have more config data
 // TODO: Add field for feedback type. Internal, External, or None
@@ -162,13 +171,19 @@ struct SimpleSpeedController {
     }
   }
 
-  Type        type;      ///< The type of the controller, corresponding with WPILib & vendor SpeedControllers
-  int         id;        ///< The ID/channel of the controller. Can be PWM channel or CAN id, based on controller type
-  int         dio_id;    ///< Only used by Nidec. The DIO channel
-  bool        inverted;  ///< Whether to invert the direction of the motor
-  std::string pdp;       ///< Name of PDP. Must be "none" or the name of one of the PDPs
-  int         pdp_ch;    ///< Which PDP channel the motor controller is connected to. Used for current draw measurement
-  double      k_eff;     ///< Scale of current to effort/torque, in N or Nm. Based on motor type and gearing.
+  Type        type;       ///< The type of the controller, corresponding with WPILib & vendor SpeedControllers
+  int         id;         ///< The ID/channel of the controller. Can be PWM channel or CAN id, based on controller type
+  int         dio_id;     ///< Only used by Nidec. The DIO channel
+  bool        inverted;   ///< Whether to invert the direction of the motor
+  std::string pdp;        ///< Name of PDP. Must be "none" or the name of one of the PDPs
+  int         pdp_ch;     ///< Which PDP channel the motor controller is connected to. Used for current draw measurement
+  double      k_eff;      ///< Scale of current to effort/torque, in N or Nm. Based on motor type and gearing.
+  PIDGains    pos_gains;  ///< The set of PID gains for position control
+  PIDGains    vel_gains;  ///< The set of PID gains for velocity control
+  PIDGains    eff_gains;  ///< The set of PID gains for effort control
+  bool        has_pos_gains;  ///< Whether the controller specified gains for position control
+  bool        has_vel_gains;  ///< Whether the controller specified gains for velocity control
+  bool        has_eff_gains;  ///< Whether the controller specified gains for effort control
 };
 
 struct Relay {
