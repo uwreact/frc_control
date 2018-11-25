@@ -187,14 +187,28 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
                               "PDP channel " << pdp_ch << " specified, but no PDP specified. "
                                              << "Please verify your configuration.");
 
+      bool has_pos_gains = validateJointParamMember(cur_joint, "position_gains", XmlValue::TypeStruct, false, true);
+      bool has_vel_gains = validateJointParamMember(cur_joint, "velocity_gains", XmlValue::TypeStruct, false, true);
+      bool has_eff_gains = validateJointParamMember(cur_joint, "effort_gains", XmlValue::TypeStruct, false, true);
+
+      PIDGains pos_gains = has_pos_gains ? parsePIDGains(cur_joint["position_gains"]) : PIDGains();
+      PIDGains vel_gains = has_vel_gains ? parsePIDGains(cur_joint["velocity_gains"]) : PIDGains();
+      PIDGains eff_gains = has_eff_gains ? parsePIDGains(cur_joint["effort_gains"]) : PIDGains();
+
       simple_speed_controller_templates_[joint_name] = {
-          .type     = type,
-          .id       = cur_joint["id"],
-          .dio_id   = dio_ch,
-          .inverted = inverted,
-          .pdp      = pdp,
-          .pdp_ch   = pdp_ch,
-          .k_eff    = k_eff,
+          .type          = type,
+          .id            = cur_joint["id"],
+          .dio_id        = dio_ch,
+          .inverted      = inverted,
+          .pdp           = pdp,
+          .pdp_ch        = pdp_ch,
+          .k_eff         = k_eff,
+          .pos_gains     = pos_gains,
+          .vel_gains     = vel_gains,
+          .eff_gains     = eff_gains,
+          .has_pos_gains = has_pos_gains,
+          .has_vel_gains = has_vel_gains,
+          .has_eff_gains = has_eff_gains,
       };
     } else if (joint_type == "pdp") {
       if (validateJointParamMember(cur_joint, "id", XmlValue::TypeInt, false, true)) {
@@ -452,6 +466,24 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
   }
 
   return true;
+}
+
+hardware_template::PIDGains FRCRobotHW::parsePIDGains(XmlRpc::XmlRpcValue& value) {
+  using XmlValue = XmlRpc::XmlRpcValue;
+
+  hardware_template::PIDGains gains;
+  gains.k_p = validateJointParamMember(value, "p", XmlValue::TypeDouble, false, true)
+                    ? getXmlRpcDouble(value["p"]) : 0.0;
+  gains.k_i = validateJointParamMember(value, "i", XmlValue::TypeDouble, false, true)
+                    ? getXmlRpcDouble(value["i"]) : 0.0;
+  gains.k_d = validateJointParamMember(value, "d", XmlValue::TypeDouble, false, true)
+                    ? getXmlRpcDouble(value["d"]) : 0.0;
+  gains.k_f = validateJointParamMember(value, "f", XmlValue::TypeDouble, false, true)
+                    ? getXmlRpcDouble(value["f"]) : 0.0;
+  gains.has_i_clamp = validateJointParamMember(value, "i_clamp", XmlValue::TypeDouble, false, true);
+  gains.i_clamp = gains.has_i_clamp ? getXmlRpcDouble(value["i_clamp"]) : 0.0;
+
+  return gains;
 }
 
 double FRCRobotHW::getXmlRpcDouble(XmlRpc::XmlRpcValue& value) {

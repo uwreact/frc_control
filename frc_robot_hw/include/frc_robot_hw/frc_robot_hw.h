@@ -241,6 +241,8 @@ private:
                                 const bool                       warn_exist = true,
                                 const bool                       warn_type  = true);
 
+  hardware_template::PIDGains parsePIDGains(XmlRpc::XmlRpcValue& value);
+
   /**
    * @brief Get TypeInt and TypeDouble XmlRpcValues as doubles
    *
