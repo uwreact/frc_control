@@ -9,6 +9,8 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   controller_manager
   hardware_interface
+  joint_limits_interface
+  transmission_interface
   realtime_tools
   roscpp
   #tinyxml2 #TODO: cmake_modules
@@ -27,6 +29,8 @@ catkin_package(
   CATKIN_DEPENDS
     controller_manager
     hardware_interface
+    joint_limits_interface
+    transmission_interface
     realtime_tools
     roscpp
     #tinyxml2
