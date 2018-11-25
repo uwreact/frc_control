@@ -63,7 +63,9 @@ void FRCRobotHW::loadURDF(const ros::NodeHandle& nh, const std::string& param_na
 }
 
 void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_name) {
-  using XmlValue = XmlRpc::XmlRpcValue;
+  using XmlValue                  = XmlRpc::XmlRpcValue;
+  using SmartSpeedControllerType  = SmartSpeedController::Type;
+  using SimpleSpeedControllerType = SimpleSpeedController::Type;
   using namespace hardware_template;
 
   ROS_INFO_NAMED(name_, "Loading joints");
@@ -87,23 +89,19 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
   }
 
   // Parse each joint and store it in its respective map
-  // NOLINTNEXTLINE(modernize-loop-convert)
-  for (uint i = 0; i < joint_param_list.size(); i++) {
-    XmlValue cur_joint = joint_param_list[i];
-    ROS_INFO_STREAM(cur_joint);
+  for (const auto& pair : joint_param_list) {
+    const std::string joint_name = pair.first;
+    XmlValue          cur_joint  = pair.second;
+    ROS_INFO_STREAM(joint_name << cur_joint);
 
-    // Ensure the current joint parameter is valid. That is, it has a string parameter for name and type
+    // Ensure the current joint parameter specifies a type
     // TODO: Consider failing instead of skipping (throw std::runtime_error) in some cases
-    if (!validateJointParamMember(cur_joint, "name", XmlValue::TypeString)
-        || !validateJointParamMember(cur_joint, "type", XmlValue::TypeString))
+    if (!validateJointParamMember(cur_joint, "type", XmlValue::TypeString)) {
       continue;
+    }
 
-    // Get the name and type
-    const std::string joint_name = cur_joint["name"];
+    // Get the type of the joint
     const std::string joint_type = cur_joint["type"];
-
-    using SmartSpeedControllerType  = SmartSpeedController::Type;
-    using SimpleSpeedControllerType = SimpleSpeedController::Type;
 
     bool is_smart_speed_controller;
     try {
@@ -121,6 +119,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       is_simple_speed_controller = false;
     }
 
+    // Depending on the type of joint, parse the data further and store the config in a template
     if (is_smart_speed_controller) {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
@@ -419,6 +418,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       continue;
     }
   }
+
+  ROS_INFO_NAMED(name_, "Done loading joints");
 }
 
 bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value,
