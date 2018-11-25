@@ -81,9 +81,15 @@ Once a URDF model of the robot has been created, the joints and sensors are
 defined in a YAML file. The exact syntax of each possible actuator and sensor
 are defined below, however they all take the following general form:
 
-    joints:
-      - {name: shoulder_joint,      type: talon,        id: 1}
-      - {name: shoulder_joint_pot,  type: analog_input, ain_channel: 1}
+   joints:
+
+      shoulder_joint:
+        type: talon
+        id: 1
+
+      shoulder_joint_pot
+        type: analog_input
+        ain_channel: 1
 
 Note a few key attributes:
  - Confusingly, both sensors and actuators are refered to here as 'joints'.
