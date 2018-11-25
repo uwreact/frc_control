@@ -546,13 +546,18 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
                                                       &joint_states_[pair.first].eff);
     joint_state_interface_.registerHandle(state_handle);
 
-    // TODO: Only register pos, vel, effort cmds if the controller a) has a feedback device and b) has PID tunings
-    joint_position_command_interface_.registerHandle(
-        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
-    joint_velocity_command_interface_.registerHandle(
-        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
-    joint_effort_command_interface_.registerHandle(
-        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    // TODO: Only register pos, vel, effort handles if the controller has a feedback device?
+    if (pair.second.has_pos_gains)
+      joint_position_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+    if (pair.second.has_vel_gains)
+      joint_velocity_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+    if (pair.second.has_eff_gains)
+      joint_effort_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
     joint_voltage_command_interface_.registerHandle(
         hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
   }
