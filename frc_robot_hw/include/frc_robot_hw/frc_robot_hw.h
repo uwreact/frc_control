@@ -241,6 +241,15 @@ private:
                                 const bool                       warn_exist = true,
                                 const bool                       warn_type  = true);
 
+  /**
+   * @brief Get TypeInt and TypeDouble XmlRpcValues as doubles
+   *
+   * Note: XmlRpcValue does not support implicit casting of TypeInt to double. In fact, it throws an XmlRpcException.
+   * This behaviour is frustrating and causes unexpected errors. Use getXmlRpcDouble() to allow implicit casting
+   * whenever fetching a double value from an XmlRpcValue.
+   *
+   * @throws std::runtime_error if the XmlRpcValue is not of TypeInt or TypeDouble
+   */
   double getXmlRpcDouble(XmlRpc::XmlRpcValue& value);
 };
 

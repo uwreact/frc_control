@@ -135,7 +135,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       smart_speed_controller_templates_[joint_name] = {
           .type     = SmartSpeedController::stringToType(joint_type),
-          .id       = (int) cur_joint["id"],
+          .id       = cur_joint["id"],
           .inverted = inverted,
       };
     } else if (is_simple_speed_controller) {
@@ -149,7 +149,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       if (type == SimpleSpeedController::Type::Nidec) {
         if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
           continue;
-        dio_ch = (int) cur_joint["dio_channel"];
+        dio_ch = cur_joint["dio_channel"];
       }
 
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
@@ -164,7 +164,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       int pdp_ch;
       if (validateJointParamMember(cur_joint, "pdp_ch", XmlValue::TypeInt, false, true))
-        pdp_ch = (int) cur_joint["pdp_ch"];
+        pdp_ch = cur_joint["pdp_ch"];
       else
         pdp_ch = -1;
 
@@ -178,7 +178,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       double k_eff;
       if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true))
-        k_eff = (double) cur_joint["k_eff"];
+        k_eff = getXmlRpcDouble(cur_joint["k_eff"]);
       else
         k_eff = 1.0;
 
@@ -235,7 +235,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       int pcm_id;
       if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
-        pcm_id = (int) cur_joint["pcm_id"];
+        pcm_id = cur_joint["pcm_id"];
       else
         pcm_id = 0;
 
@@ -250,7 +250,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       int pcm_id;
       if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
-        pcm_id = (int) cur_joint["pcm_id"];
+        pcm_id = cur_joint["pcm_id"];
       else
         pcm_id = 0;
 
@@ -262,7 +262,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     } else if (joint_type == "compressor") {
       int pcm_id;
       if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
-        pcm_id = (int) cur_joint["pcm_id"];
+        pcm_id = cur_joint["pcm_id"];
       else
         pcm_id = 0;
 
@@ -300,8 +300,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       analog_input_templates_[joint_name] = {
           .joint  = "",  // TODO: Lookup in URDF
           .id     = cur_joint["ain_channel"],
-          .scale  = cur_joint["scale"],
-          .offset = cur_joint["offset"],
+          .scale  = getXmlRpcDouble(cur_joint["scale"]),
+          .offset = getXmlRpcDouble(cur_joint["offset"]),
       };
     } else if (joint_type == "analog_output") {
       if (!validateJointParamMember(cur_joint, "aout_channel", XmlValue::TypeInt)
@@ -318,8 +318,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       analog_output_templates_[joint_name] = {
           .joint  = joint,
           .id     = cur_joint["analog_channel"],
-          .scale  = cur_joint["scale"],
-          .offset = cur_joint["offset"],
+          .scale  = getXmlRpcDouble(cur_joint["scale"]),
+          .offset = getXmlRpcDouble(cur_joint["offset"]),
       };
     } else if (joint_type == "encoder") {
       if (!validateJointParamMember(cur_joint, "ch_a", XmlValue::TypeInt)
@@ -331,7 +331,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
                             && cur_joint["inverted"];
       int encoding;
       if (validateJointParamMember(cur_joint, "encoding", XmlValue::TypeInt, false, true))
-        encoding = (int) cur_joint["encoding"];
+        encoding = cur_joint["encoding"];
       else
         encoding = 4;
 
@@ -351,7 +351,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .joint              = joint,
           .ch_a               = cur_joint["ch_a"],
           .ch_b               = cur_joint["ch_b"],
-          .distance_per_pulse = cur_joint["dist_per_pulse"],
+          .distance_per_pulse = getXmlRpcDouble(cur_joint["dist_per_pulse"]),
           .inverted           = inverted,
           .encoding           = encoding,
       };
