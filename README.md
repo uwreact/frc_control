@@ -12,7 +12,7 @@ Read the project's design goals in [DESIGN.md](https://github.com/uwreact/frc_co
 
 ## Compiling
 
-Full instructions for cross-compiling ROS for the roboRIO and linking the WPI libraries can be found in [installation/INSTALLATION.md](https://github.com/uwreact/frc_control/blob/kinetic-devel/installation/installation.md).
+Full instructions for cross-compiling ROS for the roboRIO and linking the WPI libraries can be found in [installation/INSTALLATION.md](https://github.com/uwreact/frc_control/blob/kinetic-devel/installation/INSTALLATION.md).
 
 Once the workspace has been setup for cross-compilation, you can native or cross compile the code using:
 
