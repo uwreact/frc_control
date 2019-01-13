@@ -56,7 +56,7 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 # Install launch files
-install(DIRECTORY config/
+install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   FILES_MATCHING PATTERN "*.launch"
 )

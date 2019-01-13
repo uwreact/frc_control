@@ -1,6 +1,5 @@
 # frc_control
 
-
 [![Build Status](https://travis-ci.com/uwreact/frc_control.svg?branch=kinetic-devel)](https://travis-ci.com/uwreact/frc_control)
 
 A set of packages enabling FRC teams to use ROS on their robots.
