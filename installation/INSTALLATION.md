@@ -2,7 +2,7 @@
 
 # The basics - Setup ROS Kinetic and clone frc_control
 
-### 1. Install ROS Kinetic. See the [wiki](http://wiki.ros.org/kinetic/Installation/Ubuntu) for more details
+## 1. Install ROS Kinetic. See the [wiki](http://wiki.ros.org/kinetic/Installation/Ubuntu) for more details
 
 a) Add ROS to the apt sources list:
 
@@ -24,19 +24,20 @@ d) Source the ROS environment
 
     echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 
-### 2. Install [catkin_tools](https://catkin-tools.readthedocs.io)
+## 2. Install [catkin_tools](https://catkin-tools.readthedocs.io)
+
 We recommend using `catkin_tools` rather than `catkin_make`, as it makes switching between native and cross compilation easier.
 The instructions and scripts discussed below are all for `catkin_tools`.
 
     sudo apt install python-catkin-tools
 
-### 3. Create a workspace, for example `~/robot_workspace/`
+## 3. Create a workspace, for example `~/robot_workspace/`
 
     mkdir -p ~/robot_workspace/src
     cd ~/robot_workspace
     catkin init
 
-### 4. Clone the repository from GitHub into `<workspace>/src/`
+## 4. Clone the repository from GitHub into `<workspace>/src/`
 
     cd ~/robot_workspace/src
     git clone https://github.com/uwreact/frc_control.git
@@ -45,42 +46,40 @@ The instructions and scripts discussed below are all for `catkin_tools`.
 
 This is a tricky procedure, and these instructions aren't guaranteed to work forever. However, the general procedure will largely remain the same. See [the ROS wiki](http://wiki.ros.org/kinetic/Installation/Source) for more information.
 
-### 1. Install the FRC Toolchain
+## 1. Install the WPILib and associated tools
+Follow the instructions on [the ScreenStepsLive](https://wpilib.screenstepslive.com/s/currentCS/m/getting_started/l/999999-installing-c-and-java-development-tools-for-frc). These have been summarized below:
 
-    sudo add-apt-repository ppa:wpilib/toolchain
-    sudo apt update
-    sudo apt install frc-toolchain
+### 1.1 Download and extract the latest WPILib release
 
-### 2. (Hopefully temporary) Install the Eclipse plugins
+Download the latest Linux release from [the WPILib GitHub](https://github.com/wpilibsuite/allwpilib/releases) (At the time of writing, the latest is [2019.1.1](https://github.com/wpilibsuite/allwpilib/releases/download/v2019.1.1/WPILib_Linux-2019.1.1.tar.gz)). Extract the archive to `~/frc2019`.
 
-Hopefully this will not be needed once the VS Code integration is more complete, but for now, we must either compile the wpilib from source or pull the existing binaries out of the Eclipse plugins. This procedure below basically mimics the installation procedure the Eclipse plugins perform to install the necessary libraries and tools.
+    wget https://github.com/wpilibsuite/allwpilib/releases/download/v2019.1.1/WPILib_Linux-2019.1.1.tar.gz
 
-     mkdir ~/wpilib
-     cd wpilib
-     wget http://first.wpi.edu/FRC/roborio/release/EclipsePluginsV2018.4.1.zip
-     unzip EclipsePluginsV2018.4.1.zip
-     cd eclipse/plugins
+    mkdir ~/frc2019
+    tar xzf WPILib_Linux-2019.1.1.tar.gz -C ~/frc2019
+    rm WPILib_Linux-2019.1.1.tar.gz
 
-     # Install common (eg libraries, etc)
-     mkdir ~/wpilib/common
-     unzip edu.wpi.first.wpilib.plugins.core_2018.4.1.jar resources/common.zip resources/tools.zip
-     unzip resources/common.zip -d ~/wpilib/common/current
-     unzip resources/tools.zip -d ~/wpilib/tools
+### 1.2 Install the VSCode extensions
 
-     # Install cpp stuff
-     mkdir ~/wpilib/cpp
-     unzip edu.wpi.first.wpilib.plugins.cpp_2018.4.1.jar resources/cpp.zip
-     unzip resources/cpp.zip -d ~/wpilib/cpp/current
+**TODO**: Not sure which, if any, of the `Java*.vsix` extensions are required. For now, install everything. Once we know, unnecessary extensions will be removed from these instructions.
 
-     cd ~/wpilib
-     rm -rf EclipsePluginsV2018.4.1.zip eclipse
+    cd ~/frc2019/vsCodeExtensions
+    code --install-extension Cpp.vsix
+    code --install-extension JavaLang.vsix
+    code --install-extension JavaDeps.vsix
+    code --install-extension JavaDebug.vsix
+    code --install-extension WPILib.vsix
 
-### 3. Create a workspace for ROS source
+### 1.3 Set up VSCode to use Java 11
+
+Press `ctrl+shift+P` to open the Command Palette. Run the `Set VS Code Java Home to FRC Home` command.
+
+## 2. Create a workspace for ROS source
 
     mkdir ~/ros_arm_cross_ws
     cd ~/ros_arm_cross_ws
 
-### 4. Select the packages to install
+## 3. Select the packages to install
 
 This list of packages ~~may~~**will** change as time goes on. Right now, the standard robot set of packages contains many unneeded packages and adds a lot of unnecessary dependencies (I'm lookin at you, Collada). Once development of this project proceeds further, we can further customize this as required. In fact, we might consider only installing the dependencies of frc_control with no additional packages. This does mean that teams who wish to run their whole ROS stack on the RIO (Instead of the recommended config; frc_control on the RIO, everything else on other machines) will be required to either manually install their extra dependencies, or clone them into their workspace. Needs some consideration.
 
@@ -88,7 +87,7 @@ This list of packages ~~may~~**will** change as time goes on. Right now, the sta
     rosinstall_generator robot ros_control realtime_tools --rosdistro kinetic --deps --wet-only --tar > kinetic-roborio-wet.rosinstall #Install robot plus any other dependencies
     wstool init -j8 src kinetic-roborio-wet.rosinstall
 
-### 5. Manually resolve dependencies
+## 4. Manually resolve dependencies
 
 When possible, we install ipks that NI has distributed for the RoboRIO. If these aren't available, we instead compile libraries from source.
 
@@ -96,7 +95,7 @@ When possible, we install ipks that NI has distributed for the RoboRIO. If these
     sudo ./installation/install_cross_deps_ipks.bash
     sudo ./installation/install_cross_deps_src.bash
 
-### 6. Build ROS with the FRC toolchain
+## 5. Build ROS with the FRC toolchain
 
     cd ~/ros_arm_cross_ws
     sudo rm -rf /usr/arm-frc-linux-gnueabi/opt/ros/kinetic devel_isolated build_isolated
@@ -104,20 +103,21 @@ When possible, we install ipks that NI has distributed for the RoboRIO. If these
 
 # Configuring and compiling frc_control
 
-### 1. Run the installer script to set up catkin profiles for native and cross compilation
+## 1. Run the installer script to set up catkin profiles for native and cross compilation
 
     cd ~/robot_workspace
     ./src/frc_control/setup_catkin.bash .
 
-### 2. To perform a native compilation:
+## 2. To perform a native compilation:
 
     catkin build --profile native
 
-### 3. To perform a cross compilation:
+## 3. To perform a cross compilation:
 
     catkin build --profile cross
 
-### 4. Enable 3rd party libraries
+## 4. Enable 3rd party libraries
+
 frc_control has built-in support for the most common 3rd party libraries; [CTRE Toolsuite](http://www.ctr-electronics.com/control-system/hro.html#product_tabs_technical_resources), [Kauai Labs](https://pdocs.kauailabs.com/navx-mxp/software/), and [Mindsensors](http://www.mindsensors.com/blog/how-to/how-to-use-sd540c-and-canlight-with-roborio). However, since we know not all teams will be using all of these libraries, they are all **disabled** by default. To download and enable these libraries, use the `install_3rd_party_libs.bash` script.
 
     cd ~/robot_workspace/src/frc_control/installation
