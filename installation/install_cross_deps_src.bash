@@ -46,7 +46,7 @@ do
             num_jobs=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift
             ;;
-        
+
         # Verbosity
         -mq)
             ;&
@@ -100,7 +100,7 @@ function install_cmake ()
     mkdir -p ${1}/build
 	tar xzf $archive --strip 1 -C $1
     cd ${1}/build
-    cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release ..
+    cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=~/frc2019/roborio/arm-frc2019-linux-gnueabi -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release ..
     make install $make_args -j $num_jobs
     cd ../..
 }
@@ -140,14 +140,14 @@ install_cmake colllada-dom https://github.com/rdiankov/collada-dom/archive/v2.5.
 wget -q --show-progress https://github.com/pocoproject/poco/archive/poco-1.9.0-release.tar.gz
 tar xzf poco-1.9.0-release.tar.gz
 cd poco-poco-1.9.0-release
-CROSS_COMPILE=arm-frc-linux-gnueabi- ./configure --no-tests --no-samples --minimal --prefix=/usr/arm-frc-linux-gnueabi/usr/local --static --cflags="-fPIC"
-CROSS_COMPILE=arm-frc-linux-gnueabi- make install $make_args -j $num_jobs --quiet #We get TONS of warnings here if we don't compile quietly
+CROSS_COMPILE=arm-frc2019-linux-gnueabi- ./configure --no-tests --no-samples --minimal --prefix=~/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/local --static --cflags="-fPIC"
+CROSS_COMPILE=arm-frc2019-linux-gnueabi- make install $make_args -j $num_jobs --quiet #We get TONS of warnings here if we don't compile quietly
 
 # python_orocos_kdl v1.3.1 (Apr 5 2016) requires SIP. Corresponding SIP version for this date: v4.17
 wget -q --show-progress https://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.tar.gz
 tar xzf sip-4.17.tar.gz
 cd sip-4.17
-python configure.py CC=arm-frc-linux-gnueabi-gcc CXX=arm-frc-linux-gnueabi-g++ LINK=arm-frc-linux-gnueabi-g++ LINK_SHLIB=arm-frc-linux-gnueabi-g++ --sysroot=/usr/arm-frc-linux-gnueabi --incdir=/usr/arm-frc-linux-gnueabi/usr/include/python2.7 STRIP=arm-frc-linux-gnueabi-strip
+python configure.py CC=arm-frc2019-linux-gnueabi-gcc CXX=arm-frc2019-linux-gnueabi-g++ LINK=arm-frc2019-linux-gnueabi-g++ LINK_SHLIB=arm-frc2019-linux-gnueabi-g++ --sysroot=~/frc2019/roborio/arm-frc2019-linux-gnueabi --incdir=~/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/include/python2.7 STRIP=arm-frc2019-linux-gnueabi-strip
 sed -i '/^CPPFLAGS/ s_include_usr/include_' siplib/Makefile
 make install $make_args -j $num_jobs
 
@@ -162,7 +162,7 @@ sed -i "14i  set_target_properties(tinyxml PROPERTIES PUBLIC_HEADER tinyxml.h)" 
 # Since we're installing the header, we also need to ensure the header and the library match. We will override the ENABLE_STL behaviour
 # by forcing STL to be enabled in the header. This ensures that both the library and anyone using the header will have STL enabled
 sed -i "29i#ifndef TIXML_USE_STL\n\t#define TIXML_USE_STL\n#endif\n" tinyxml.h
-cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release .
+cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=~/frc2019/roborio/arm-frc2019-linux-gnueabi -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release .
 make install $make_args -j $num_jobs
 
 # bondcpp v1.8.3 (Aug 17 2018) requires uuid. Corresponding version v2.32.1
@@ -170,7 +170,7 @@ make install $make_args -j $num_jobs
 wget -q --show-progress https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.32/util-linux-2.32.1.tar.gz
 tar xzf util-linux-2.32.1.tar.gz
 cd util-linux-2.32.1
-./configure --host=arm-frc-linux-gnueabi --prefix=/usr/arm-frc-linux-gnueabi/usr/local --disable-all-programs --enable-libuuid
+./configure --host=arm-frc2019-linux-gnueabi --prefix=~/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/local --disable-all-programs --enable-libuuid
 make install $make_args -j $num_jobs
 
 # Cleanup

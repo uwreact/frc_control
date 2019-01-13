@@ -24,7 +24,7 @@ function install_package ()
 	cd ~/.frc_control_temp
 	wget -q --show-progress "$1"
 	ar x "${1##*/}" # Note: This regex simply extracts the filename from the url
-	tar xzf data.tar.gz -C /usr/arm-frc-linux-gnueabi
+	tar xzf data.tar.gz -C ~/frc2019/roborio/arm-frc2019-linux-gnueabi
 	cd
 	rm -rf .frc_control_temp
 }
@@ -62,7 +62,7 @@ install_package "${prefix}libeigen_3.2.6-r0.5_cortexa9-vfpv3.ipk"
 
 # Install FindEigen3.cmake
 # Replaces deprecated FindEigen.cmake provided by the ROS cmake_modules package.
-# Note that we then need to manually specify the CMAKE_MODULE_PATH to include /usr/arm-frc-linux-gnueabi/usr/share/cmake/Modules 
+# Note that we then need to manually specify the CMAKE_MODULE_PATH to include /usr/arm-frc-linux-gnueabi/usr/share/cmake/Modules
 # See https://github.com/ros-perception/perception_pcl/issues/106
 # For some reason, frcmake (cmake 3.5.1) doesn't have /usr/arm-frc-linux-gnueabi/usr/share/cmake/Modules in its modules path by default
 install_package "${prefix}libeigen-dev_3.2.6-r0.5_cortexa9-vfpv3.ipk"

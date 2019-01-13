@@ -98,8 +98,8 @@ When possible, we install ipks that NI has distributed for the RoboRIO. If these
 ## 5. Build ROS with the FRC toolchain
 
     cd ~/ros_arm_cross_ws
-    sudo rm -rf /usr/arm-frc-linux-gnueabi/opt/ros/kinetic devel_isolated build_isolated
-    sudo ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_TOOLCHAIN_FILE=~/robot_workspace/rostoolchain.cmake -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi/opt/ros/kinetic -DCMAKE_MODULE_PATH=/usr/arm-frc-linux-gnueabi/usr/share/cmake/Modules
+    sudo rm -rf ~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/kinetic devel_isolated build_isolated
+    sudo ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_TOOLCHAIN_FILE=~/robot_workspace/rostoolchain.cmake -DCMAKE_INSTALL_PREFIX=~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/kinetic -DCMAKE_MODULE_PATH=~/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/share/cmake/Modules
 
 # Configuring and compiling frc_control
 

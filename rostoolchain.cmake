@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-set(ARM_PREFIX arm-frc-linux-gnueabi)
+set(ARM_PREFIX arm-frc2019-linux-gnueabi)
 
 set(CMAKE_SYSTEM_NAME Linux)
 
