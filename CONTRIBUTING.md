@@ -53,11 +53,11 @@ git remote add upstream https://github.com/uwreact/frc_control.git
 4. Get the latest changes:
 
 ```bash
-git checkout kinetic-devel
-git pull upstream kinetic-devel
+git checkout melodic-devel
+git pull upstream melodic-devel
 ```
 
-5. Create a new branch off of `kinetic-devel`:
+5. Create a new branch off of `melodic-devel`:
 
 ```bash
 git checkout -b <branch-name>
@@ -68,7 +68,7 @@ git checkout -b <branch-name>
 7. Locally merge the upstream branch into your branch:
 
 ```bash
-git pull upstream kinetic-devel
+git pull upstream melodic-devel
 ```
 
 8. [Open a pull request](https://help.github.com/articles/about-pull-requests/)

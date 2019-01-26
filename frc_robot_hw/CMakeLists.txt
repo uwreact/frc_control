@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(frc_robot_hw)
 
-# Enable C++11
-# Note: We are unable to use C++03 for Kinetic releases because the WPILib requires at least C++11
-add_compile_options(-std=c++11)
-
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
   controller_manager
