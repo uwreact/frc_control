@@ -46,33 +46,15 @@ The instructions and scripts discussed below are all for `catkin_tools`.
 
 This is a tricky procedure, and these instructions aren't guaranteed to work forever. However, the general procedure will largely remain the same. See [the ROS wiki](http://wiki.ros.org/melodic/Installation/Source) for more information.
 
-## 1. Install the WPILib and associated tools
-Follow the instructions on [the ScreenStepsLive](https://wpilib.screenstepslive.com/s/currentCS/m/getting_started/l/999999-installing-c-and-java-development-tools-for-frc). These have been summarized below:
+## 1. Download and extract the latest WPILib release
 
-### 1.1 Download and extract the latest WPILib release
+Download the latest Linux release from [the WPILib GitHub](https://github.com/wpilibsuite/allwpilib/releases) (At the time of writing, the latest is [2019.2.1](https://github.com/wpilibsuite/allwpilib/releases/download/v2019.2.1/WPILib_Linux-2019.2.1.tar.gz)). Extract the archive to `~/frc2019`.
 
-Download the latest Linux release from [the WPILib GitHub](https://github.com/wpilibsuite/allwpilib/releases) (At the time of writing, the latest is [2019.1.1](https://github.com/wpilibsuite/allwpilib/releases/download/v2019.1.1/WPILib_Linux-2019.1.1.tar.gz)). Extract the archive to `~/frc2019`.
-
-    wget https://github.com/wpilibsuite/allwpilib/releases/download/v2019.1.1/WPILib_Linux-2019.1.1.tar.gz
+    wget https://github.com/wpilibsuite/allwpilib/releases/download/v2019.2.1/WPILib_Linux-2019.2.1.tar.gz
 
     mkdir ~/frc2019
-    tar xzf WPILib_Linux-2019.1.1.tar.gz -C ~/frc2019
-    rm WPILib_Linux-2019.1.1.tar.gz
-
-### 1.2 Install the VSCode extensions
-
-**TODO**: Not sure which, if any, of the `Java*.vsix` extensions are required. For now, install everything. Once we know, unnecessary extensions will be removed from these instructions.
-
-    cd ~/frc2019/vsCodeExtensions
-    code --install-extension Cpp.vsix
-    code --install-extension JavaLang.vsix
-    code --install-extension JavaDeps.vsix
-    code --install-extension JavaDebug.vsix
-    code --install-extension WPILib.vsix
-
-### 1.3 Set up VSCode to use Java 11
-
-Press `ctrl+shift+P` to open the Command Palette. Run the `Set VS Code Java Home to FRC Home` command.
+    tar xzf WPILib_Linux-2019.2.1.tar.gz -C ~/frc2019
+    rm WPILib_Linux-2019.2.1.tar.gz
 
 ## 2. Create a workspace for ROS source
 
@@ -81,7 +63,7 @@ Press `ctrl+shift+P` to open the Command Palette. Run the `Set VS Code Java Home
 
 ## 3. Select the packages to install
 
-This list of packages ~~may~~**will** change as time goes on. Right now, the standard robot set of packages contains many unneeded packages and adds a lot of unnecessary dependencies (I'm lookin at you, Collada). Once development of this project proceeds further, we can further customize this as required. In fact, we might consider only installing the dependencies of frc_control with no additional packages. This does mean that teams who wish to run their whole ROS stack on the RIO (Instead of the recommended config; frc_control on the RIO, everything else on other machines) will be required to either manually install their extra dependencies, or clone them into their workspace. Needs some consideration.
+This list of packages ~~may~~**will** change as time goes on. Right now, the standard robot set of packages contains many unneeded packages and adds a lot of unnecessary dependencies. Once development of this project proceeds further, we can further customize this as required. In fact, we might consider only installing the dependencies of frc_control with no additional packages. This does mean that teams who wish to run their whole ROS stack on the RIO (Instead of the recommended config; frc_control on the RIO, everything else on other machines) will be required to either manually install their extra dependencies, or clone them into their workspace. Needs some consideration.
 
     sudo apt install python-rosinstall-generator python-wstool
     rosinstall_generator robot ros_control realtime_tools --rosdistro melodic --deps --wet-only --tar > melodic-roborio-wet.rosinstall #Install robot plus any other dependencies
@@ -90,16 +72,17 @@ This list of packages ~~may~~**will** change as time goes on. Right now, the sta
 ## 4. Manually resolve dependencies
 
 When possible, we install ipks that NI has distributed for the RoboRIO. If these aren't available, we instead compile libraries from source.
+Note: The order of installation is important, as some of these packages are dependent on eachother
 
     cd ~/robot_workspace/src/frc_control
-    sudo ./installation/install_cross_deps_ipks.bash
-    sudo ./installation/install_cross_deps_src.bash
+    ./installation/install_cross_deps_ipks.bash
+    ./installation/install_cross_deps_src.bash
 
 ## 5. Build ROS with the FRC toolchain
 
     cd ~/ros_arm_cross_ws
-    sudo rm -rf ~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/melodic devel_isolated build_isolated
-    sudo ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_TOOLCHAIN_FILE=~/robot_workspace/rostoolchain.cmake -DCMAKE_INSTALL_PREFIX=~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/melodic -DCMAKE_MODULE_PATH=~/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/share/cmake/Modules
+    rm -rf ~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/melodic devel_isolated build_isolated
+    ./src/catkin/bin/catkin_make_isolated --install --install-space ~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/melodic -DCMAKE_TOOLCHAIN_FILE=~/robot_workspace/src/frc_control/rostoolchain.cmake -DCMAKE_MODULE_PATH=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/share/cmake/Modules -DCATKIN_ENABLE_TESTING=0
 
 # Configuring and compiling frc_control
 
