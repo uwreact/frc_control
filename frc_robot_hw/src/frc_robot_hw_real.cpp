@@ -28,7 +28,7 @@
 #include <frc_robot_hw/frc_robot_hw_real.h>
 
 #include <boost/make_unique.hpp>
-#include <HAL/HAL.h>
+#include <hal/HAL.h>
 #include <sensor_msgs/Joy.h>
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -60,15 +60,15 @@ void FRCRobotHWReal::runHAL() {
   // Tell the DS that the robot is ready to be enabled ('Robot code ready')
   HAL_ObserveUserProgramStarting();
 
-  sensor_msgs::Joy joysticks[DriverStation::kJoystickPorts];
+  sensor_msgs::Joy joysticks[frc::DriverStation::kJoystickPorts];
 
-  DriverStation& ds = DriverStation::GetInstance();
+  frc::DriverStation& ds = frc::DriverStation::GetInstance();
 
   while (ros::ok()) {
     // TODO: Limit update & publish rate of match data?
 
     // Read all joysticks
-    for (unsigned stick = 0; stick < DriverStation::kJoystickPorts; stick++) {
+    for (unsigned stick = 0; stick < frc::DriverStation::kJoystickPorts; stick++) {
 
       joysticks[stick].header.stamp = ros::Time::now();
 

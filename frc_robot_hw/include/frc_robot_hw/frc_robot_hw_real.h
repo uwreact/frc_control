@@ -30,30 +30,30 @@
 #include <frc_robot_hw/frc_robot_hw.h>
 
 // WPILib driver station
-#include <DriverStation.h>
+#include <frc/DriverStation.h>
 
 // WPILib & vendor sensors/actuators
-#include <AnalogInput.h>
-#include <AnalogOutput.h>
-#include <Compressor.h>
-#include <DigitalInput.h>
-#include <DigitalOutput.h>
-#include <DMC60.h>
-#include <DoubleSolenoid.h>
-#include <Encoder.h>
-#include <Jaguar.h>
-#include <NidecBrushless.h>
-#include <PowerDistributionPanel.h>
-#include <PWMTalonSRX.h>
-#include <PWMVictorSPX.h>
-#include <Relay.h>
-#include <SD540.h>
-#include <Servo.h>
-#include <Solenoid.h>
-#include <Spark.h>
-#include <Talon.h>
-#include <Victor.h>
-#include <VictorSP.h>
+#include <frc/AnalogInput.h>
+#include <frc/AnalogOutput.h>
+#include <frc/Compressor.h>
+#include <frc/DigitalInput.h>
+#include <frc/DigitalOutput.h>
+#include <frc/DMC60.h>
+#include <frc/DoubleSolenoid.h>
+#include <frc/Encoder.h>
+#include <frc/Jaguar.h>
+#include <frc/NidecBrushless.h>
+#include <frc/PowerDistributionPanel.h>
+#include <frc/PWMTalonSRX.h>
+#include <frc/PWMVictorSPX.h>
+#include <frc/Relay.h>
+#include <frc/SD540.h>
+#include <frc/Servo.h>
+#include <frc/Solenoid.h>
+#include <frc/Spark.h>
+#include <frc/Talon.h>
+#include <frc/Victor.h>
+#include <frc/VictorSP.h>
 
 // Note: We will use WPI_ prefixed versions of the CTRE controllers. They are almost identical but add the standard
 // speed controller watchdog all WPILib speed controllers use, as well as allowing for the controller to be put on the
