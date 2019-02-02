@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(frc_robot_hw)
 
 # Extract WPI libraries and headers from maven archives
-add_custom_target(extract_wpilib COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../extract_archives.sh)
+add_custom_target(extract_wpilib COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../extract_archives.py)
 
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
@@ -86,7 +86,7 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   )
 
   # Setup linker to link WPILib libraries
-  set (WPILIB_LIB_DIR $ENV{HOME}/frc2019/extracted/lib_athena)
+  set (WPILIB_LIB_DIR $ENV{HOME}/frc2019/extracted/libathena)
   file(GLOB WPILIB_LIBS ${WPILIB_LIB_DIR}/*/*.so
                         ${WPILIB_LIB_DIR}/*/*.so.[0-9]*) #TODO: This is super hackey, but it filters out so.debugs
   link_directories(
