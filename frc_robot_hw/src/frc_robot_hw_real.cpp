@@ -28,7 +28,11 @@
 #include <frc_robot_hw/frc_robot_hw_real.h>
 
 #include <hal/HAL.h>
+#include <frc_msgs/DriverStationMode.h>
+#include <frc_msgs/JoyArray.h>
+#include <frc_msgs/MatchData.h>
 #include <sensor_msgs/Joy.h>
+#include <std_msgs/Time.h>
 #include <tf2/LinearMath/Quaternion.h>
 
 namespace frc_robot_hw {
@@ -59,50 +63,68 @@ void FRCRobotHWReal::runHAL() {
   // Tell the DS that the robot is ready to be enabled ('Robot code ready')
   HAL_ObserveUserProgramStarting();
 
-  sensor_msgs::Joy joysticks[frc::DriverStation::kJoystickPorts];
-
   frc::DriverStation& ds = frc::DriverStation::GetInstance();
 
   while (ros::ok()) {
     // TODO: Limit update & publish rate of match data?
 
     // Read all joysticks
-    for (unsigned stick = 0; stick < frc::DriverStation::kJoystickPorts; stick++) {
+    frc_msgs::JoyArray joys;
+    for (unsigned i = 0; i < frc::DriverStation::kJoystickPorts; i++) {
 
-      joysticks[stick].header.stamp = ros::Time::now();
+      sensor_msgs::Joy stick;
 
-      joysticks[stick].axes.resize(ds.GetStickAxisCount(stick));
-      for (unsigned axis = 0; axis < ds.GetStickAxisCount(stick); axis++)
-        joysticks[stick].axes[axis] = ds.GetStickAxis(stick, axis);
+      stick.header.stamp = ros::Time::now();
+
+      stick.axes.resize(ds.GetStickAxisCount(i));
+      for (unsigned axis = 0; axis < ds.GetStickAxisCount(i); axis++)
+        stick.axes[axis] = ds.GetStickAxis(i, axis);
 
       // Note: Buttons, unlike axes, are indexed from 1 rather than 0
-      joysticks[stick].buttons.resize(ds.GetStickButtonCount(stick));
-      for (unsigned button = 0; button < ds.GetStickButtonCount(stick); button++)
-        joysticks[stick].buttons[button] = ds.GetStickButton(stick, button + 1);
+      stick.buttons.resize(ds.GetStickButtonCount(i));
+      for (unsigned button = 0; button < ds.GetStickButtonCount(i); button++)
+        stick.buttons[button] = ds.GetStickButton(i, button+1);
 
-      // TODO: Ensure POV hat is covered. If not, append it to axes and/or buttons
+      // TODO: Ensure POV hat is covered. If not, append it to axes and buttons
+
+      joys.sticks[i] = stick;
+      joys.type[i] = ds.GetJoystickType(i);
+      joys.name[i] = ds.GetJoystickName(i);
     }
 
+
     // Get match data
-    ds.GetGameSpecificMessage();
-    ds.GetEventName();
-    ds.GetMatchType();  // kNone, kPractice, kQualification, kElimination
-    ds.GetMatchNumber();
-    ds.GetReplayNumber();
-    ds.GetAlliance();  // kRed, kBlue, or kInvalid
-    ds.GetLocation();  // 1, 2, or 3. 0 if invalid
+    frc_msgs::MatchData match_data;
+    match_data.game_specific_message = ds.GetGameSpecificMessage();
+    match_data.event_name = ds.GetEventName();
+    match_data.match_type = ds.GetMatchType(); // kNone, kPractice, kQualification, kElimination
+    match_data.match_number = ds.GetMatchNumber();
+    match_data.replay_number = ds.GetReplayNumber(); // Presumably will increment on each replay of a match, since match number is no longer unique
+    match_data.alliance = ds.GetAlliance(); // kRed, kBlue, or kInvalid
+    match_data.location = ds.GetLocation(); // 1, 2, or 3. 0 if invalid
 
     // Get current match data
-    ds.GetMatchTime();  // APPROXIMATE remaining time in current period (auto or teleop), in seconds.
-                        // Note: The FMS does not report official match time to robots, thus this may be imprecise.
+    // APPROXIMATE remaining time in current period (auto or teleop), in seconds.
+    // Note: The FMS does not report official match time to robots, thus this may be imprecise.
+    std_msgs::Time match_time;
+    match_time.data = ros::Time(ds.GetMatchTime());
 
     // Get robot state
-    ds.IsEnabled();
-    ds.IsAutonomous();
-    ds.IsOperatorControl();
-    ds.IsTest();
-    ds.IsDSAttached();
-    ds.IsFMSAttached();
+    frc_msgs::DriverStationMode ds_mode;
+    //TODO: Estop
+    if (ds.IsDisabled())
+      ds_mode.mode = frc_msgs::DriverStationMode::MODE_DISABLED;
+    else if (ds.IsOperatorControl())
+      ds_mode.mode = frc_msgs::DriverStationMode::MODE_OPERATOR;
+    else if (ds.IsAutonomous())
+      ds_mode.mode = frc_msgs::DriverStationMode::MODE_AUTONOMOUS;
+    else if (ds.IsTest())
+      ds_mode.mode = frc_msgs::DriverStationMode::MODE_TEST;
+    else
+      ds_mode.mode = frc_msgs::DriverStationMode::MODE_DISABLED;
+
+    ds_mode.is_ds_attached = ds.IsDSAttached();
+    ds_mode.is_fms_attached = ds.IsFMSAttached();
 
     // TODO: Publish NetworkTables.
 
