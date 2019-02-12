@@ -34,6 +34,8 @@ def extract(path, pkg, version=None):
         fullpath = '/'.join([path, pkg, version, pkg + '-' + version])
     else:
         fullpath = '/'.join([path, pkg + '-' + version])
+
+    pkg = pkg.split('-')[0]
     print('\nExtracting {pkg} version {version}...'.format(pkg=pkg, version=version))
 
     # Extract headers
@@ -78,8 +80,8 @@ if __name__ == '__main__':
     extract(wpi_maven_prefix + '/wpiutil', 'wpiutil-cpp')
     extract(wpi_maven_prefix + '/ni-libraries', 'chipobject')
     extract(wpi_maven_prefix + '/ni-libraries', 'netcomm')
-    extract(wpi_maven_prefix + '/thirdparty/frc2019', 'googletest')
-    extract(wpi_maven_prefix + '/thirdparty/frc2019/opencv', 'opencv-cpp')
+    # extract(wpi_maven_prefix + '/thirdparty/frc2019', 'googletest')
+    # extract(wpi_maven_prefix + '/thirdparty/frc2019/opencv', 'opencv-cpp')
 
     # Extract installed vendor artifacts
     vendor_deps = FRC_PATH + '/vendordeps'
@@ -89,4 +91,4 @@ if __name__ == '__main__':
 
             for artifact in parsed['cppDependencies']:
                 path = '/'.join([FRC_PATH, 'maven', artifact['groupId']]).replace('.', '/')
-                extract(path, artifact['artifactId'], parsed['version'])
+                extract(path, artifact['artifactId'], artifact['version'])

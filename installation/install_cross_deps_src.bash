@@ -95,7 +95,15 @@ function install_cmake ()
     mkdir -p ${1}/build
     tar xzf $archive --strip 1 -C $1
     cd ${1}/build
-    cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release ..
+
+
+    if [ -z ${3} ] || [ ${3} = true ]; then
+        args="-DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON"
+    else
+        args=""
+    fi
+
+    cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi ${args} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release ..
     make install $make_args -j $num_jobs
     cd ../..
 }
@@ -164,6 +172,10 @@ tar xzf util-linux-2.32.1.tar.gz
 cd util-linux-2.32.1
 ./configure CC=${bin_prefix}-gcc --host=arm-frc2019-linux-gnueabi --prefix=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/local --disable-all-programs --enable-libuuid --disable-bash-completion
 make install $make_args -j $num_jobs
+
+# Install OpenCV, needed to build WPILib. Note that this must be shared, since
+# pre-build vendor libraries are linked against the shared libopencv-XXX.so.3.4 libraries
+install_cmake opencv https://github.com/opencv/opencv/archive/3.4.4.tar.gz false
 
 # Cleanup
 cd

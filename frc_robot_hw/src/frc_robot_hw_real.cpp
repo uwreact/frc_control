@@ -164,7 +164,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
   }
 
   // Create navXs
-#if USE_NAVX
+#if USE_KAUAI
   for (const auto& pair : navx_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib NavX-MXP " << pair.first
                                   << " on interface " << pair.second.interface
@@ -348,7 +348,7 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
   }
 
   // Read current navX IMU states
-#if USE_NAVX
+#if USE_KAUAI
   for (const auto& pair : navxs_) {
     const auto& navx = pair.second;
 

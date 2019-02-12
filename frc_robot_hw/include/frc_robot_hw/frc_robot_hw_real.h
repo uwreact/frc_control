@@ -59,24 +59,26 @@
 // speed controller watchdog all WPILib speed controllers use, as well as allowing for the controller to be put on the
 // SmartDashboard. It also makes them play nicely with other WPILib stuff such as its PIDs
 #if USE_CTRE
-#include <ctre/phoenix/Sensors/PigeonIMU.h>
-#include <ctre/phoenix/MotorControl/CAN/WPI_VictorSPX.h>
-#include <ctre/phoenix/MotorControl/CAN/WPI_TalonSRX.h>
+#include <ctre/phoenix/sensors/PigeonIMU.h>
+#include <ctre/phoenix/motorcontrol/can/WPI_VictorSPX.h>
+#include <ctre/phoenix/motorcontrol/can/WPI_TalonSRX.h>
 #endif
 
-#if USE_NAVX
-#include <kauai/AHRS.h>
+#if USE_KAUAI
+#include <AHRS.h>
 #endif
 
 #if USE_MINDSENSORS
-//#include <mindsensors/CANLIGHT.h>
-#include <mindsensors/CANSD540.h>
+// #include <mindsensors/CANLIGHT.h>
+// #include <mindsensors/CANSD540.h>
 #endif
 
-namespace frc_robot_hw {
+namespace frc_robot_hw
+{
 
 /// FRC Robot HW for real robots running on the RoboRIO
-class FRCRobotHWReal : public FRCRobotHW {
+class FRCRobotHWReal : public FRCRobotHW
+{
 public:
   FRCRobotHWReal() : FRCRobotHW("frc_robot_hw_real") {}
 
@@ -99,12 +101,11 @@ public:
   void runHAL();
 
   // Overrides
-  bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
-  void read(const ros::Time& time, const ros::Duration& period) override;
-  void write(const ros::Time& time, const ros::Duration& period) override;
+  bool init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh) override;
+  void read(const ros::Time &time, const ros::Duration &period) override;
+  void write(const ros::Time &time, const ros::Duration &period) override;
 
 private:
-
   // Maps of the WPILib objects used to interact with the HAL
   std::map<std::string, std::unique_ptr<frc::SpeedController>> smart_speed_controllers_; // TODO: Probably can't have generic type
   std::map<std::string, std::unique_ptr<frc::SpeedController>> simple_speed_controllers_;
@@ -119,7 +120,7 @@ private:
   std::map<std::string, std::unique_ptr<frc::AnalogInput>> analog_inputs_;
   std::map<std::string, std::unique_ptr<frc::AnalogOutput>> analog_outputs_;
   std::map<std::string, std::unique_ptr<frc::Encoder>> encoders_;
-#if USE_NAVX
+#if USE_KAUAI
   std::map<std::string, std::unique_ptr<AHRS>> navxs_;
 #endif
 #if USE_CTRE
@@ -127,7 +128,7 @@ private:
 #endif
 
   std::thread hal_thread_;
-  bool robot_code_ready_ { false };
+  bool robot_code_ready_{false};
 };
 
 } // namespace frc_robot_hw
