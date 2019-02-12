@@ -78,6 +78,15 @@ Note: The order of installation is important, as some of these packages are depe
     ./installation/install_cross_deps_ipks.bash
     ./installation/install_cross_deps_src.bash
 
+## 5. Un-Source ROS
+
+In order to successfully cross-compile ROS, we must use a fresh shell that doesn't have a ROS environment sourced.
+You can do this manually by commenting out `source /opt/ros/melodic/setup.bash` from your `~/.bashrc`, opening a new terminal,
+and restoring that line once you are complete. Or, you can use the following script:
+
+    cd ~/robot_workspace/src/frc_control
+    source installation/unsource_ros.bash 
+
 ## 5. Build ROS with the FRC toolchain
 
     cd ~/ros_arm_cross_ws
