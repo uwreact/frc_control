@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.6) # We require 3.6 for list(FILTER)
 project(frc_robot_hw)
 
-# Extract WPI libraries and headers from maven archives
-add_custom_target(extract_wpilib COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../extract_archives.py)
-
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
   controller_manager
@@ -69,7 +66,6 @@ add_library(${PROJECT_NAME}
   src/frc_robot_hw.cpp
   src/robot_control_loop.cpp
 )
-add_dependencies(${PROJECT_NAME} extract_wpilib)
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -83,6 +79,10 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   # Find OpenCV
   set(OpenCV_DIR ${CMAKE_FIND_ROOT_PATH}/share/OpenCV/)
   find_package(OpenCV)
+
+  # Extract WPI libraries and headers from maven archives
+  add_custom_target(extract_wpilib COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../extract_archives.py)
+  add_dependencies(${PROJECT_NAME} extract_wpilib)
 
   # Include WPILib and vendor headers
   file(GLOB WPILIB_HEADERS $ENV{HOME}/frc2019/extracted/include/*)
