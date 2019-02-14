@@ -87,7 +87,7 @@ and restoring that line once you are complete. Or, you can use the following scr
     cd ~/robot_workspace/src/frc_control
     source installation/unsource_ros.bash 
 
-## 5. Build ROS with the FRC toolchain
+## 6. Build ROS with the FRC toolchain
 
     cd ~/ros_arm_cross_ws
     rm -rf ~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/melodic devel_isolated build_isolated
