@@ -19,7 +19,7 @@ function install_package ()
 
 prefix="http://download.ni.com/ni-linux-rt/feeds/2018.5/arm/cortexa9-vfpv3/"
 
-## Install Boost
+# Install Boost
 install_package "${prefix}boost-dev_1.63.0-r1.5_cortexa9-vfpv3.ipk"
 # install_package "${prefix}boost-log_1.63.0-r1.5_cortexa9-vfpv3.ipk"
 # install_package "${prefix}boost-serialization_1.63.0-r1.5_cortexa9-vfpv3.ipk"
@@ -40,12 +40,12 @@ install_package "${prefix}libboost-system1.63.0_1.63.0-r1.5_cortexa9-vfpv3.ipk"
 install_package "${prefix}libboost-thread1.63.0_1.63.0-r1.5_cortexa9-vfpv3.ipk"
 install_package "${prefix}libboost-timer1.63.0_1.63.0-r1.5_cortexa9-vfpv3.ipk"
 
-## Install Python
+# Install Python
 install_package "${prefix}python-core_2.7.13-r1.40_cortexa9-vfpv3.ipk"
 install_package "${prefix}libpython2_2.7.13-r1.40_cortexa9-vfpv3.ipk"
 install_package "${prefix}python-dev_2.7.13-r1.40_cortexa9-vfpv3.ipk"
 
-# ## Install Eigen (Required for various packages (eigen, orocos, kdl, etc))
+# Install Eigen (Required for various packages (eigen, orocos, kdl, etc))
 install_package "${prefix}libeigen_3.2.8-r0.5_cortexa9-vfpv3.ipk"
 
 # Install FindEigen3.cmake
