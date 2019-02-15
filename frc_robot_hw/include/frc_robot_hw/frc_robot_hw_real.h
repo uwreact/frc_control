@@ -73,12 +73,10 @@
 // #include <mindsensors/CANSD540.h>
 #endif
 
-namespace frc_robot_hw
-{
+namespace frc_robot_hw {
 
 /// FRC Robot HW for real robots running on the RoboRIO
-class FRCRobotHWReal : public FRCRobotHW
-{
+class FRCRobotHWReal : public FRCRobotHW {
 public:
   FRCRobotHWReal() : FRCRobotHW("frc_robot_hw_real") {}
 
