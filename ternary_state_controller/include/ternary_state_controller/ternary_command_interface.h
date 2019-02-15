@@ -37,8 +37,7 @@ namespace hardware_interface {
  * A handle used to read and command a ternary (-1, 0, 1 or reverse, off, forward) actuator
  * (eg. H-bridge relay, double-acting solenoid).
  */
-class TernaryCommandHandle : public TernaryStateHandle
-{
+class TernaryCommandHandle : public TernaryStateHandle {
 public:
   TernaryCommandHandle() : TernaryStateHandle(), cmd_(0) {}
 
@@ -47,12 +46,9 @@ public:
    * \param cmd A pointer to the storage for this joint's output command
    */
   TernaryCommandHandle(const TernaryStateHandle& state_handle, TernaryState* cmd)
-    : TernaryStateHandle(state_handle), cmd_(cmd)
-  {
+    : TernaryStateHandle(state_handle), cmd_(cmd) {
     if (!cmd_)
-    {
       throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
-    }
   }
 
   void setCommand(TernaryState command) {assert(cmd_); *cmd_ = command;}

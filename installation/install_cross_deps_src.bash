@@ -11,6 +11,7 @@
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 make_args="-S"
+bin_prefix=$HOME/frc2019/roborio/bin/arm-frc2019-linux-gnueabi
 
 ##### Launch Options #####
 
@@ -46,7 +47,7 @@ do
             num_jobs=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift
             ;;
-        
+
         # Verbosity
         -mq)
             ;&
@@ -85,22 +86,24 @@ if [ ! -f "$toolchain" ]; then
     exit 1
 fi
 
-# Ensure the user is running as root
-if (( $EUID != 0 )); then
-    echo "Please run as root"
-    exit 1
-fi
-
 # Used whenever a standard CMake compile is possible
 # $1 is the name of the library, $2 is the url
 function install_cmake ()
 {
     archive="${1}_${2##*/}" # Prepend the archive name with the name of the library
-	wget -q --show-progress $2 -O $archive
+    wget -q --show-progress $2 -O $archive
     mkdir -p ${1}/build
-	tar xzf $archive --strip 1 -C $1
+    tar xzf $archive --strip 1 -C $1
     cd ${1}/build
-    cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release ..
+
+
+    if [ -z ${3} ] || [ ${3} = true ]; then
+        args="-DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON"
+    else
+        args=""
+    fi
+
+    cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi ${args} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release ..
     make install $make_args -j $num_jobs
     cd ../..
 }
@@ -110,48 +113,20 @@ rm -rf ~/.frc_control_temp
 mkdir ~/.frc_control_temp
 cd ~/.frc_control_temp
 
-# class_loader v0.3.9 (Mar 16 2018) requires console_bridge. Corresponding console_bridge version for this date: v0.4.0
-# tf2 v0.5.19 (Nov 17 2018) requires console_bridge. However, **tf2 requires v0.3.2**
-install_cmake console_bridge https://github.com/ros/console_bridge/archive/0.3.2.tar.gz
+# General rule of thumb for versions: Numbering is typically MAJOR.MINOR.PATCH. The patch number can be freely incremented,
+# but generally the major must remain identical and the minor version _usually_ should remain identical to the version the library
+# was released against.
 
-# pluginlib v1.11.3 (Mar 16 2018) requires TinyXML2. Corresponding TinyXML2 version for this date: v6.0.0
-install_cmake TinyXML2 https://github.com/leethomason/tinyxml2/archive/6.0.0.tar.gz
+# class_loader v0.4.1 (Apr 27 2018) requires console_bridge. Corresponding console_bridge version for this date: v0.4.0
+# tf2 v0.6.5 (Nov 16 2018) requires console_bridge. Corresponding console_bridge version for this date: v0.4.1
+install_cmake console_bridge https://github.com/ros/console_bridge/archive/0.4.3.tar.gz
 
-# TODO: urdfdom and urdfdom_headers can be installed either manually like this, or by merging them into the ros workspace and cloning their package.xml files. Not sure which is better
-# urdf_parser_plugin v1.12.12 (Nov 8 2017) requires urdfdom. Corresponding version v1.0.0
-install_cmake urdfdom https://github.com/ros/urdfdom/archive/1.0.0.tar.gz
+# pluginlib v1.12.1 (Apr 27 2018) requires TinyXML2. Corresponding TinyXML2 version for this date: v6.2.0
+# rospack v2.5.2 (Sep 5 2018) requires TinyXML2. Corresponding TinyXML2 version for this date: v6.2.0
+install_cmake TinyXML2 https://github.com/leethomason/tinyxml2/archive/6.2.0.tar.gz
 
-# urdf_parser_plugin v1.12.12 (Nov 8 2017) requires urdfdom_headers. Corresponding version v1.0.0
-install_cmake urdfdom_headers https://github.com/ros/urdfdom_headers/archive/1.0.0.tar.gz
-
-# geometric_shapes v0.5.4 (May 14 2018) requires qhull. Corresponding version v2015.2
-install_cmake qhull http://www.qhull.org/download/qhull-2015-src-7.2.0.tgz
-
-# geometric_shapes v0.5.4 (May 14 2018) requires assimp. Corresponding version v4.1.0
-install_cmake assimp https://github.com/assimp/assimp/archive/v4.1.0.tar.gz
-
-# tf v1.11.9 (Jul 14 2017) requires gtest. Corresponding version v1.8.0
-install_cmake googletest https://github.com/google/googletest/archive/release-1.8.0.tar.gz
-
-# collada_parser v1.12.12 (May 8 2018) requires collada-dom. Corresponding version v2.5.0
-install_cmake colllada-dom https://github.com/rdiankov/collada-dom/archive/v2.5.0.tar.gz
-
-# class_loader v0.3.9 (Mar 16 2018) requires Poco. Corresponding Poco version for this date: v1.9.0
-wget -q --show-progress https://github.com/pocoproject/poco/archive/poco-1.9.0-release.tar.gz
-tar xzf poco-1.9.0-release.tar.gz
-cd poco-poco-1.9.0-release
-CROSS_COMPILE=arm-frc-linux-gnueabi- ./configure --no-tests --no-samples --minimal --prefix=/usr/arm-frc-linux-gnueabi/usr/local --static --cflags="-fPIC"
-CROSS_COMPILE=arm-frc-linux-gnueabi- make install $make_args -j $num_jobs --quiet #We get TONS of warnings here if we don't compile quietly
-
-# python_orocos_kdl v1.3.1 (Apr 5 2016) requires SIP. Corresponding SIP version for this date: v4.17
-wget -q --show-progress https://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.tar.gz
-tar xzf sip-4.17.tar.gz
-cd sip-4.17
-python configure.py CC=arm-frc-linux-gnueabi-gcc CXX=arm-frc-linux-gnueabi-g++ LINK=arm-frc-linux-gnueabi-g++ LINK_SHLIB=arm-frc-linux-gnueabi-g++ --sysroot=/usr/arm-frc-linux-gnueabi --incdir=/usr/arm-frc-linux-gnueabi/usr/include/python2.7 STRIP=arm-frc-linux-gnueabi-strip
-sed -i '/^CPPFLAGS/ s_include_usr/include_' siplib/Makefile
-make install $make_args -j $num_jobs
-
-# rospack v2.4.4 (Nov 16 2017) requires TinyXML. Corresponding TinyXML version for this date: v2.6.2
+# transmission_interface v0.15.1 (Sep 30 2018) requires TinyXML. Corresponding TinyXML version for this date: v2.6.2
+# Note: Unfortunately TinyXML won't be deprecated from ROS until N-turtle so we still have to deal with it for now :(
 wget -q --show-progress https://sourceforge.net/projects/tinyxml/files/tinyxml/2.6.2/tinyxml_2_6_2.tar.gz
 tar xzf tinyxml_2_6_2.tar.gz
 cd tinyxml
@@ -162,7 +137,32 @@ sed -i "14i  set_target_properties(tinyxml PROPERTIES PUBLIC_HEADER tinyxml.h)" 
 # Since we're installing the header, we also need to ensure the header and the library match. We will override the ENABLE_STL behaviour
 # by forcing STL to be enabled in the header. This ensures that both the library and anyone using the header will have STL enabled
 sed -i "29i#ifndef TIXML_USE_STL\n\t#define TIXML_USE_STL\n#endif\n" tinyxml.h
-cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=/usr/arm-frc-linux-gnueabi -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release .
+cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=~/frc2019/roborio/arm-frc2019-linux-gnueabi -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release .
+make install $make_args -j $num_jobs
+
+# TODO: urdfdom and urdfdom_headers can be installed either manually like this, or by merging them into the ros workspace and cloning their package.xml files. Not sure which is better
+# urdf_parser_plugin v1.13.1 (Apr 5 2018) requires urdfdom_headers. Corresponding version v1.0.0.
+install_cmake urdfdom_headers https://github.com/ros/urdfdom_headers/archive/1.0.3.tar.gz
+
+# urdf_parser_plugin v1.13.1 (Apr 5 2018) requires urdfdom. Corresponding version v1.0.0
+# Note: urdfdom requires TinyXML, and therefore MUST be installed after TinyXML
+install_cmake urdfdom https://github.com/ros/urdfdom/archive/1.0.0.tar.gz
+
+# class_loader v0.4.1 (Apr 27 2018) requires Poco. Corresponding Poco version for this date: v1.9.0
+wget -q --show-progress https://github.com/pocoproject/poco/archive/poco-1.9.0-release.tar.gz
+tar xzf poco-1.9.0-release.tar.gz
+cd poco-poco-1.9.0-release
+CROSS_COMPILE=${bin_prefix}- ./configure --no-tests --no-samples --minimal --prefix=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/local --static --cflags="-fPIC"
+CROSS_COMPILE=${bin_prefix}- make install $make_args -j $num_jobs --quiet #We get TONS of warnings here if we don't compile quietly
+
+# python_orocos_kdl v1.4.0 (Mar 21 2018) requires SIP. Corresponding SIP version for this date: v4.19.8
+# Note: SIP versions 4.19.9 and onward seem to be incompatible due to changes to the SIP_MODULE_NAME definition.
+# See https://www.riverbankcomputing.com/hg/sip/rev/d2b3b20484bd.
+wget -q --show-progress https://sourceforge.net/projects/pyqt/files/sip/sip-4.19.8/sip-4.19.8.tar.gz
+tar xzf sip-4.19.8.tar.gz
+cd sip-4.19.8
+python configure.py CC=${bin_prefix}-gcc CXX=${bin_prefix}-g++ LINK=${bin_prefix}-g++ LINK_SHLIB=${bin_prefix}-g++ --sysroot=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi --incdir=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/include/python2.7 STRIP=${bin_prefix}-strip
+sed -i '/^CPPFLAGS/ s_include_usr/include_' siplib/Makefile
 make install $make_args -j $num_jobs
 
 # bondcpp v1.8.3 (Aug 17 2018) requires uuid. Corresponding version v2.32.1
@@ -170,8 +170,12 @@ make install $make_args -j $num_jobs
 wget -q --show-progress https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.32/util-linux-2.32.1.tar.gz
 tar xzf util-linux-2.32.1.tar.gz
 cd util-linux-2.32.1
-./configure --host=arm-frc-linux-gnueabi --prefix=/usr/arm-frc-linux-gnueabi/usr/local --disable-all-programs --enable-libuuid
+./configure CC=${bin_prefix}-gcc --host=arm-frc2019-linux-gnueabi --prefix=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/local --disable-all-programs --enable-libuuid --disable-bash-completion
 make install $make_args -j $num_jobs
+
+# Install OpenCV, needed to build WPILib. Note that this must be shared, since
+# pre-build vendor libraries are linked against the shared libopencv-XXX.so.3.4 libraries
+install_cmake opencv https://github.com/opencv/opencv/archive/3.4.4.tar.gz false
 
 # Cleanup
 cd

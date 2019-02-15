@@ -41,10 +41,10 @@ namespace hardware_template {
   // TODO: Add field for feedback type. Internal, External, or None
   struct SmartSpeedController {
     enum class Type {
-      //CANJaguar,        ///< Luminary Micro / Vex Robotics Jaguar with CAN control. Deprecated.
+      // CANJaguar,        ///< Luminary Micro / Vex Robotics Jaguar with CAN control. Deprecated.
 
 #if USE_MINDSENSORS
-      CANSD540,           ///< Mindsensors SD540 with CAN control
+      // CANSD540,           ///< Mindsensors SD540 with CAN control
 #endif
 
 #if USE_CTRE
@@ -59,8 +59,8 @@ namespace hardware_template {
     static Type stringToType(const std::string& string) {
       if (false) {} // TODO: This is ugly :(
 #if USE_MINDSENSORS
-      else if (string == "can_sd540")
-        return Type::CANSD540;
+      // else if (string == "can_sd540")
+      //   return Type::CANSD540;
 #endif
 #if USE_CTRE
       else if (string == "can_talon_spx")
@@ -74,7 +74,7 @@ namespace hardware_template {
     static std::string typeToString(const Type& type) {
       switch(type) {
 #if USE_MINDSENSORS
-        case Type::CANSD540:      return "can_sd540";
+        // case Type::CANSD540:      return "can_sd540";
 #endif
 #if USE_CTRE
         case Type::CANTalonSRX:   return "can_talon_spx";
@@ -239,7 +239,7 @@ namespace hardware_template {
     int encoding;               ///< The encoding format. Must be 1, 2, or 4
   };
 
-#if USE_NAVX
+#if USE_KAUAI
   struct NavX {
     std::string interface;      ///< The interface on which the NavX is connected. Must be 'i2c', 'serial', or 'spi'
     int id;                     ///< The port number on whichever interface is specified above

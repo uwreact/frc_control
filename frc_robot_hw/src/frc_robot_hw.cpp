@@ -332,7 +332,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
         .encoding = encoding
       };
     }
-#if USE_NAVX
+#if USE_KAUAI
     else if (joint_type == "navx") {
       if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString) ||
           !validateJointParamMember(cur_joint, "interface", XmlValue::TypeString) ||
@@ -636,7 +636,7 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   }
 
   // Register a state handle for each navX IMU
-#if USE_NAVX
+#if USE_KAUAI
   for (const auto& pair : navx_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for navX-MXP IMU " << pair.first
                                   << " with tf frame " << pair.second.frame_id);

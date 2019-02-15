@@ -28,7 +28,7 @@
 #include <frc_robot_hw/frc_robot_hw_real.h>
 
 #include <boost/make_unique.hpp>
-#include <HAL/HAL.h>
+#include <hal/HAL.h>
 #include <sensor_msgs/Joy.h>
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -60,15 +60,15 @@ void FRCRobotHWReal::runHAL() {
   // Tell the DS that the robot is ready to be enabled ('Robot code ready')
   HAL_ObserveUserProgramStarting();
 
-  sensor_msgs::Joy joysticks[DriverStation::kJoystickPorts];
+  sensor_msgs::Joy joysticks[frc::DriverStation::kJoystickPorts];
 
-  DriverStation& ds = DriverStation::GetInstance();
+  frc::DriverStation& ds = frc::DriverStation::GetInstance();
 
   while (ros::ok()) {
     // TODO: Limit update & publish rate of match data?
 
     // Read all joysticks
-    for (unsigned stick = 0; stick < DriverStation::kJoystickPorts; stick++) {
+    for (unsigned stick = 0; stick < frc::DriverStation::kJoystickPorts; stick++) {
 
       joysticks[stick].header.stamp = ros::Time::now();
 
@@ -164,7 +164,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
   }
 
   // Create navXs
-#if USE_NAVX
+#if USE_KAUAI
   for (const auto& pair : navx_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib NavX-MXP " << pair.first
                                   << " on interface " << pair.second.interface
@@ -348,7 +348,7 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
   }
 
   // Read current navX IMU states
-#if USE_NAVX
+#if USE_KAUAI
   for (const auto& pair : navxs_) {
     const auto& navx = pair.second;
 

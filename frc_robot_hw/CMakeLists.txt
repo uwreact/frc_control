@@ -1,9 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.6) # We require 3.6 for list(FILTER)
 project(frc_robot_hw)
-
-# Enable C++11
-# Note: We are unable to use C++03 for Kinetic releases because the WPILib requires at least C++11
-add_compile_options(-std=c++11)
 
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
@@ -54,14 +50,15 @@ if (CTRE)
   add_definitions(-DUSE_CTRE=1)
 endif()
 
-option(NAVX "Use Kauai Labs NavX library" OFF)
-if (NAVX)
-  add_definitions(-DUSE_NAVX=1)
+option(KAUAI "Use Kauai Labs NavX library" OFF)
+if (KAUAI)
+  add_definitions(-DUSE_KAUAI=1)
 endif()
 
-option(MINDSENSORS "Use Mindsensors library (eg. CANSD450 and CANLIGHTS)" OFF)
+option(MINDSENSORS "DEPRECATED! Use Mindsensors library (eg. CANSD450 and CANLIGHTS)" OFF)
 if (MINDSENSORS)
-  add_definitions(-DUSE_MINDSENSORS=1)
+  message(WARNING "Mindsensors libraries are not supported since 2019!")
+  # add_definitions(-DUSE_MINDSENSORS=1)
 endif()
 
 # Compile the standard, generic base classes for both sim and real
@@ -79,29 +76,42 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
 
   message(STATUS "Performing cross-compile, linking WPILib")
 
+  # Find OpenCV
+  set(OpenCV_DIR ${CMAKE_FIND_ROOT_PATH}/share/OpenCV/)
+  find_package(OpenCV)
+
+  # Extract WPI libraries and headers from maven archives
+  add_custom_target(extract_wpilib COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../extract_archives.py)
+  add_dependencies(${PROJECT_NAME} extract_wpilib)
+
   # Include WPILib and vendor headers
+  file(GLOB WPILIB_HEADERS $ENV{HOME}/frc2019/extracted/include/*)
   include_directories(
-    $ENV{HOME}/wpilib/user/cpp/include
-    $ENV{HOME}/wpilib/cpp/current/include
+   ${WPILIB_HEADERS}
   )
+
+  # Compile WPILib libraries from source
+  file(GLOB uncompiled_artifacts $ENV{HOME}/frc2019/extracted/src/*/)
+  foreach(artifact_path ${uncompiled_artifacts})
+    get_filename_component(artifact ${artifact_path} NAME [CACHE])
+
+    # Find all source files
+    file(GLOB_RECURSE ${artifact}_SRC ${artifact_path}/*.cpp ${artifact_path}/*.cc)
+    list(FILTER ${artifact}_SRC EXCLUDE REGEX "jni") # Ignore anything with "jni" in it
+    list(FILTER ${artifact}_SRC EXCLUDE REGEX "sim") # Ignore anything with "sim" in it
+
+    add_library(${artifact} ${${artifact}_SRC})
+    target_link_libraries(${artifact} ${OpenCV_LIBS})
+    list(APPEND build_wpilibs ${artifact})
+  endforeach()
 
   # Setup linker to link WPILib libraries
-  set (WPI_LIB_DIR        $ENV{HOME}/wpilib/cpp/current/reflib/linux/athena/shared)
-  set (WPI_COMMON_LIB_DIR $ENV{HOME}/wpilib/common/current/lib/linux/athena/shared)
-  set (WPI_USER_LIB_DIR   $ENV{HOME}/wpilib/user/cpp/lib)
-
+  set (WPILIB_LIB_DIR $ENV{HOME}/frc2019/extracted/libathena)
+  file(GLOB WPILIB_LIBS ${WPILIB_LIB_DIR}/*/*.so
+                        ${WPILIB_LIB_DIR}/*/*.so.[0-9]*) #TODO: This is super hackey, but it filters out so.debugs
   link_directories(
-    ${WPI_LIB_DIR}
-    ${WPI_COMMON_LIB_DIR}
-    ${WPI_USER_LIB_DIR}
+    ${WPILIB_LIB_DIR}
   )
-
-  # List all user libraries for linking
-  # NOTE: This will link ALL libraries in the directory, not just the ones enabled by the options
-  file(GLOB USER_LIBS ${WPI_USER_LIB_DIR}/*.a ${WPI_USER_LIB_DIR}/*.so)
-
-  # NOTE: Hack for CTRE. libCTRE_Phoenix.a must be linked before libCTRE_PhoenixCCI.a
-  list(REVERSE USER_LIBS)
 
   add_executable(robot_base_node
     src/frc_robot_hw_real.cpp
@@ -112,10 +122,8 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   target_link_libraries(robot_base_node
     ${PROJECT_NAME}
     ${catkin_LIBRARIES}
-    ${USER_LIBS}
-    ${WPI_LIB_DIR}/libwpi.so
-    ${WPI_LIB_DIR}/libFRC_NetworkCommunication.so.18.0.0
-    ${WPI_LIB_DIR}/libRoboRIO_FRC_ChipObject.so.18.0.0
+    ${build_wpilibs}
+    ${WPILIB_LIBS}
   )
 
 # If we're compiling for a normal Ubuntu image, do not compile real-robot WPILib code

@@ -198,7 +198,7 @@ protected:
   std::map<std::string, hardware_template::AnalogIO> analog_output_templates_;
   std::map<std::string, hardware_template::Encoder> encoder_templates_;
 // TODO: More IMUs! AnalogGyro, AnalogAccelerometer, ADXL/ADXR series, and BuiltInAccelerometer
-#if USE_NAVX
+#if USE_KAUAI
   std::map<std::string, hardware_template::NavX> navx_templates_;
 #endif
 #if USE_CTRE

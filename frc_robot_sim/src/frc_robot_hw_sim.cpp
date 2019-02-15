@@ -43,7 +43,7 @@ void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
   // Read all simple speed controllers
   for (const auto& pair : simple_speed_controller_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
-    joint_states_[pair.first].pos = joint->GetAngle(0).Radian();
+    joint_states_[pair.first].pos = joint->Position();
     joint_states_[pair.first].vel = joint->GetVelocity(0);
     joint_states_[pair.first].eff = joint->GetForce(0);
   }
@@ -51,7 +51,7 @@ void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
   // Read all servos
   for (const auto& pair : servo_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
-    joint_states_[pair.first].pos = joint->GetAngle(0).Radian();
+    joint_states_[pair.first].pos = joint->Position();
     joint_states_[pair.first].vel = joint->GetVelocity(0);
     joint_states_[pair.first].eff = joint->GetForce(0);
   }
@@ -59,10 +59,10 @@ void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
   // Read all solenoids
   for (const auto& pair : solenoid_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
-    const double min = joint->GetLowerLimit(0).Radian(); // Note: Radian is actually meters in prismatic joints
-    const double max = joint->GetUpperLimit(0).Radian(); // Note: Radian is actually meters in prismatic joints
+    const double min = joint->LowerLimit();
+    const double max = joint->UpperLimit();
     const double mid = (max - min) / 2.0 + min;
-    const double pos = joint->GetAngle(0).Radian(); // Note: Radian is actually meters in prismatic joints
+    const double pos = joint->Position();
 
     binary_states_[pair.first] = pos > mid;
   }
@@ -70,10 +70,10 @@ void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
   // Read all double solenoids
   for (const auto& pair : double_solenoid_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
-    const double min = joint->GetLowerLimit(0).Radian(); // Note: Radian is actually meters in prismatic joints
-    const double max = joint->GetUpperLimit(0).Radian(); // Note: Radian is actually meters in prismatic joints
+    const double min = joint->LowerLimit();
+    const double max = joint->UpperLimit();
     const double mid = (max - min) / 2.0 + min;
-    const double pos = joint->GetAngle(0).Radian(); // Note: Radian is actually meters in prismatic joints
+    const double pos = joint->Position();
 
     TernaryState state;
     if (pos > mid)
@@ -137,9 +137,9 @@ void FRCRobotHWSim::write(const ros::Time& time, const ros::Duration& period) {
     const auto& joint = model_->GetJoint(pair.first);
     double position;
     if (binary_commands_[pair.first])
-      position = joint->GetUpperLimit(0).Radian();
+      position = joint->UpperLimit();
     else
-      position = joint->GetLowerLimit(0).Radian();
+      position = joint->LowerLimit();
     joint->SetPosition(0, position);
   }
 
@@ -148,11 +148,11 @@ void FRCRobotHWSim::write(const ros::Time& time, const ros::Duration& period) {
     const auto& joint = model_->GetJoint(pair.first);
     double position;
     if (ternary_commands_[pair.first] == TernaryState::kForward)
-      position = joint->GetUpperLimit(0).Radian();
+      position = joint->UpperLimit();
     else if (ternary_commands_[pair.first] == TernaryState::kReverse)
-      position = joint->GetLowerLimit(0).Radian();
+      position = joint->LowerLimit();
     else
-      position = joint->GetAngle(0).Radian();
+      position = joint->Position();
     joint->SetPosition(0, position);
   }
 

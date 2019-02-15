@@ -20,7 +20,7 @@ cp "${SCRIPTPATH}/rostoolchain.cmake" "${WSPATH}"
 # Setup the cross-compile profile
 catkin profile add cross
 catkin profile set cross
-catkin config --extend /usr/arm-frc-linux-gnueabi/opt/ros/kinetic\
+catkin config --extend ~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/melodic\
               --space-suffix _cross\
               --blacklist frc_robot_sim\
               -DCMAKE_TOOLCHAIN_FILE="${WSPATH}/rostoolchain.cmake"
@@ -28,5 +28,5 @@ catkin config --extend /usr/arm-frc-linux-gnueabi/opt/ros/kinetic\
 # Setup the native compile profile
 catkin profile add native
 catkin profile set native
-catkin config --extend /opt/ros/kinetic\
+catkin config --extend /opt/ros/melodic\
               --space-suffix _native\
