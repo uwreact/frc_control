@@ -82,7 +82,8 @@ Note: The order of installation is important, as some of these packages are depe
 
 In order to successfully cross-compile ROS, we must use a fresh shell that doesn't have a ROS environment sourced.
 You can do this manually by commenting out `source /opt/ros/melodic/setup.bash` from your `~/.bashrc`, opening a new terminal,
-and restoring that line once you are complete. Or, you can use the following script:
+performing the installation steps required, and restoring that line once you are complete. Or, you can use the following script:
+**Note: This script is currently broken! Only manual method works for now**
 
     cd ~/robot_workspace/src/frc_control
     source installation/unsource_ros.bash 
