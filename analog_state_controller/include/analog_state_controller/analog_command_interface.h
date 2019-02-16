@@ -28,28 +28,34 @@
 #ifndef ANALOG_COMMAND_INTERFACE_H
 #define ANALOG_COMMAND_INTERFACE_H
 
-#include <hardware_interface/internal/hardware_resource_manager.h>
 #include <analog_state_controller/analog_state_interface.h>
+#include <hardware_interface/internal/hardware_resource_manager.h>
 
 namespace hardware_interface {
 
 /** @brief A handle used to read and command an analog actuator. */
 class AnalogCommandHandle : public AnalogStateHandle {
 public:
-  AnalogCommandHandle() : AnalogStateHandle(), cmd_(0) {}
+  AnalogCommandHandle() : AnalogStateHandle(), cmd_(nullptr) {}
 
   /**
    * @param state_handle This joint's state handle
    * @param cmd A pointer to the storage for this joint's output command
    */
-  AnalogCommandHandle(const AnalogStateHandle& state_handle, double* cmd)
-    : AnalogStateHandle(state_handle), cmd_(cmd) {
+  AnalogCommandHandle(const AnalogStateHandle& state_handle, double* cmd) : AnalogStateHandle(state_handle), cmd_(cmd) {
     if (!cmd_)
       throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
   }
 
-  void setCommand(double command) {assert(cmd_); *cmd_ = command;}
-  double getCommand() const {assert(cmd_); return *cmd_;}
+  void setCommand(double command) {
+    assert(cmd_);
+    *cmd_ = command;
+  }
+
+  double getCommand() const {
+    assert(cmd_);
+    return *cmd_;
+  }
 
 private:
   double* cmd_;
@@ -58,6 +64,6 @@ private:
 /** @brief Hardware interface to support commanding an array of analog actuators. */
 class AnalogCommandInterface : public HardwareResourceManager<AnalogCommandHandle, ClaimResources> {};
 
-} // namespace hardware_interface
+}  // namespace hardware_interface
 
 #endif
