@@ -33,17 +33,16 @@
 namespace frc_robot_sim {
 
 class FRCRobotHWSim : public frc_robot_hw::FRCRobotHW {
- public:
-  FRCRobotHWSim(gazebo::physics::ModelPtr model)
-      : FRCRobotHW("frc_robot_hw_sim"), model_(model) {}
+public:
+  FRCRobotHWSim(gazebo::physics::ModelPtr model) : FRCRobotHW("frc_robot_hw_sim"), model_(model) {}
 
   // Overrides
   bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
   void read(const ros::Time& time, const ros::Duration& period) override;
   void write(const ros::Time& time, const ros::Duration& period) override;
 
- private:
+private:
   gazebo::physics::ModelPtr model_;
 };
 
-} // namespace frc_robot_sim
+}  // namespace frc_robot_sim

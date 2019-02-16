@@ -42,7 +42,7 @@ void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
 
   // Read all simple speed controllers
   for (const auto& pair : simple_speed_controller_templates_) {
-    const auto& joint = model_->GetJoint(pair.first);
+    const auto& joint             = model_->GetJoint(pair.first);
     joint_states_[pair.first].pos = joint->Position();
     joint_states_[pair.first].vel = joint->GetVelocity(0);
     joint_states_[pair.first].eff = joint->GetForce(0);
@@ -50,7 +50,7 @@ void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
 
   // Read all servos
   for (const auto& pair : servo_templates_) {
-    const auto& joint = model_->GetJoint(pair.first);
+    const auto& joint             = model_->GetJoint(pair.first);
     joint_states_[pair.first].pos = joint->Position();
     joint_states_[pair.first].vel = joint->GetVelocity(0);
     joint_states_[pair.first].eff = joint->GetForce(0);
@@ -58,22 +58,22 @@ void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
 
   // Read all solenoids
   for (const auto& pair : solenoid_templates_) {
-    const auto& joint = model_->GetJoint(pair.first);
-    const double min = joint->LowerLimit();
-    const double max = joint->UpperLimit();
-    const double mid = (max - min) / 2.0 + min;
-    const double pos = joint->Position();
+    const auto&  joint = model_->GetJoint(pair.first);
+    const double min   = joint->LowerLimit();
+    const double max   = joint->UpperLimit();
+    const double mid   = (max - min) / 2.0 + min;
+    const double pos   = joint->Position();
 
     binary_states_[pair.first] = pos > mid;
   }
 
   // Read all double solenoids
   for (const auto& pair : double_solenoid_templates_) {
-    const auto& joint = model_->GetJoint(pair.first);
-    const double min = joint->LowerLimit();
-    const double max = joint->UpperLimit();
-    const double mid = (max - min) / 2.0 + min;
-    const double pos = joint->Position();
+    const auto&  joint = model_->GetJoint(pair.first);
+    const double min   = joint->LowerLimit();
+    const double max   = joint->UpperLimit();
+    const double mid   = (max - min) / 2.0 + min;
+    const double pos   = joint->Position();
 
     TernaryState state;
     if (pos > mid)
@@ -97,8 +97,8 @@ void FRCRobotHWSim::write(const ros::Time& time, const ros::Duration& period) {
     // TODO: Validate these
     switch (joint_commands_[pair.first].type) {
       case JointCmd::Type::kPos:
-        joint->SetParam("fmax", 0, 0.0); // TODO: Is this needed?
-        joint->SetPosition(0, joint_commands_[pair.first].data); // TODO: SetPosition is bad
+        joint->SetParam("fmax", 0, 0.0);                          // TODO: Is this needed?
+        joint->SetPosition(0, joint_commands_[pair.first].data);  // TODO: SetPosition is bad
         break;
       case JointCmd::Type::kVel:
         // TODO: Support non-ODE engines? Why is SetVelocity so broken?
@@ -107,11 +107,11 @@ void FRCRobotHWSim::write(const ros::Time& time, const ros::Duration& period) {
         // Therefore, we set fmax whenever in velocity control, otherwise we unset fmax and use the standard
         // SetPosition() and SetForce() functions. TODO: Do we need to unset?
         // See http://gazebosim.org/tutorials?tut=set_velocity
-        joint->SetParam("fmax", 0, 1000.0); // TODO: Appropriate limit
+        joint->SetParam("fmax", 0, 1000.0);  // TODO: Appropriate limit
         joint->SetParam("vel", 0, joint_commands_[pair.first].data);
         break;
       case JointCmd::Type::kEff:
-        joint->SetParam("fmax", 0, 0.0); // TODO: Is this needed?
+        joint->SetParam("fmax", 0, 0.0);  // TODO: Is this needed?
         joint->SetForce(0, joint_commands_[pair.first].data);
         break;
       case JointCmd::Type::kVolt:
@@ -129,13 +129,13 @@ void FRCRobotHWSim::write(const ros::Time& time, const ros::Duration& period) {
   // Command all servos
   for (const auto& pair : servo_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
-    joint->SetPosition(0, joint_commands_[pair.first].data); // TODO: SetPosition is bad
+    joint->SetPosition(0, joint_commands_[pair.first].data);  // TODO: SetPosition is bad
   }
 
   // Command all single Solenoids
   for (const auto& pair : solenoid_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
-    double position;
+    double      position;
     if (binary_commands_[pair.first])
       position = joint->UpperLimit();
     else
@@ -146,7 +146,7 @@ void FRCRobotHWSim::write(const ros::Time& time, const ros::Duration& period) {
   // Command all double Solenoids
   for (const auto& pair : double_solenoid_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
-    double position;
+    double      position;
     if (ternary_commands_[pair.first] == TernaryState::kForward)
       position = joint->UpperLimit();
     else if (ternary_commands_[pair.first] == TernaryState::kReverse)
@@ -157,6 +157,6 @@ void FRCRobotHWSim::write(const ros::Time& time, const ros::Duration& period) {
   }
 
   // TODO: Support DigitalOutput, AnalogOutput, (Relay?)
-  }
+}
 
-} // namespace frc_robot_sim
+}  // namespace frc_robot_sim

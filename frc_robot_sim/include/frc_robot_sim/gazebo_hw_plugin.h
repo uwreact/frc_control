@@ -36,9 +36,8 @@
 namespace frc_robot_sim {
 
 /// Custom ModelPlugin that runs ros_control within Gazebo
-class GazeboHWPlugin : public frc_robot_hw::RobotControlLoop,
-                       public gazebo::ModelPlugin {
- public:
+class GazeboHWPlugin : public frc_robot_hw::RobotControlLoop, public gazebo::ModelPlugin {
+public:
   GazeboHWPlugin() : RobotControlLoop("gazebo_hw_plugin") {}
 
   // Overrides
@@ -48,8 +47,7 @@ class GazeboHWPlugin : public frc_robot_hw::RobotControlLoop,
   /// Update ros_control (read & write, maybe update) every simulation step
   void WorldUpdate(const gazebo::common::UpdateInfo& info);
 
- private:
-
+private:
   /// Namespace to spawn the robot in
   std::string robot_namespace_;
 
@@ -66,4 +64,4 @@ class GazeboHWPlugin : public frc_robot_hw::RobotControlLoop,
   gazebo::event::ConnectionPtr update_connection_;
 };
 
-} // namespace frc_robot_sim
+}  // namespace frc_robot_sim
