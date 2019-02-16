@@ -36,16 +36,16 @@
 #include <frc/AnalogInput.h>
 #include <frc/AnalogOutput.h>
 #include <frc/Compressor.h>
+#include <frc/DMC60.h>
 #include <frc/DigitalInput.h>
 #include <frc/DigitalOutput.h>
-#include <frc/DMC60.h>
 #include <frc/DoubleSolenoid.h>
 #include <frc/Encoder.h>
 #include <frc/Jaguar.h>
 #include <frc/NidecBrushless.h>
-#include <frc/PowerDistributionPanel.h>
 #include <frc/PWMTalonSRX.h>
 #include <frc/PWMVictorSPX.h>
+#include <frc/PowerDistributionPanel.h>
 #include <frc/Relay.h>
 #include <frc/SD540.h>
 #include <frc/Servo.h>
@@ -59,9 +59,9 @@
 // speed controller watchdog all WPILib speed controllers use, as well as allowing for the controller to be put on the
 // SmartDashboard. It also makes them play nicely with other WPILib stuff such as its PIDs
 #if USE_CTRE
-#include <ctre/phoenix/sensors/PigeonIMU.h>
-#include <ctre/phoenix/motorcontrol/can/WPI_VictorSPX.h>
 #include <ctre/phoenix/motorcontrol/can/WPI_TalonSRX.h>
+#include <ctre/phoenix/motorcontrol/can/WPI_VictorSPX.h>
+#include <ctre/phoenix/sensors/PigeonIMU.h>
 #endif
 
 #if USE_KAUAI
@@ -99,25 +99,26 @@ public:
   void runHAL();
 
   // Overrides
-  bool init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh) override;
-  void read(const ros::Time &time, const ros::Duration &period) override;
-  void write(const ros::Time &time, const ros::Duration &period) override;
+  bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
+  void read(const ros::Time& time, const ros::Duration& period) override;
+  void write(const ros::Time& time, const ros::Duration& period) override;
 
 private:
   // Maps of the WPILib objects used to interact with the HAL
-  std::map<std::string, std::unique_ptr<frc::SpeedController>> smart_speed_controllers_; // TODO: Probably can't have generic type
-  std::map<std::string, std::unique_ptr<frc::SpeedController>> simple_speed_controllers_;
+  // TODO: Probably can't have generic type for smart_speed_controllers_
+  std::map<std::string, std::unique_ptr<frc::SpeedController>>        smart_speed_controllers_;
+  std::map<std::string, std::unique_ptr<frc::SpeedController>>        simple_speed_controllers_;
   std::map<std::string, std::unique_ptr<frc::PowerDistributionPanel>> pdps_;
-  std::map<std::string, std::unique_ptr<frc::Servo>> servos_;
-  std::map<std::string, std::unique_ptr<frc::Relay>> relays_;
-  std::map<std::string, std::unique_ptr<frc::Solenoid>> solenoids_;
-  std::map<std::string, std::unique_ptr<frc::DoubleSolenoid>> double_solenoids_;
-  std::map<std::string, std::unique_ptr<frc::Compressor>> compressors_;
-  std::map<std::string, std::unique_ptr<frc::DigitalInput>> digital_inputs_;
-  std::map<std::string, std::unique_ptr<frc::DigitalOutput>> digital_outputs_;
-  std::map<std::string, std::unique_ptr<frc::AnalogInput>> analog_inputs_;
-  std::map<std::string, std::unique_ptr<frc::AnalogOutput>> analog_outputs_;
-  std::map<std::string, std::unique_ptr<frc::Encoder>> encoders_;
+  std::map<std::string, std::unique_ptr<frc::Servo>>                  servos_;
+  std::map<std::string, std::unique_ptr<frc::Relay>>                  relays_;
+  std::map<std::string, std::unique_ptr<frc::Solenoid>>               solenoids_;
+  std::map<std::string, std::unique_ptr<frc::DoubleSolenoid>>         double_solenoids_;
+  std::map<std::string, std::unique_ptr<frc::Compressor>>             compressors_;
+  std::map<std::string, std::unique_ptr<frc::DigitalInput>>           digital_inputs_;
+  std::map<std::string, std::unique_ptr<frc::DigitalOutput>>          digital_outputs_;
+  std::map<std::string, std::unique_ptr<frc::AnalogInput>>            analog_inputs_;
+  std::map<std::string, std::unique_ptr<frc::AnalogOutput>>           analog_outputs_;
+  std::map<std::string, std::unique_ptr<frc::Encoder>>                encoders_;
 #if USE_KAUAI
   std::map<std::string, std::unique_ptr<AHRS>> navxs_;
 #endif
@@ -126,7 +127,8 @@ private:
 #endif
 
   std::thread hal_thread_;
-  bool robot_code_ready_{false};
+
+  bool robot_code_ready_ = false;
 };
 
-} // namespace frc_robot_hw
+}  // namespace frc_robot_hw

@@ -58,14 +58,14 @@ bool RobotControlLoop::init() {
 
 void RobotControlLoop::update(const ros::Time& time_now, bool update_controllers) {
   ros::Duration rw_period = time_now - last_rw_time_;
-  last_rw_time_ = time_now;
+  last_rw_time_           = time_now;
 
   // Read from hardware
   robot_hw_->read(time_now, rw_period);
 
   if (update_controllers) {
     ros::Duration update_period = time_now - last_update_time_;
-    last_update_time_ = time_now;
+    last_update_time_           = time_now;
 
     // If we've gone too long without updating controllers, reset them
     bool timeout = (update_period.toSec() > controller_watchdog_timeout_);
@@ -74,10 +74,10 @@ void RobotControlLoop::update(const ros::Time& time_now, bool update_controllers
     controller_manager_->update(time_now, update_period, timeout);
   }
 
-  //TODO: Enforce limits
+  // TODO: Enforce limits
 
   // Write to hardware
   robot_hw_->write(time_now, rw_period);
 }
 
-} // namespace frc_robot_hw
+}  // namespace frc_robot_hw

@@ -28,9 +28,9 @@
 #pragma once
 
 #include <controller_manager/controller_manager.h>
-#include <ros/ros.h>
 #include <frc_robot_hw/frc_robot_hw.h>
 #include <memory>
+#include <ros/ros.h>
 #include <thread>
 
 namespace frc_robot_hw {
@@ -38,9 +38,7 @@ namespace frc_robot_hw {
 /// Generic template for robot control loop
 class RobotControlLoop {
 public:
-  RobotControlLoop(std::string name, const ros::NodeHandle& nh = ros::NodeHandle()) :
-      name_(std::move(name)),
-      nh_(nh) {}
+  RobotControlLoop(std::string name, const ros::NodeHandle& nh = ros::NodeHandle()) : name_(std::move(name)), nh_(nh) {}
 
   virtual ~RobotControlLoop() = default;
 
@@ -56,7 +54,6 @@ public:
   void update(const ros::Time& time_now, bool update_controllers = true);
 
 protected:
-
   // Short name of this class
   const std::string name_;
 
@@ -70,10 +67,10 @@ protected:
   std::unique_ptr<controller_manager::ControllerManager> controller_manager_;
 
   // Timing
-  ros::Time last_update_time_;          ///< The last time the controllers were updated
-  ros::Time last_rw_time_;              ///< The last time the hardware was read/written
-  double controller_watchdog_timeout_;  ///< The watchdog time interval, in seconds
-  double control_freq_;                 ///< The frequency of the control loop, in hz
+  ros::Time last_update_time_;             ///< The last time the controllers were updated
+  ros::Time last_rw_time_;                 ///< The last time the hardware was read/written
+  double    controller_watchdog_timeout_;  ///< The watchdog time interval, in seconds
+  double    control_freq_;                 ///< The frequency of the control loop, in hz
 };
 
-} // namespace frc_robot_hw
+}  // namespace frc_robot_hw

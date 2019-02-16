@@ -58,7 +58,8 @@ void FRCRobotHW::loadURDF(const ros::NodeHandle& nh, const std::string& param_na
   // Note: We could pass the XML doc in here, but it is more efficient to just pass in the raw string
   if (!urdf_model_.initString(urdf_string)) {
     ROS_ERROR_NAMED(name_, "Unable to load URDF model");
-  } else {
+  }
+  else {
     ROS_INFO_NAMED(name_, "Loaded URDF from parameter server");
   }
 }
@@ -94,22 +95,23 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
 
     // Ensure the current joint parameter is valid. That is, it has a string parameter for name and type
     // TODO: Consider failing instead of skipping (throw std::runtime_error) in some cases
-    if (!validateJointParamMember(cur_joint, "name", XmlValue::TypeString) ||
-        !validateJointParamMember(cur_joint, "type", XmlValue::TypeString))
+    if (!validateJointParamMember(cur_joint, "name", XmlValue::TypeString)
+        || !validateJointParamMember(cur_joint, "type", XmlValue::TypeString))
       continue;
 
     // Get the name and type
     const std::string joint_name = cur_joint["name"];
     const std::string joint_type = cur_joint["type"];
 
-    using SmartSpeedControllerType = SmartSpeedController::Type;
+    using SmartSpeedControllerType  = SmartSpeedController::Type;
     using SimpleSpeedControllerType = SimpleSpeedController::Type;
 
     bool is_smart_speed_controller;
     try {
       SmartSpeedController::stringToType(joint_type);
       is_smart_speed_controller = true;
-    } catch (const std::runtime_error& e) {
+    }
+    catch (const std::runtime_error& e) {
       is_smart_speed_controller = false;
     }
 
@@ -117,7 +119,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
     try {
       SimpleSpeedController::stringToType(joint_type);
       is_simple_speed_controller = true;
-    } catch (const std::runtime_error& e) {
+    }
+    catch (const std::runtime_error& e) {
       is_simple_speed_controller = false;
     }
 
@@ -130,12 +133,13 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
 
       // Can be "none", "internal", or another feedback device (eg. analog, encoder)
       std::string feedback = validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true)
-                    ? cur_joint["feedback"] : "none";
+                                 ? cur_joint["feedback"]
+                                 : "none";
 
-      smart_speed_controller_templates_[joint_name] = SmartSpeedController {
-        .type = SmartSpeedController::stringToType(joint_type),
-        .id = (int) cur_joint["id"],
-        .inverted = inverted,
+      smart_speed_controller_templates_[joint_name] = {
+          .type     = SmartSpeedController::stringToType(joint_type),
+          .id       = (int) cur_joint["id"],
+          .inverted = inverted,
       };
     }
     else if (is_simple_speed_controller) {
@@ -156,40 +160,47 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
                       && cur_joint["inverted"];
 
       // Can be "none" or the name of a PDP
-      std::string pdp = validateJointParamMember(cur_joint, "pdp", XmlValue::TypeString, false, true)
-                    ? cur_joint["pdp"] : "none";
+      std::string pdp = validateJointParamMember(cur_joint, "pdp", XmlValue::TypeString, false, true) ? cur_joint["pdp"]
+                                                                                                      : "none";
 
       int pdp_ch = validateJointParamMember(cur_joint, "pdp_ch", XmlValue::TypeInt, false, true)
-                    ? (int) cur_joint["pdp_ch"] : -1;
+                       ? (int) cur_joint["pdp_ch"]
+                       : -1;
       if (pdp_ch < -1 || pdp_ch > 15) {
-        ROS_WARN_STREAM_NAMED(name_, "Invalid PDP channel '" << pdp_ch << "', must be within range [0,15]. "
-                                      << " Skipping PDP current feedback (Joint will have no effort state)");
+        ROS_WARN_STREAM_NAMED(name_,
+                              "Invalid PDP channel '"
+                                  << pdp_ch << "', must be within range [0,15]. "
+                                  << " Skipping PDP current feedback (Joint will have no effort state)");
         pdp_ch = -1;
       }
 
       double k_eff = validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true)
-                    ? (double) cur_joint["k_eff"] : 1.0;
+                         ? (double) cur_joint["k_eff"]
+                         : 1.0;
 
       if (pdp == "none" && pdp_ch != -1)
-        ROS_WARN_STREAM_NAMED(name_, "PDP channel " << pdp_ch << " specified, but no PDP specified. "
-                                      << "Please verify your configuration.");
+        ROS_WARN_STREAM_NAMED(name_,
+                              "PDP channel " << pdp_ch << " specified, but no PDP specified. "
+                                             << "Please verify your configuration.");
 
-      simple_speed_controller_templates_[joint_name] = SimpleSpeedController {
-        .type = type,
-        .id = cur_joint["id"],
-        .dio_id = dio_ch,
-        .inverted = inverted,
-        .pdp = pdp,
-        .pdp_ch = pdp_ch,
-        .k_eff = k_eff
+      simple_speed_controller_templates_[joint_name] = {
+          .type     = type,
+          .id       = cur_joint["id"],
+          .dio_id   = dio_ch,
+          .inverted = inverted,
+          .pdp      = pdp,
+          .pdp_ch   = pdp_ch,
+          .k_eff    = k_eff,
       };
     }
     else if (joint_type == "pdp") {
       if (validateJointParamMember(cur_joint, "id", XmlValue::TypeInt, false, true)) {
         pdp_templates_[joint_name] = cur_joint["id"];
-      } else {
-        ROS_WARN_STREAM_NAMED(name_, "No PowerDistributionPanel ID specified, using default ID 0 for PDP '"
-                                      << joint_name << "'");
+      }
+      else {
+        ROS_WARN_STREAM_NAMED(name_,
+                              "No PowerDistributionPanel ID specified, using default ID 0 for PDP '" << joint_name
+                                                                                                     << "'");
         pdp_templates_[joint_name] = 0;
       }
     }
@@ -199,8 +210,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
       servo_templates_[joint_name] = cur_joint["id"];
     }
     else if (joint_type == "relay") {
-      if (!validateJointParamMember(cur_joint, "relay_id", XmlValue::TypeInt) ||
-          !validateJointParamMember(cur_joint, "direction", XmlValue::TypeString))
+      if (!validateJointParamMember(cur_joint, "relay_id", XmlValue::TypeInt)
+          || !validateJointParamMember(cur_joint, "direction", XmlValue::TypeString))
         continue;
 
       using Direction = Relay::Direction;
@@ -211,12 +222,13 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
       catch (const std::runtime_error& e) {
         ROS_WARN_STREAM_NAMED(name_, e.what() << ". Using default 'both'");
         direction = Direction::kBoth;
-        // TODO: Should probably throw a bigger error here, since running the relay with incorrect direction could fry components
+        // TODO: Should probably throw a bigger error here, since running the relay with incorrect direction could fry
+        // components
       }
 
-      relay_templates_[joint_name] = Relay {
-        .id = cur_joint["relay_id"],
-        .direction = direction
+      relay_templates_[joint_name] = {
+          .id        = cur_joint["relay_id"],
+          .direction = direction,
       };
     }
     else if (joint_type == "solenoid") {
@@ -224,30 +236,33 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
         continue;
 
       int pcm_id = validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)
-                    ? (int) cur_joint["pcm_id"] : 0;
+                       ? (int) cur_joint["pcm_id"]
+                       : 0;
 
-      solenoid_templates_[joint_name] = Solenoid {
-        .id = cur_joint["id"],
-        .pcm_id = pcm_id
+      solenoid_templates_[joint_name] = {
+          .id     = cur_joint["id"],
+          .pcm_id = pcm_id,
       };
     }
     else if (joint_type == "double_solenoid") {
-      if (!validateJointParamMember(cur_joint, "forward_id", XmlValue::TypeInt) ||
-          !validateJointParamMember(cur_joint, "reverse_id", XmlValue::TypeInt))
+      if (!validateJointParamMember(cur_joint, "forward_id", XmlValue::TypeInt)
+          || !validateJointParamMember(cur_joint, "reverse_id", XmlValue::TypeInt))
         continue;
 
       int pcm_id = validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)
-                    ? (int) cur_joint["pcm_id"] : 0;
+                       ? (int) cur_joint["pcm_id"]
+                       : 0;
 
-      double_solenoid_templates_[joint_name] = DoubleSolenoid {
-        .forward_id = cur_joint["forward_id"],
-        .reverse_id = cur_joint["reverse_id"],
-        .pcm_id = pcm_id
+      double_solenoid_templates_[joint_name] = {
+          .forward_id = cur_joint["forward_id"],
+          .reverse_id = cur_joint["reverse_id"],
+          .pcm_id     = pcm_id,
       };
     }
     else if (joint_type == "compressor") {
       int pcm_id = validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)
-                    ? (int) cur_joint["pcm_id"] : 0;
+                       ? (int) cur_joint["pcm_id"]
+                       : 0;
       compressor_templates_[joint_name] = pcm_id;
     }
     else if (joint_type == "digital_input") {
@@ -257,10 +272,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
 
-      digital_input_templates_[joint_name] = DigitalIO {
-        .joint = "", // TODO: Lookup in URDF
-        .id = cur_joint["dio_channel"],
-        .inverted = inverted
+      digital_input_templates_[joint_name] = {
+          .joint    = "",  // TODO: Lookup in URDF
+          .id       = cur_joint["dio_channel"],
+          .inverted = inverted,
       };
     }
     else if (joint_type == "digital_output") {
@@ -270,86 +285,91 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
 
-      digital_output_templates_[joint_name] = DigitalIO {
-        .joint = "",
-        .id = cur_joint["digital_output"],
-        .inverted = inverted
+      digital_output_templates_[joint_name] = {
+          .joint    = "",
+          .id       = cur_joint["digital_output"],
+          .inverted = inverted,
       };
     }
     else if (joint_type == "analog_input") {
-      if (!validateJointParamMember(cur_joint, "ain_channel", XmlValue::TypeInt) ||
-          !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble) ||
-          !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
+      if (!validateJointParamMember(cur_joint, "ain_channel", XmlValue::TypeInt)
+          || !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble)
+          || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
         continue;
 
-      analog_input_templates_[joint_name] = AnalogIO {
-        .joint = "", // TODO: Lookup in URDF
-        .id = cur_joint["ain_channel"],
-        .scale = cur_joint["scale"],
-        .offset = cur_joint["offset"]
+      analog_input_templates_[joint_name] = {
+          .joint  = "",  // TODO: Lookup in URDF
+          .id     = cur_joint["ain_channel"],
+          .scale  = cur_joint["scale"],
+          .offset = cur_joint["offset"],
       };
     }
     else if (joint_type == "analog_output") {
-      if (!validateJointParamMember(cur_joint, "aout_channel", XmlValue::TypeInt) ||
-          !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble) ||
-          !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
+      if (!validateJointParamMember(cur_joint, "aout_channel", XmlValue::TypeInt)
+          || !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble)
+          || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
         continue;
 
       const std::string& joint = validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true)
-                    ? cur_joint["joint"] : "none";
+                                     ? cur_joint["joint"]
+                                     : "none";
 
-      analog_output_templates_[joint_name] = AnalogIO {
-        .joint = joint,
-        .id = cur_joint["analog_channel"],
-        .scale = cur_joint["scale"],
-        .offset = cur_joint["offset"]
+      analog_output_templates_[joint_name] = {
+          .joint  = joint,
+          .id     = cur_joint["analog_channel"],
+          .scale  = cur_joint["scale"],
+          .offset = cur_joint["offset"],
       };
     }
     else if (joint_type == "encoder") {
-      if (!validateJointParamMember(cur_joint, "ch_a", XmlValue::TypeInt) ||
-          !validateJointParamMember(cur_joint, "ch_b", XmlValue::TypeInt) ||
-          !validateJointParamMember(cur_joint, "dist_per_pulse", XmlValue::TypeDouble))
+      if (!validateJointParamMember(cur_joint, "ch_a", XmlValue::TypeInt)
+          || !validateJointParamMember(cur_joint, "ch_b", XmlValue::TypeInt)
+          || !validateJointParamMember(cur_joint, "dist_per_pulse", XmlValue::TypeDouble))
         continue;
 
       const bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
-                      && cur_joint["inverted"];
+                            && cur_joint["inverted"];
       int encoding = validateJointParamMember(cur_joint, "encoding", XmlValue::TypeInt, false, true)
-                    ? (int) cur_joint["encoding"] : 4;
+                         ? (int) cur_joint["encoding"]
+                         : 4;
       if (encoding != 1 && encoding != 2 && encoding != 4) {
-        ROS_WARN_STREAM_NAMED(name_, "Invalid encoder encoding '" << encoding << "', must be 1, 2, or 4. Using default 4.");
+        ROS_WARN_STREAM_NAMED(name_,
+                              "Invalid encoder encoding '" << encoding << "', must be 1, 2, or 4. Using default 4.");
         encoding = 4;
       }
 
       const std::string& joint = validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true)
-              ? cur_joint["joint"] : "none";
+                                     ? cur_joint["joint"]
+                                     : "none";
 
-      encoder_templates_[joint_name] = Encoder {
-        .joint = joint,
-        .ch_a = cur_joint["ch_a"],
-        .ch_b = cur_joint["ch_b"],
-        .distance_per_pulse = cur_joint["dist_per_pulse"],
-        .inverted = inverted,
-        .encoding = encoding
+      encoder_templates_[joint_name] = {
+          .joint              = joint,
+          .ch_a               = cur_joint["ch_a"],
+          .ch_b               = cur_joint["ch_b"],
+          .distance_per_pulse = cur_joint["dist_per_pulse"],
+          .inverted           = inverted,
+          .encoding           = encoding,
       };
     }
 #if USE_KAUAI
     else if (joint_type == "navx") {
-      if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString) ||
-          !validateJointParamMember(cur_joint, "interface", XmlValue::TypeString) ||
-          !validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
+      if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString)
+          || !validateJointParamMember(cur_joint, "interface", XmlValue::TypeString)
+          || !validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
 
       std::string interface = cur_joint["interface"];
       if (interface != "spi" && interface != "i2c" && interface != "serial") {
-        ROS_WARN_STREAM_NAMED(name_, "Invalid NavX-MXP interface '" << interface
-                                      << "', must be 'spi', 'i2c', or 'serial. Using default 'serial'.");
+        ROS_WARN_STREAM_NAMED(name_,
+                              "Invalid NavX-MXP interface '"
+                                  << interface << "', must be 'spi', 'i2c', or 'serial. Using default 'serial'.");
         interface = "serial";
       }
 
-      navx_templates_[joint_name] = NavX {
-        .interface = interface,
-        .id = cur_joint["id"], // TODO: Validate
-        .frame_id = cur_joint["frame_id"] // TODO: If not specified, use joint name
+      navx_templates_[joint_name] = {
+          .interface = interface,
+          .id        = cur_joint["id"],        // TODO: Validate
+          .frame_id  = cur_joint["frame_id"],  // TODO: If not specified, use joint name
       };
     }
 #endif
@@ -358,59 +378,68 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
       if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString))
         continue;
 
-      bool has_can_id = validateJointParamMember(cur_joint, "id", XmlValue::TypeInt, false, true);
+      bool has_can_id     = validateJointParamMember(cur_joint, "id", XmlValue::TypeInt, false, true);
       bool has_talon_name = validateJointParamMember(cur_joint, "talon", XmlValue::TypeString, false, true);
 
       boost::variant<int, std::string> interface;
       if (has_can_id && !has_talon_name) {
         interface = (int) cur_joint["id"];
-      } else if (!has_can_id && has_talon_name) {
+      }
+      else if (!has_can_id && has_talon_name) {
         interface = (std::string) cur_joint["talon"];
-      } else if (has_can_id && has_talon_name) {
-        ROS_WARN_STREAM_NAMED(name_, "Skipping pigeon_imu '" << joint_name
-                                      << "', two interfaces specified! "
-                                      << "Please specify either 'id' or 'talon' but not both");
-        continue;
-      } else {
-        ROS_WARN_STREAM_NAMED(name_, "Skipping pigeon_imu '" << joint_name
-                                      << "', Pigeon must be connected directly to the CAN bus or to the bus through a "
-                                      << "CANTalonSRX. Please specify either 'id' (int) or 'talon' (string)");
+      }
+      else if (has_can_id && has_talon_name) {
+        ROS_WARN_STREAM_NAMED(name_,
+                              "Skipping pigeon_imu '" << joint_name << "', two interfaces specified! "
+                                                      << "Please specify either 'id' or 'talon' but not both");
         continue;
       }
-      pigeon_templates_[joint_name] = PigeonIMU {
-        .interface = interface,
-        .frame_id = cur_joint["frame_id"]
+      else {
+        ROS_WARN_STREAM_NAMED(name_,
+                              "Skipping pigeon_imu '"
+                                  << joint_name
+                                  << "', Pigeon must be connected directly to the CAN bus or to the bus through a "
+                                  << "CANTalonSRX. Please specify either 'id' (int) or 'talon' (string)");
+        continue;
+      }
+      pigeon_templates_[joint_name] = {
+          .interface = interface,
+          .frame_id  = cur_joint["frame_id"],
       };
     }
 #endif
     else {
-      ROS_WARN_STREAM_NAMED(name_, "Skipping malformed joint, invalid type '"
-                                    << joint_type << "': '" << cur_joint << "'");
+      ROS_WARN_STREAM_NAMED(name_,
+                            "Skipping malformed joint, invalid type '" << joint_type << "': '" << cur_joint << "'");
       continue;
     }
   }
 }
 
-bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue& value,
-                                          const std::string& member,
+bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value,
+                                          const std::string&               member,
                                           const XmlRpc::XmlRpcValue::Type& type,
-                                          const bool warn_exist,
-                                          const bool warn_type) {
+                                          const bool                       warn_exist,
+                                          const bool                       warn_type) {
 
-    // Check that the member exists
-    if (!value.hasMember(member)) {
-        ROS_WARN_STREAM_COND_NAMED(warn_exist, name_, "Skipping malformed joint, missing mandatory member '"
-                                                    << member << "': '" << value << "'");
-        return false;
-    }
+  // Check that the member exists
+  if (!value.hasMember(member)) {
+    // clang-format off
+    ROS_WARN_STREAM_COND_NAMED(warn_exist, name_, "Skipping malformed joint, missing mandatory member '"
+                                                  << member << "': '" << value << "'");
+    // clang-format on
+    return false;
+  }
 
-    // Check that the member is of the correct type
-    if (value[member].getType() != type) {
-        // TODO: Map of Type to string
-        ROS_WARN_STREAM_COND_NAMED(warn_type, name_, "Skipping malformed joint, '"
-                                                    << member << "' must be a '" << type << "': '" << value << "'");
-        return false;
-    }
+  // Check that the member is of the correct type
+  if (value[member].getType() != type) {
+    // TODO: Map of Type to string
+    // clang-format off
+    ROS_WARN_STREAM_COND_NAMED(warn_type, name_, "Skipping malformed joint, '"
+                                                  << member << "' must be a '" << type << "': '" << value << "'");
+    //  clang-format on
+    return false;
+  }
 
   return true;
 }
@@ -452,9 +481,11 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
 
   // Register a command handle for each simple motor controller
   for (const auto& pair : simple_speed_controller_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for SpeedController " << pair.first
                                   << " on channel " << pair.second.pdp_ch
                                   << " of PDP " << pair.second.pdp);
+    // clang-format on
     hardware_interface::JointStateHandle state_handle(pair.first,
                                                       &joint_states_[pair.first].pos,
                                                       &joint_states_[pair.first].vel,
@@ -462,39 +493,39 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     joint_state_interface_.registerHandle(state_handle);
 
     // TODO: Only register pos, vel, effort cmds if the controller a) has a feedback device and b) has PID tunings
-    joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(
-                                                state_handle, &(joint_commands_[pair.first].data)));
-    joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(
-                                                state_handle, &(joint_commands_[pair.first].data)));
-    joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(
-                                                state_handle, &(joint_commands_[pair.first].data)));
-    joint_voltage_command_interface_.registerHandle(hardware_interface::JointHandle(
-                                                state_handle, &(joint_commands_[pair.first].data)));
+    joint_position_command_interface_.registerHandle(
+        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    joint_velocity_command_interface_.registerHandle(
+        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    joint_effort_command_interface_.registerHandle(
+        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    joint_voltage_command_interface_.registerHandle(
+        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
   }
 
   // Register a state handle for each pdp
   for (const auto& pair : pdp_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for PDP " << pair.first);
     pdp_state_interface_.registerHandle(hardware_interface::PDPStateHandle(pair.first,
-                                                                            &pdp_states_[pair.first].voltage,
-                                                                            &pdp_states_[pair.first].temperature,
-                                                                            &pdp_states_[pair.first].total_current,
-                                                                            &pdp_states_[pair.first].total_power,
-                                                                            &pdp_states_[pair.first].total_energy,
-                                                                            pdp_states_[pair.first].current));
+                                                                           &pdp_states_[pair.first].voltage,
+                                                                           &pdp_states_[pair.first].temperature,
+                                                                           &pdp_states_[pair.first].total_current,
+                                                                           &pdp_states_[pair.first].total_power,
+                                                                           &pdp_states_[pair.first].total_energy,
+                                                                           pdp_states_[pair.first].current));
   }
 
   // Register a command handle for each servo
   for (const auto& pair : servo_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for servo " << pair.first);
-    joint_commands_[pair.first].type = JointCmd::Type::kPos; // TODO: Should this be here?
+    joint_commands_[pair.first].type = JointCmd::Type::kPos;  // TODO: Should this be here?
     hardware_interface::JointStateHandle state_handle(pair.first,
                                                       &joint_states_[pair.first].pos,
                                                       &joint_states_[pair.first].vel,
                                                       &joint_states_[pair.first].eff);
     joint_state_interface_.registerHandle(state_handle);
-    joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(
-                                                state_handle, &(joint_commands_[pair.first].data)));
+    joint_position_command_interface_.registerHandle(
+        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
   }
 
   // Register a command handle for each relay
@@ -507,8 +538,8 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for relay " << pair.first);
     hardware_interface::TernaryStateHandle state_handle(pair.first, &ternary_states_[pair.first]);
     ternary_state_interface_.registerHandle(state_handle);
-    ternary_command_interface_.registerHandle(hardware_interface::TernaryCommandHandle(
-                                                state_handle, &ternary_commands_[pair.first]));
+    ternary_command_interface_.registerHandle(
+        hardware_interface::TernaryCommandHandle(state_handle, &ternary_commands_[pair.first]));
   }
 
   // Register a command handle for each single-acting solenoid
@@ -516,14 +547,13 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for solenoid " << pair.first);
     hardware_interface::BinaryStateHandle state_handle(pair.first, &binary_states_[pair.first]);
     binary_state_interface_.registerHandle(state_handle);
-    binary_command_interface_.registerHandle(hardware_interface::BinaryCommandHandle(
-                                                state_handle, &binary_commands_[pair.first]));
+    binary_command_interface_.registerHandle(
+        hardware_interface::BinaryCommandHandle(state_handle, &binary_commands_[pair.first]));
     // Register a corresponding JointStateHandle for the solenoid
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                              pair.first,
-                                              &joint_states_[pair.first].pos,
-                                              &joint_states_[pair.first].vel,
-                                              &joint_states_[pair.first].eff));
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(pair.first,
+                                                                               &joint_states_[pair.first].pos,
+                                                                               &joint_states_[pair.first].vel,
+                                                                               &joint_states_[pair.first].eff));
   }
 
   // Register a command handle for each double-acting solenoid
@@ -531,14 +561,13 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for double solenoid " << pair.first);
     hardware_interface::TernaryStateHandle state_handle(pair.first, &ternary_states_[pair.first]);
     ternary_state_interface_.registerHandle(state_handle);
-    ternary_command_interface_.registerHandle(hardware_interface::TernaryCommandHandle(
-                                                state_handle, &ternary_commands_[pair.first]));
+    ternary_command_interface_.registerHandle(
+        hardware_interface::TernaryCommandHandle(state_handle, &ternary_commands_[pair.first]));
     // Register a corresponding JointStateHandle for the solenoid
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                              pair.first,
-                                              &joint_states_[pair.first].pos,
-                                              &joint_states_[pair.first].vel,
-                                              &joint_states_[pair.first].eff));
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(pair.first,
+                                                                               &joint_states_[pair.first].pos,
+                                                                               &joint_states_[pair.first].vel,
+                                                                               &joint_states_[pair.first].eff));
   }
 
   // Register a command handle for each compressor
@@ -546,25 +575,25 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for compressor " << pair.first);
     hardware_interface::BinaryStateHandle state_handle(pair.first, &binary_states_[pair.first]);
     binary_state_interface_.registerHandle(state_handle);
-    binary_command_interface_.registerHandle(hardware_interface::BinaryCommandHandle(
-                                                state_handle, &binary_commands_[pair.first]));
+    binary_command_interface_.registerHandle(
+        hardware_interface::BinaryCommandHandle(state_handle, &binary_commands_[pair.first]));
   }
 
   // Register a state handle for each digital input
   for (const auto& pair : digital_input_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for digital input " << pair.first);
-    binary_state_interface_.registerHandle(hardware_interface::BinaryStateHandle(
-                                                pair.first, &binary_states_[pair.first]));
+    binary_state_interface_.registerHandle(
+        hardware_interface::BinaryStateHandle(pair.first, &binary_states_[pair.first]));
 
     // If the digital input's parent joint hasn't been registered, then this must be a passive (non-driven) joint.
     // Therefore, register a corresponding JointStateHandle
     const auto& handles = joint_state_interface_.getNames();
     if (std::find(handles.begin(), handles.end(), pair.second.joint) == handles.end()) {
-      joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                                pair.second.joint,
-                                                &joint_states_[pair.second.joint].pos,
-                                                &joint_states_[pair.second.joint].vel,
-                                                &joint_states_[pair.second.joint].eff));
+      joint_state_interface_.registerHandle(
+          hardware_interface::JointStateHandle(pair.second.joint,
+                                               &joint_states_[pair.second.joint].pos,
+                                               &joint_states_[pair.second.joint].vel,
+                                               &joint_states_[pair.second.joint].eff));
     }
   }
 
@@ -573,31 +602,30 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for digital output " << pair.first);
     hardware_interface::BinaryStateHandle state_handle(pair.first, &binary_states_[pair.first]);
     binary_state_interface_.registerHandle(state_handle);
-    binary_command_interface_.registerHandle(hardware_interface::BinaryCommandHandle(
-                                                state_handle, &binary_commands_[pair.first]));
+    binary_command_interface_.registerHandle(
+        hardware_interface::BinaryCommandHandle(state_handle, &binary_commands_[pair.first]));
     // Register a corresponding JointStateHandle for the digital output
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                              pair.first,
-                                              &joint_states_[pair.first].pos,
-                                              &joint_states_[pair.first].vel,
-                                              &joint_states_[pair.first].eff));
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(pair.first,
+                                                                               &joint_states_[pair.first].pos,
+                                                                               &joint_states_[pair.first].vel,
+                                                                               &joint_states_[pair.first].eff));
   }
 
   // Register a state handle for each analog input
   for (const auto& pair : analog_input_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for analog input " << pair.first);
-    analog_state_interface_.registerHandle(hardware_interface::AnalogStateHandle(
-                                                pair.first, &rate_states_[pair.first].state));
+    analog_state_interface_.registerHandle(
+        hardware_interface::AnalogStateHandle(pair.first, &rate_states_[pair.first].state));
 
     // If the analog input's parent joint hasn't been registered, then this must be a passive (non-driven) joint.
     // Therefore, register a corresponding JointStateHandle
     const auto& handles = joint_state_interface_.getNames();
     if (std::find(handles.begin(), handles.end(), pair.second.joint) == handles.end()) {
-      joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                                pair.second.joint,
-                                                &joint_states_[pair.second.joint].pos,
-                                                &joint_states_[pair.second.joint].vel,
-                                                &joint_states_[pair.second.joint].eff));
+      joint_state_interface_.registerHandle(
+          hardware_interface::JointStateHandle(pair.second.joint,
+                                               &joint_states_[pair.second.joint].pos,
+                                               &joint_states_[pair.second.joint].vel,
+                                               &joint_states_[pair.second.joint].eff));
     }
   }
 
@@ -606,40 +634,40 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for analog output " << pair.first);
     hardware_interface::AnalogStateHandle state_handle(pair.first, &rate_states_[pair.first].state);
     analog_state_interface_.registerHandle(state_handle);
-    analog_command_interface_.registerHandle(hardware_interface::AnalogCommandHandle(
-                                                state_handle, &analog_commands_[pair.first]));
+    analog_command_interface_.registerHandle(
+        hardware_interface::AnalogCommandHandle(state_handle, &analog_commands_[pair.first]));
     // Register a corresponding JointStateHandle for the analog output
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                              pair.first,
-                                              &joint_states_[pair.first].pos,
-                                              &joint_states_[pair.first].vel,
-                                              &joint_states_[pair.first].eff));
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(pair.first,
+                                                                               &joint_states_[pair.first].pos,
+                                                                               &joint_states_[pair.first].vel,
+                                                                               &joint_states_[pair.first].eff));
   }
 
   // Register a state handle for each encoder
   for (const auto& pair : encoder_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for encoder " << pair.first);
-    analog_state_interface_.registerHandle(hardware_interface::AnalogStateHandle(
-                                                pair.first,
-                                                &rate_states_[pair.first].state));
+    analog_state_interface_.registerHandle(
+        hardware_interface::AnalogStateHandle(pair.first, &rate_states_[pair.first].state));
 
     // If the encoder's parent joint hasn't been registered, then this must be a passive (non-driven) joint.
     // Therefore, register a corresponding JointStateHandle
     const auto& handles = joint_state_interface_.getNames();
     if (std::find(handles.begin(), handles.end(), pair.second.joint) == handles.end()) {
-      joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
-                                                pair.second.joint,
-                                                &joint_states_[pair.second.joint].pos,
-                                                &joint_states_[pair.second.joint].vel,
-                                                &joint_states_[pair.second.joint].eff));
+      joint_state_interface_.registerHandle(
+          hardware_interface::JointStateHandle(pair.second.joint,
+                                               &joint_states_[pair.second.joint].pos,
+                                               &joint_states_[pair.second.joint].vel,
+                                               &joint_states_[pair.second.joint].eff));
     }
   }
 
   // Register a state handle for each navX IMU
 #if USE_KAUAI
   for (const auto& pair : navx_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for navX-MXP IMU " << pair.first
                                   << " with tf frame " << pair.second.frame_id);
+    // clang-format on
 
     // TODO: Init default values?
 
@@ -658,8 +686,10 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   // Register a state handle for each Pigeon IMU
 #if USE_CTRE
   for (const auto& pair : pigeon_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for Pigeon IMU " << pair.first
                                   << " with tf frame " << pair.second.frame_id);
+    // clang-format on
 
     // TODO: Init default values?
 
@@ -711,7 +741,7 @@ void FRCRobotHW::updateRobotState() {
   for (const auto& pair : analog_output_templates_) {
     joint_states_[pair.first].pos = rate_states_[pair.first].state;
     joint_states_[pair.first].vel = rate_states_[pair.first].rate;
-    joint_states_[pair.first].eff = 0; // TODO: ???
+    joint_states_[pair.first].eff = 0;  // TODO: ???
   }
 
   // Convert DigitalOutput states
@@ -720,8 +750,8 @@ void FRCRobotHW::updateRobotState() {
       joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
     else
       joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
-    joint_states_[pair.first].vel = 0; // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0; // TODO: ???
+    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0;  // TODO: ???
   }
 
   // Convert DoubleSolenoid states
@@ -730,9 +760,10 @@ void FRCRobotHW::updateRobotState() {
       joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
     else if (ternary_states_[pair.first] == TernaryState::kReverse)
       joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
-    else {}
-    joint_states_[pair.first].vel = 0; // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0; // TODO: Pressure?
+    else {
+    }
+    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0;  // TODO: Pressure?
   }
 
   // Convert Solenoid states
@@ -741,8 +772,8 @@ void FRCRobotHW::updateRobotState() {
       joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
     else
       joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
-    joint_states_[pair.first].vel = 0; // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0; // TODO: Pressure?
+    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0;  // TODO: Pressure?
   }
 
   // =*=*=*= Convert pure sensors to JointStates =*=*=*=
@@ -766,7 +797,7 @@ void FRCRobotHW::updateRobotState() {
       joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->upper;
     else
       joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->lower;
-    joint_states_[pair.second.joint].vel = 0; // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.second.joint].vel = 0;  // Set vel to 0, since binary joints can have no speed
     // Note: Don't set effort, since another sensor might
   }
 
@@ -789,9 +820,8 @@ void FRCRobotHW::updateRobotState() {
   }
 }
 
-void FRCRobotHW::doSwitch(
-    const std::list<hardware_interface::ControllerInfo>& start_list,
-    const std::list<hardware_interface::ControllerInfo>& stop_list) {
+void FRCRobotHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+                          const std::list<hardware_interface::ControllerInfo>& stop_list) {
 
   // Reset command type for joints claimed by stopping controllers
   for (const auto& controller : stop_list) {
@@ -836,4 +866,4 @@ void FRCRobotHW::write(const ros::Time& time, const ros::Duration& period) {
   ROS_INFO_THROTTLE_NAMED(1, name_, "Writing Data - Overload me!");
 }
 
-} // namespace frc_robot_hw
+}  // namespace frc_robot_hw
