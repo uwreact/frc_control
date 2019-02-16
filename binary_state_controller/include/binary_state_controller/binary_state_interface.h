@@ -36,21 +36,25 @@ namespace hardware_interface {
 /** @brief A handle used to read the state of a digital binary (on/off) sensor (eg. switches). */
 class BinaryStateHandle {
 public:
-  BinaryStateHandle() : name_(), state_(0) {}
+  BinaryStateHandle() : name_(), state_(nullptr) {}
 
   /**
    * @param name The name of the sensor
    * @param state A pointer to the storage for this sensor's state
    */
-  BinaryStateHandle(const std::string& name, const bool* state)
-    : name_(name), state_(state) {
+  BinaryStateHandle(const std::string& name, const bool* state) : name_(name), state_(state) {
     if (!state)
       throw HardwareInterfaceException("Cannot create handle '" + name + "'. State data pointer is null.");
   }
 
-  std::string getName() const {return name_;}
-  bool getState() const {assert(state_); return *state_;}
-  const bool* getStatePtr() const {return state_;}
+  std::string getName() const { return name_; }
+
+  bool getState() const {
+    assert(state_);
+    return *state_;
+  }
+
+  const bool* getStatePtr() const { return state_; }
 
 private:
   std::string name_;
@@ -60,6 +64,6 @@ private:
 /** @brief Hardware interface to support reading the state of an digital binary (on/off) sensor. */
 class BinaryStateInterface : public HardwareResourceManager<BinaryStateHandle> {};
 
-} // namespace hardware_interface
+}  // namespace hardware_interface
 
 #endif

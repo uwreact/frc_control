@@ -28,28 +28,34 @@
 #ifndef BINARY_COMMAND_INTERFACE_H
 #define BINARY_COMMAND_INTERFACE_H
 
-#include <hardware_interface/internal/hardware_resource_manager.h>
 #include <binary_state_controller/binary_state_interface.h>
+#include <hardware_interface/internal/hardware_resource_manager.h>
 
 namespace hardware_interface {
 
 /** @brief A handle used to read and command a digital binary (on/off) actuator (eg. solenoid, LED, etc). */
 class BinaryCommandHandle : public BinaryStateHandle {
 public:
-  BinaryCommandHandle() : BinaryStateHandle(), cmd_(0) {}
+  BinaryCommandHandle() : BinaryStateHandle(), cmd_(nullptr) {}
 
   /**
    * @param state_handle This joint's state handle
    * @param cmd A pointer to the storage for this joint's output command
    */
-  BinaryCommandHandle(const BinaryStateHandle& state_handle, bool* cmd)
-    : BinaryStateHandle(state_handle), cmd_(cmd) {
+  BinaryCommandHandle(const BinaryStateHandle& state_handle, bool* cmd) : BinaryStateHandle(state_handle), cmd_(cmd) {
     if (!cmd_)
       throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
   }
 
-  void setCommand(bool command) {assert(cmd_); *cmd_ = command;}
-  bool getCommand() const {assert(cmd_); return *cmd_;}
+  void setCommand(bool command) {
+    assert(cmd_);
+    *cmd_ = command;
+  }
+
+  bool getCommand() const {
+    assert(cmd_);
+    return *cmd_;
+  }
 
 private:
   bool* cmd_;
@@ -58,6 +64,6 @@ private:
 /** @brief Hardware interface to support commanding an array of digital binary actuators. */
 class BinaryCommandInterface : public HardwareResourceManager<BinaryCommandHandle, ClaimResources> {};
 
-} // namespace hardware_interface
+}  // namespace hardware_interface
 
 #endif
