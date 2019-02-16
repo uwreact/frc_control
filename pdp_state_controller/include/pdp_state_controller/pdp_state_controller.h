@@ -36,8 +36,8 @@
 #include <boost/shared_ptr.hpp>
 
 // Custom
-#include <pdp_state_controller/pdp_state_interface.h>
 #include <pdp_state_controller/PDPData.h>
+#include <pdp_state_controller/pdp_state_interface.h>
 
 namespace pdp_state_controller {
 
@@ -61,20 +61,21 @@ public:
   PDPStateController() : publish_rate_(15.0) {}
 
   virtual bool init(hardware_interface::PDPStateInterface* hw,
-                    ros::NodeHandle& root_nh,
-                    ros::NodeHandle& controller_nh);
+                    const ros::NodeHandle&                 root_nh,
+                    const ros::NodeHandle&                 controller_nh);
   virtual void starting(const ros::Time& time);
   virtual void update(const ros::Time& time, const ros::Duration& period);
   virtual void stopping(const ros::Time& time);
 
 private:
+  typedef boost::shared_ptr<realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>> RtPublisherPtr;
+
   std::vector<hardware_interface::PDPStateHandle> pdp_states_;
-  typedef boost::shared_ptr<realtime_tools::RealtimePublisher<pdp_state_controller::PDPData> > RtPublisherPtr;
-  std::vector<RtPublisherPtr> realtime_pubs_;
-  std::vector<ros::Time> last_publish_times_;
-  double publish_rate_;
+  std::vector<RtPublisherPtr>                     realtime_pubs_;
+  std::vector<ros::Time>                          last_publish_times_;
+  double                                          publish_rate_;
 };
 
-} // namespace pdp_state_controller
+}  // namespace pdp_state_controller
 
 #endif
