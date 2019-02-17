@@ -131,10 +131,13 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
 
+
       // Can be "none", "internal", or another feedback device (eg. analog, encoder)
-      std::string feedback = validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true)
-                                 ? cur_joint["feedback"]
-                                 : "none";
+      std::string feedback;
+      if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true))
+        feedback = (std::string) cur_joint["feedback"];
+      else
+        feedback = "none";
 
       smart_speed_controller_templates_[joint_name] = {
           .type     = SmartSpeedController::stringToType(joint_type),
@@ -160,12 +163,18 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
                       && cur_joint["inverted"];
 
       // Can be "none" or the name of a PDP
-      std::string pdp = validateJointParamMember(cur_joint, "pdp", XmlValue::TypeString, false, true) ? cur_joint["pdp"]
-                                                                                                      : "none";
+      std::string pdp;
+      if (validateJointParamMember(cur_joint, "pdp", XmlValue::TypeString, false, true))
+        pdp = (std::string) cur_joint["pdp"];
+      else
+        pdp = "none";
 
-      int pdp_ch = validateJointParamMember(cur_joint, "pdp_ch", XmlValue::TypeInt, false, true)
-                       ? (int) cur_joint["pdp_ch"]
-                       : -1;
+      int pdp_ch;
+      if (validateJointParamMember(cur_joint, "pdp_ch", XmlValue::TypeInt, false, true))
+        pdp_ch = (int) cur_joint["pdp_ch"];
+      else
+        pdp_ch = -1;
+
       if (pdp_ch < -1 || pdp_ch > 15) {
         ROS_WARN_STREAM_NAMED(name_,
                               "Invalid PDP channel '"
@@ -174,9 +183,11 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
         pdp_ch = -1;
       }
 
-      double k_eff = validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true)
-                         ? (double) cur_joint["k_eff"]
-                         : 1.0;
+      double k_eff;
+      if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true))
+        k_eff = (double) cur_joint["k_eff"];
+      else
+        k_eff = 1.0;
 
       if (pdp == "none" && pdp_ch != -1)
         ROS_WARN_STREAM_NAMED(name_,
@@ -235,9 +246,11 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
 
-      int pcm_id = validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)
-                       ? (int) cur_joint["pcm_id"]
-                       : 0;
+      int pcm_id;
+      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
+        pcm_id = (int) cur_joint["pcm_id"];
+      else
+        pcm_id = 0;
 
       solenoid_templates_[joint_name] = {
           .id     = cur_joint["id"],
@@ -249,9 +262,11 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
           || !validateJointParamMember(cur_joint, "reverse_id", XmlValue::TypeInt))
         continue;
 
-      int pcm_id = validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)
-                       ? (int) cur_joint["pcm_id"]
-                       : 0;
+      int pcm_id;
+      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
+        pcm_id = (int) cur_joint["pcm_id"];
+      else
+        pcm_id = 0;
 
       double_solenoid_templates_[joint_name] = {
           .forward_id = cur_joint["forward_id"],
@@ -260,9 +275,12 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
       };
     }
     else if (joint_type == "compressor") {
-      int pcm_id = validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)
-                       ? (int) cur_joint["pcm_id"]
-                       : 0;
+      int pcm_id;
+      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
+        pcm_id = (int) cur_joint["pcm_id"];
+      else
+        pcm_id = 0;
+
       compressor_templates_[joint_name] = pcm_id;
     }
     else if (joint_type == "digital_input") {
@@ -310,9 +328,11 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
           || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
         continue;
 
-      const std::string& joint = validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true)
-                                     ? cur_joint["joint"]
-                                     : "none";
+      std::string joint;
+      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true))
+        joint = (std::string) cur_joint["joint"];
+      else
+        joint = "none";
 
       analog_output_templates_[joint_name] = {
           .joint  = joint,
@@ -329,18 +349,23 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
 
       const bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                             && cur_joint["inverted"];
-      int encoding = validateJointParamMember(cur_joint, "encoding", XmlValue::TypeInt, false, true)
-                         ? (int) cur_joint["encoding"]
-                         : 4;
+      int encoding;
+      if (validateJointParamMember(cur_joint, "encoding", XmlValue::TypeInt, false, true))
+        encoding = (int) cur_joint["encoding"];
+      else
+        encoding = 4;
+
       if (encoding != 1 && encoding != 2 && encoding != 4) {
         ROS_WARN_STREAM_NAMED(name_,
                               "Invalid encoder encoding '" << encoding << "', must be 1, 2, or 4. Using default 4.");
         encoding = 4;
       }
 
-      const std::string& joint = validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true)
-                                     ? cur_joint["joint"]
-                                     : "none";
+      std::string joint;
+      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true))
+        joint = (std::string) cur_joint["joint"];
+      else
+        joint = "none";
 
       encoder_templates_[joint_name] = {
           .joint              = joint,
