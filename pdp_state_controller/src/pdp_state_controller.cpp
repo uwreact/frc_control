@@ -27,14 +27,14 @@
 
 #include <pdp_state_controller/pdp_state_controller.h>
 
-#include <pluginlib/class_list_macros.h>
 #include <algorithm>
+#include <pluginlib/class_list_macros.h>
 
 namespace pdp_state_controller {
 
 bool PDPStateController::init(hardware_interface::PDPStateInterface* hw,
-                              ros::NodeHandle& root_nh,
-                              ros::NodeHandle& controller_nh) {
+                              const ros::NodeHandle&                 root_nh,
+                              const ros::NodeHandle&                 controller_nh) {
 
   // Get all PDP names from the hardware interface
   const std::vector<std::string>& pdp_names = hw->getNames();
@@ -76,13 +76,13 @@ void PDPStateController::update(const ros::Time& time, const ros::Duration& /*pe
 
         // Populate message
         realtime_pubs_[i]->msg_.header.stamp = time;
-        realtime_pubs_[i]->msg_.voltage = pdp_states_[i].getVoltage();
-        realtime_pubs_[i]->msg_.temperature = pdp_states_[i].getTemperature();
+        realtime_pubs_[i]->msg_.voltage      = pdp_states_[i].getVoltage();
+        realtime_pubs_[i]->msg_.temperature  = pdp_states_[i].getTemperature();
         realtime_pubs_[i]->msg_.totalCurrent = pdp_states_[i].getTotalCurrent();
-        realtime_pubs_[i]->msg_.totalPower = pdp_states_[i].getTotalPower();
-        realtime_pubs_[i]->msg_.totalEnergy = pdp_states_[i].getTotalEnergy();
+        realtime_pubs_[i]->msg_.totalPower   = pdp_states_[i].getTotalPower();
+        realtime_pubs_[i]->msg_.totalEnergy  = pdp_states_[i].getTotalEnergy();
 
-        for(unsigned channel = 0; channel < 16; channel++)
+        for (unsigned channel = 0; channel < 16; channel++)
           realtime_pubs_[i]->msg_.current[channel] = pdp_states_[i].getCurrent(channel);
 
         // Publish data
@@ -92,8 +92,8 @@ void PDPStateController::update(const ros::Time& time, const ros::Duration& /*pe
   }
 }
 
-void PDPStateController::stopping(const ros::Time& /*time*/)  {}
+void PDPStateController::stopping(const ros::Time& /*time*/) {}
 
-} // namespace pdp_state_controller
+}  // namespace pdp_state_controller
 
 PLUGINLIB_EXPORT_CLASS(pdp_state_controller::PDPStateController, controller_interface::ControllerBase)

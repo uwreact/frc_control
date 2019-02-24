@@ -39,37 +39,40 @@ namespace hardware_interface {
  */
 class TernaryStateHandle {
 public:
-
   enum class TernaryState {
     kReverse,
     kOff,
     kForward,
   };
 
-  TernaryStateHandle() : name_(), state_(0) {}
+  TernaryStateHandle() : name_(), state_(nullptr) {}
 
   /**
    * @param name The name of the sensor
    * @param state A pointer to the storage for this sensor's state
    */
-  TernaryStateHandle(const std::string& name, const TernaryState* state)
-    : name_(name), state_(state) {
+  TernaryStateHandle(const std::string& name, const TernaryState* state) : name_(name), state_(state) {
     if (!state)
       throw HardwareInterfaceException("Cannot create handle '" + name + "'. State data pointer is null.");
   }
 
-  std::string getName() const {return name_;}
-  TernaryState getState() const {assert(state_); return *state_;}
-  const TernaryState* getStatePtr() const {return state_;}
+  std::string getName() const { return name_; }
+
+  TernaryState getState() const {
+    assert(state_);
+    return *state_;
+  }
+
+  const TernaryState* getStatePtr() const { return state_; }
 
 private:
-  std::string name_;
+  std::string         name_;
   const TernaryState* state_;
 };
 
 /** @brief Hardware interface to support reading the state of a ternary sensor. */
 class TernaryStateInterface : public HardwareResourceManager<TernaryStateHandle> {};
 
-} // namespace hardware_interface
+}  // namespace hardware_interface
 
 #endif

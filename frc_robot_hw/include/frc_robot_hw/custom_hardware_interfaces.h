@@ -34,4 +34,4 @@ namespace hardware_interface {
 /// JointCommandInterface for commanding voltage-based joints.
 class VoltageJointInterface : public JointCommandInterface {};
 
-} // namespace hardware_interface
+}  // namespace hardware_interface

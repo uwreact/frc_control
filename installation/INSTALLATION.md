@@ -86,7 +86,7 @@ performing the installation steps required, and restoring that line once you are
 **Note: This script is currently broken! Only manual method works for now**
 
     cd ~/robot_workspace/src/frc_control
-    source installation/unsource_ros.bash 
+    source installation/unsource_ros.bash
 
 ## 6. Build ROS with the FRC toolchain
 

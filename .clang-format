@@ -1,0 +1,101 @@
+---
+## General
+Language:           Cpp
+Standard:           Cpp11
+ColumnLimit:        120
+IndentWidth:        2
+UseTab:             Never
+BreakBeforeBraces:  Custom
+BraceWrapping:
+  BeforeCatch: true
+  BeforeElse: true
+
+
+## Single liners
+# Disallow all single liners, except for empty functions and
+# single-statement member functions.
+AllowShortBlocksOnASingleLine:        false
+AllowShortCaseLabelsOnASingleLine:    false
+AllowShortFunctionsOnASingleLine:     Inline
+AllowShortIfStatementsOnASingleLine:  false
+AllowShortLoopsOnASingleLine:         false
+
+## Line breaks
+# Rule of thumb is prefer one per line if wrapping is required,
+# rather than move all parameters to the next line or bin packing.
+AlignAfterOpenBracket:                          Align
+AllowAllParametersOfDeclarationOnNextLine:      false
+AlwaysBreakAfterReturnType:                     None
+AlwaysBreakBeforeMultilineStrings:              false
+AlwaysBreakTemplateDeclarations:                true
+BinPackArguments:                               false
+BinPackParameters:                              false
+BreakBeforeBinaryOperators:                     NonAssignment
+BreakBeforeTernaryOperators:                    true
+BreakConstructorInitializers:                   BeforeColon
+# BreakInheritanceList:                         BeforeColon # Requires clang-format-7
+BreakStringLiterals:                            true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+## Alignment
+# Rule of thumb: Align lines with eachother to improve readability
+AlignConsecutiveAssignments:  true
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines:         Left
+AlignOperands:                true
+
+## Pointer alignment
+DerivePointerAlignment:       false
+PointerAlignment:             Left
+
+## Indentation
+AccessModifierOffset:              -2
+ConstructorInitializerIndentWidth:  4
+ContinuationIndentWidth:            4
+IndentCaseLabels:                   true
+IndentPPDirectives:                 None
+IndentWrappedFunctionNames:         true
+NamespaceIndentation:               None
+
+## Sorting
+IncludeBlocks:          Preserve
+SortIncludes:           true
+SortUsingDeclarations:  true
+
+## Spaces
+Cpp11BracedListStyle:                 true
+SpaceAfterCStyleCast:                 true
+SpaceAfterTemplateKeyword:            true
+SpaceBeforeAssignmentOperators:       true
+SpaceBeforeParens:                    ControlStatements
+SpaceInEmptyParentheses:              false
+SpacesInAngles:                       false
+SpacesInCStyleCastParentheses:        false
+SpacesInContainerLiterals:            false
+SpacesInParentheses:                  false
+SpacesInSquareBrackets:               false
+# SpaceBeforeCpp11BracedList:         true # Requires clang-format-7
+# SpaceBeforeCtorInitializerColon:    true # Requires clang-format-7
+# SpaceBeforeInheritanceColon:        true # Requires clang-format-7
+# SpaceBeforeRangeBasedForLoopColon:  true # Requires clang-format-7
+
+## Comments
+AlignTrailingComments:        true
+ReflowComments:               true
+SpacesBeforeTrailingComments: 2
+
+## Misc
+CompactNamespaces:                false
+FixNamespaceComments:             true
+KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep:              2
+
+## "AllOnOneLineOrOnePerLine" for assignments.
+# Example: Prefer the left over the right:
+#
+# int foo = bar(aaaaaaa,           int foo =
+#               bbbbbbb,               bar(aaaaaaa, bbbbbbb, ccccccc);
+#               ccccccc);
+PenaltyBreakAssignment: 1000
+PenaltyBreakBeforeFirstCallParameter: 1000
+...

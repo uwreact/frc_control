@@ -36,30 +36,34 @@ namespace hardware_interface {
 /** @brief A handle used to read the state of a generic analog sensor (eg. potentiometer). */
 class AnalogStateHandle {
 public:
-  AnalogStateHandle() : name_(), state_(0) {}
+  AnalogStateHandle() : name_(), state_(nullptr) {}
 
   /**
    * @param name The name of the sensor
    * @param state A pointer to the storage for this sensor's state
    */
-  AnalogStateHandle(const std::string& name, const double* state)
-    : name_(name), state_(state) {
+  AnalogStateHandle(const std::string& name, const double* state) : name_(name), state_(state) {
     if (!state)
       throw HardwareInterfaceException("Cannot create handle '" + name + "'. State data pointer is null.");
   }
 
-  std::string getName() const {return name_;}
-  double getState() const {assert(state_); return *state_;}
-  const double* getStatePtr() const {return state_;}
+  std::string getName() const { return name_; }
+
+  double getState() const {
+    assert(state_);
+    return *state_;
+  }
+
+  const double* getStatePtr() const { return state_; }
 
 private:
-  std::string name_;
+  std::string   name_;
   const double* state_;
 };
 
 /** @brief Hardware interface to support reading the state of an analog sensor. */
 class AnalogStateInterface : public HardwareResourceManager<AnalogStateHandle> {};
 
-} // namespace hardware_interface
+}  // namespace hardware_interface
 
 #endif

@@ -46,40 +46,37 @@ public:
   };
 
   PDPStateHandle()
-    : name_(),
-      voltage_(0),
-      temperature_(0),
-      total_current_(0),
-      total_power_(0),
-      total_energy_(0),
-      current_(0)
-    {}
+      : name_(),
+        voltage_(nullptr),
+        temperature_(nullptr),
+        total_current_(nullptr),
+        total_power_(nullptr),
+        total_energy_(nullptr),
+        current_(nullptr) {}
 
   PDPStateHandle(const std::string& name, const PDPState& state)
-    : name_(name),
-      voltage_(&state.voltage),
-      temperature_(&state.temperature),
-      total_current_(&state.total_current),
-      total_power_(&state.total_power),
-      total_energy_(&state.total_energy),
-      current_(state.current)
-    {}
+      : name_(name),
+        voltage_(&state.voltage),
+        temperature_(&state.temperature),
+        total_current_(&state.total_current),
+        total_power_(&state.total_power),
+        total_energy_(&state.total_energy),
+        current_(state.current) {}
 
-  PDPStateHandle(
-      const std::string& name,
-      const double* voltage,
-      const double* temperature,
-      const double* total_current,
-      const double* total_power,
-      const double* total_energy,
-      const double* current)
-  : name_(name),
-    voltage_(voltage),
-    temperature_(temperature),
-    total_current_(total_current),
-    total_power_(total_power),
-    total_energy_(total_energy),
-    current_(current) {
+  PDPStateHandle(const std::string& name,
+                 const double*      voltage,
+                 const double*      temperature,
+                 const double*      total_current,
+                 const double*      total_power,
+                 const double*      total_energy,
+                 const double*      current)
+      : name_(name),
+        voltage_(voltage),
+        temperature_(temperature),
+        total_current_(total_current),
+        total_power_(total_power),
+        total_energy_(total_energy),
+        current_(current) {
 
     if (!voltage_)
       throw HardwareInterfaceException("Cannot create PDP state handle '" + name + "'. Voltage pointer is null.");
@@ -95,6 +92,7 @@ public:
       throw HardwareInterfaceException("Cannot create PDP state handle '" + name + "'. Current pointer is null.");
   }
 
+  // clang-format off
     std::string getName() const               {return name_;}
 
     double getVoltage() const                 {assert(voltage_);        return *voltage_;}
@@ -110,20 +108,21 @@ public:
     const double* getTotalPowerPtr() const    {return total_power_;}
     const double* getTotalEnergyPtr() const   {return total_energy_;}
     const double* getCurrentPtr() const       {return current_;}
+  // clang-format on
 
-  private:
-    std::string   name_;
-    const double* voltage_;
-    const double* temperature_;
-    const double* total_current_;
-    const double* total_power_;
-    const double* total_energy_;
-    const double* current_;
+private:
+  std::string   name_;
+  const double* voltage_;
+  const double* temperature_;
+  const double* total_current_;
+  const double* total_power_;
+  const double* total_energy_;
+  const double* current_;
 };
 
 /** @brief Hardware interface to support reading the state of the PowerDistributionPanel (PDP). */
-class PDPStateInterface: public HardwareResourceManager<PDPStateHandle> {};
+class PDPStateInterface : public HardwareResourceManager<PDPStateHandle> {};
 
-} // namespace hardware_interface
+}  // namespace hardware_interface
 
 #endif

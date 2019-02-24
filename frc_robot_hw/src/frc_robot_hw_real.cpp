@@ -79,7 +79,7 @@ void FRCRobotHWReal::runHAL() {
       // Note: Buttons, unlike axes, are indexed from 1 rather than 0
       joysticks[stick].buttons.resize(ds.GetStickButtonCount(stick));
       for (unsigned button = 0; button < ds.GetStickButtonCount(stick); button++)
-        joysticks[stick].buttons[button] = ds.GetStickButton(stick, button+1);
+        joysticks[stick].buttons[button] = ds.GetStickButton(stick, button + 1);
 
       // TODO: Ensure POV hat is covered. If not, append it to axes and/or buttons
     }
@@ -87,12 +87,11 @@ void FRCRobotHWReal::runHAL() {
     // Get match data
     ds.GetGameSpecificMessage();
     ds.GetEventName();
-    ds.GetMatchType(); // kNone, kPractice, kQualification, kElimination
+    ds.GetMatchType();  // kNone, kPractice, kQualification, kElimination
     ds.GetMatchNumber();
-    ds.GetReplayNumber(); // Presumably will increment on each replay of a match, since match number is no longer unique
-                          // TODO: Validate this understanding
-    ds.GetAlliance(); // kRed, kBlue, or kInvalid
-    ds.GetLocation(); // 1, 2, or 3. 0 if invalid
+    ds.GetReplayNumber();
+    ds.GetAlliance();  // kRed, kBlue, or kInvalid
+    ds.GetLocation();  // 1, 2, or 3. 0 if invalid
 
     // Get current match data
     ds.GetMatchTime();  // APPROXIMATE remaining time in current period (auto or teleop), in seconds.
@@ -117,10 +116,10 @@ void FRCRobotHWReal::runHAL() {
 
 // Setup HAL interaction. Create WPILib objects for each specified sensor and actuator.
 bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
-  if(!FRCRobotHW::init(root_nh, robot_hw_nh))
+  if (!FRCRobotHW::init(root_nh, robot_hw_nh))
     return false;
 
-  if(!initHAL())
+  if (!initHAL())
     return false;
 
   // =*=*=*=*=*=*=*= Sensors =*=*=*=*=*=*=*=
@@ -128,29 +127,35 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
   // Create AnalogInputs
   // TODO: Allow configuration of bits, accumulator
   for (const auto& pair : analog_input_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib AnalogInput " << pair.first
                                   << " on channel " << pair.second.id
                                   << " w/ scale " << pair.second.scale     // Non-wpilib feature
                                   << " w/ offset " << pair.second.offset); // Non-wpilib feature
+    // clang-format on
     analog_inputs_[pair.first] = boost::make_unique<frc::AnalogInput>(pair.second.id);
   }
 
   // Create DigitalInputs
   for (const auto& pair : digital_input_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib DigitalInput " << pair.first
                                   << " on channel " << pair.second.id
                                   << " w/ inverted=" << pair.second.inverted); // Non-wpilib feature
+    // clang-format on
     digital_inputs_[pair.first] = boost::make_unique<frc::DigitalInput>(pair.second.id);
   }
 
   // Create Encoders
   for (const auto& pair : encoder_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib Encoder " << pair.first
                                   << " on channel A " << pair.second.ch_a
                                   << " and channel B " << pair.second.ch_b
                                   << " w/ distance per pulse " << pair.second.distance_per_pulse
                                   << " and encoding x" << pair.second.encoding
                                   << " and inverted " << pair.second.inverted);
+    // clang-format on
     frc::CounterBase::EncodingType encoding;
     if (pair.second.encoding == 1)
       encoding = frc::CounterBase::EncodingType::k1X;
@@ -159,17 +164,21 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     else
       encoding = frc::CounterBase::EncodingType::k4X;
 
-    encoders_[pair.first] =
-      boost::make_unique<frc::Encoder>(pair.second.ch_a, pair.second.ch_b, pair.second.inverted, encoding);
+    encoders_[pair.first] = boost::make_unique<frc::Encoder>(pair.second.ch_a,
+                                                             pair.second.ch_b,
+                                                             pair.second.inverted,
+                                                             encoding);
   }
 
   // Create navXs
 #if USE_KAUAI
   for (const auto& pair : navx_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib NavX-MXP " << pair.first
                                   << " on interface " << pair.second.interface
                                   << " at id " << pair.second.id
                                   << " with tf frame " << pair.second.frame_id); // Non-wpilib feature
+    // clang-format on
 
     if (pair.second.interface == "i2c")
       navxs_[pair.first] = boost::make_unique<AHRS>((frc::I2C::Port) pair.second.id);
@@ -183,16 +192,19 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
   // Create PigeonIMUs
 #if USE_CTRE
   for (const auto& pair : pigeon_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib PigeonIMU " << pair.first
                                   << " on CAN ID or TalonSRX name " << pair.second.interface
                                   << " with tf frame " << pair.second.frame_id); // Non-wpilib feature
+    // clang-format on
 
-    using PigeonIMU = ctre::phoenix::sensors::PigeonIMU;
+    using PigeonIMU    = ctre::phoenix::sensors::PigeonIMU;
     using PigeonIMUPtr = std::unique_ptr<PigeonIMU>;
 
     struct Visitor : public boost::static_visitor<PigeonIMUPtr> {
       PigeonIMUPtr operator()(const int& i) const { return boost::make_unique<PigeonIMU>(i); }
-      PigeonIMUPtr operator()(const std::string& s) const { return boost::make_unique<PigeonIMU>( 0 ); } // TODO: Get associated TalonSRX
+      PigeonIMUPtr operator()(const std::string& s) const { return boost::make_unique<PigeonIMU>(0); }
+      // TODO: Get associated TalonSRX by name
     };
 
     pigeons_[pair.first] = boost::apply_visitor(Visitor{}, pair.second.interface);
@@ -204,75 +216,98 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
 
   // Create AnalogOutputs
   for (const auto& pair : analog_output_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib AnalogOutput " << pair.first
                                   << " on channel " << pair.second.id
                                   << " w/ scale " << pair.second.scale     // Non-wpilib feature
                                   << " w/ offset " << pair.second.offset); // Non-wpilib feature
+    // clang-format on
     analog_outputs_[pair.first] = boost::make_unique<frc::AnalogOutput>(pair.second.id);
   }
 
   // Create DigitalOutputs
   for (const auto& pair : digital_output_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib DigitalOutput " << pair.first
                                   << " on channel " << pair.second.id
                                   << " w/ inverted=" << pair.second.inverted); // Non-wpilib feature
+    // clang-format on
     digital_outputs_[pair.first] = boost::make_unique<frc::DigitalOutput>(pair.second.id);
   }
 
   // Create DoubleSolenoids
   for (const auto& pair : double_solenoid_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib DoubleSolenoid " << pair.first
                                   << " on channels fwd:" << pair.second.forward_id
                                   << " rev:" << pair.second.reverse_id
                                   << " on PCM  " << pair.second.pcm_id);
-    double_solenoids_[pair.first] =
-      boost::make_unique<frc::DoubleSolenoid>(pair.second.pcm_id, pair.second.forward_id, pair.second.reverse_id);
+    // clang-format on
+    double_solenoids_[pair.first] = boost::make_unique<frc::DoubleSolenoid>(pair.second.pcm_id,
+                                                                            pair.second.forward_id,
+                                                                            pair.second.reverse_id);
   }
 
   // Create Relays
   for (const auto& pair : relay_templates_) {
-    using Direction = hardware_template::Relay::Direction;
+    using Direction                     = hardware_template::Relay::Direction;
     const std::string& direction_string = hardware_template::Relay::directionToString(pair.second.direction);
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib Relay " << pair.first
                                   << " on channel " << pair.second.id
                                   << " w/ direction " << direction_string);
+    // clang-format on
     frc::Relay::Direction dir;
     switch (pair.second.direction) {
-      case Direction::kBoth:    dir = frc::Relay::Direction::kBothDirections; break;
-      case Direction::kForward: dir = frc::Relay::Direction::kForwardOnly;    break;
-      case Direction::kReverse: dir = frc::Relay::Direction::kReverseOnly;    break;
+      case Direction::kBoth:
+        dir = frc::Relay::Direction::kBothDirections;
+        break;
+      case Direction::kForward:
+        dir = frc::Relay::Direction::kForwardOnly;
+        break;
+      case Direction::kReverse:
+        dir = frc::Relay::Direction::kReverseOnly;
+        break;
     }
     relays_[pair.first] = boost::make_unique<frc::Relay>(pair.second.id, dir);
   }
 
   // Create Servos
   for (const auto& pair : servo_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib Servo " << pair.first
                                   << " on channel " << pair.second);
+    // clang-format on
     servos_[pair.first] = boost::make_unique<frc::Servo>(pair.second);
   }
 
   // Create Solenoids
   for (const auto& pair : solenoid_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib Solenoid " << pair.first
                                   << " on channel " << pair.second.id
                                   << " on PCM  " << pair.second.pcm_id);
+    // clang-format on
     solenoids_[pair.first] = boost::make_unique<frc::Solenoid>(pair.second.pcm_id, pair.second.id);
   }
 
   // Create simple SpeedControllers
   for (const auto& pair : simple_speed_controller_templates_) {
     const std::string& type_string = hardware_template::SimpleSpeedController::typeToString(pair.second.type);
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating " << type_string
                                   << " SpeedController " << pair.first
                                   << " on channel " << pair.second.id
                                   << " w/ inverted=" << pair.second.inverted);
+    // clang-format on
     using Type = hardware_template::SimpleSpeedController::Type;
 
-    const int id = pair.second.id;
+    const int id     = pair.second.id;
     const int dio_id = pair.second.dio_id;
+
     std::unique_ptr<frc::SpeedController> controller;
     switch (pair.second.type) {
+      // clang-format off
       case Type::DMC60:         controller = boost::make_unique<frc::DMC60>(id);        break;
       case Type::Jaguar:        controller = boost::make_unique<frc::Jaguar>(id);       break;
       case Type::PWMTalonSRX:   controller = boost::make_unique<frc::PWMTalonSRX>(id);  break;
@@ -286,6 +321,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
 #if USE_CTRE
       case Type::CANVictorSPX:  controller = boost::make_unique<ctre::phoenix::motorcontrol::can::WPI_VictorSPX>(id); break;
 #endif
+        // clang-format on
     }
     simple_speed_controllers_[pair.first] = std::move(controller);
   }
@@ -298,15 +334,19 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
 
   // Create Compressors
   for (const auto& pair : compressor_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib Compressor " << pair.first
                                   << " on PCM  " << pair.second);
+    // clang-format on
     compressors_[pair.first] = boost::make_unique<frc::Compressor>(pair.second);
   }
 
   // Create PDPs
   for (const auto& pair : pdp_templates_) {
+    // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Creating PDP " << pair.first
                                   << " with ID " << pair.second);
+    // clang-format on
     pdps_[pair.first] = boost::make_unique<frc::PowerDistributionPanel>(pair.second);
   }
 
@@ -322,29 +362,29 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
 
   // Read current AnalogInput states
   for (const auto& pair : analog_inputs_) {
-    const auto& config = analog_input_templates_[pair.first];
-    double last_state = rate_states_[pair.first].state;
+    const auto& config             = analog_input_templates_[pair.first];
+    double      last_state         = rate_states_[pair.first].state;
     rate_states_[pair.first].state = pair.second->GetVoltage() / 5.0 * config.scale + config.offset;
 
     // Sloppy rate calculation
     // TODO: Use hardware rate when available (AnalogGyro). Actually, we should probably treat AnalogGyros as IMUs, and
     // reserve AnalogInputs for pots, linear transducers, analog ultrasonics, etc.
-    static double last_time = ros::Time::now().toSec();
-    double cur_time = ros::Time::now().toSec();
+    static double last_time       = ros::Time::now().toSec();
+    double        cur_time        = ros::Time::now().toSec();
     rate_states_[pair.first].rate = (rate_states_[pair.first].state - last_state) / (cur_time - last_time);
-    last_time = cur_time;
+    last_time                     = cur_time;
   }
 
   // Read current DigitalInput states
   for (const auto& pair : digital_inputs_) {
-    const auto& config = digital_input_templates_[pair.first];
+    const auto& config         = digital_input_templates_[pair.first];
     binary_states_[pair.first] = pair.second->Get() ^ config.inverted;
   }
 
   // Read current Encoder states
   for (const auto& pair : encoders_) {
     rate_states_[pair.first].state = pair.second->GetDistance();  // Distance, scaled by distancePerPulse
-    rate_states_[pair.first].rate = pair.second->GetRate();       // Distance / second, scaled by distancePerPulse
+    rate_states_[pair.first].rate  = pair.second->GetRate();      // Distance / second, scaled by distancePerPulse
   }
 
   // Read current navX IMU states
@@ -353,9 +393,9 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     const auto& navx = pair.second;
 
     // TODO: Orientation/heading zeroing if needed?
-    //const double last_zero_val;
-    //const double offset = last_zero_val - navx->GetFusedHeading() / 180.0 * M_PI;
-    //const double cur_heading = navx->GetFusedHeading() / 180.0 * M_PI + offset;
+    // const double last_zero_val;
+    // const double offset = last_zero_val - navx->GetFusedHeading() / 180.0 * M_PI;
+    // const double cur_heading = navx->GetFusedHeading() / 180.0 * M_PI + offset;
 
     // Linear acceleration (X, Y, Z in m/s^2)
     // TODO: Determine if we should use this or getRawAccel. Might factor into gravity.
@@ -371,8 +411,8 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     // Orientation (Quaternion X, Y, Z, W)
     tf2::Quaternion tempQ;
     tempQ.setRPY(navx->GetRoll() / -180.0 * M_PI,
-                  navx->GetPitch() / -180.0 * M_PI,
-                  navx->GetFusedHeading() / 180.0 * M_PI/* + offset*/);
+                 navx->GetPitch() / -180.0 * M_PI,
+                 navx->GetFusedHeading() / 180.0 * M_PI /* + offset*/);
     imu_states_[pair.first].orientation[0] = tempQ.x();
     imu_states_[pair.first].orientation[1] = tempQ.y();
     imu_states_[pair.first].orientation[2] = tempQ.z();
@@ -405,7 +445,6 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     imu_states_[pair.first].orientation[1] = q_wxyz[2];
     imu_states_[pair.first].orientation[2] = q_wxyz[3];
     imu_states_[pair.first].orientation[3] = q_wxyz[0];
-
   }
 #endif
 
@@ -414,14 +453,14 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
 
   // Read current AnalogOutput states
   for (const auto& pair : analog_outputs_) {
-    const auto& config = analog_output_templates_[pair.first];
+    const auto& config             = analog_output_templates_[pair.first];
     rate_states_[pair.first].state = pair.second->GetVoltage() * config.scale + config.offset;
-    rate_states_[pair.first].rate = 0;
+    rate_states_[pair.first].rate  = 0;
   }
 
   // Read current DigitalOutput states
   for (const auto& pair : digital_outputs_) {
-    const auto& config = digital_output_templates_[pair.first];
+    const auto& config         = digital_output_templates_[pair.first];
     binary_states_[pair.first] = pair.second->Get() ^ config.inverted;
   }
 
@@ -430,16 +469,22 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     using Value = frc::DoubleSolenoid::Value;
     TernaryState state;
     switch (pair.second->Get()) {
-      case Value::kOff:     state = TernaryState::kOff;     break;
-      case Value::kForward: state = TernaryState::kForward; break;
-      case Value::kReverse: state = TernaryState::kReverse; break;
+      case Value::kOff:
+        state = TernaryState::kOff;
+        break;
+      case Value::kForward:
+        state = TernaryState::kForward;
+        break;
+      case Value::kReverse:
+        state = TernaryState::kReverse;
+        break;
     }
-     ternary_states_[pair.first] = state;
+    ternary_states_[pair.first] = state;
   }
 
   // Read current Relay states
   for (const auto& pair : relays_) {
-    using Value = frc::Relay::Value;
+    using Value     = frc::Relay::Value;
     using Direction = hardware_template::Relay::Direction;
 
     Value value = pair.second->Get();
@@ -457,14 +502,14 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
       ternary_states_[pair.first] = TernaryState::kReverse;
     else {
       ROS_ERROR_STREAM_NAMED(name_, "Error: Unexpected state kOn on bidirectional relay! Setting state to kOff");
-      ternary_states_[pair.first] = TernaryState::kOff;
+      ternary_states_[pair.first]   = TernaryState::kOff;
       ternary_commands_[pair.first] = TernaryState::kOff;
     }
   }
 
   // Read current Servo states
   for (const auto& pair : servos_) {
-    joint_states_[pair.first].pos = pair.second->Get(); // TODO: Scale to degrees, etc
+    joint_states_[pair.first].pos = pair.second->Get();  // TODO: Scale to degrees, etc
     joint_states_[pair.first].vel = 0;
     joint_states_[pair.first].eff = 0;
   }
@@ -492,11 +537,11 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
 
   // Read current PDP current draw states
   for (const auto& pair : pdps_) {
-    pdp_states_[pair.first].voltage = pair.second->GetVoltage();
-    pdp_states_[pair.first].temperature = pair.second->GetTemperature();
+    pdp_states_[pair.first].voltage       = pair.second->GetVoltage();
+    pdp_states_[pair.first].temperature   = pair.second->GetTemperature();
     pdp_states_[pair.first].total_current = pair.second->GetTotalCurrent();
-    pdp_states_[pair.first].total_power = pair.second->GetTotalPower();
-    pdp_states_[pair.first].total_energy = pair.second->GetTotalEnergy();
+    pdp_states_[pair.first].total_power   = pair.second->GetTotalPower();
+    pdp_states_[pair.first].total_energy  = pair.second->GetTotalEnergy();
     for (unsigned i = 0; i < 16; i++)
       pdp_states_[pair.first].current[i] = pair.second->GetCurrent(i);
   }
@@ -507,7 +552,7 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
   // Write AnalogOutput commands
   for (const auto& pair : analog_outputs_) {
     const auto& config = analog_output_templates_[pair.first];
-    pair.second->SetVoltage((analog_commands_[pair.first] - config.offset) /config.scale);
+    pair.second->SetVoltage((analog_commands_[pair.first] - config.offset) / config.scale);
   }
 
   // Write DigitalOutput commands
@@ -521,30 +566,42 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
     using Value = frc::DoubleSolenoid::Value;
     Value value;
     switch (ternary_states_[pair.first]) {
-      case TernaryState::kOff:     value = Value::kOff;     break;
-      case TernaryState::kForward: value = Value::kForward; break;
-      case TernaryState::kReverse: value = Value::kReverse; break;
+      case TernaryState::kOff:
+        value = Value::kOff;
+        break;
+      case TernaryState::kForward:
+        value = Value::kForward;
+        break;
+      case TernaryState::kReverse:
+        value = Value::kReverse;
+        break;
     }
     pair.second->Set(value);
   }
 
   // Write Relay commands
   for (const auto& pair : relays_) {
-    using Value = frc::Relay::Value;
+    using Value     = frc::Relay::Value;
     using Direction = hardware_template::Relay::Direction;
 
     Value command;
     switch (ternary_commands_[pair.first]) {
-      case TernaryState::kOff:      command = Value::kOff;      break;
-      case TernaryState::kForward:  command = Value::kForward;  break;
-      case TernaryState::kReverse:  command = Value::kReverse;  break;
+      case TernaryState::kOff:
+        command = Value::kOff;
+        break;
+      case TernaryState::kForward:
+        command = Value::kForward;
+        break;
+      case TernaryState::kReverse:
+        command = Value::kReverse;
+        break;
     }
     pair.second->Set(command);
   }
 
   // Write Servo commands
   for (const auto& pair : servos_) {
-    pair.second->Set(joint_commands_[pair.first].data); // TODO: Scale from angle to 0-1
+    pair.second->Set(joint_commands_[pair.first].data);  // TODO: Scale from angle to 0-1
   }
 
   // Write Solenoid commands
@@ -556,11 +613,11 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
   for (const auto& pair : simple_speed_controllers_) {
 
     // Get the bus voltage
-    const auto& config = simple_speed_controller_templates_[pair.first];
-    const double vbus = pdp_states_[config.pdp].voltage;
+    const auto&  config = simple_speed_controller_templates_[pair.first];
+    const double vbus   = pdp_states_[config.pdp].voltage;
 
     // TODO: Need PIDs to convert cmd from pos/vel/eff to percent Vbus, unless in voltage mode
-    switch(joint_commands_[pair.first].type) {
+    switch (joint_commands_[pair.first].type) {
       case JointCmd::Type::kNone:
         pair.second->Set(0);
         break;
@@ -590,4 +647,4 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
   }
 };
 
-} // namespace frc_robot_hw
+}  // namespace frc_robot_hw

@@ -39,20 +39,27 @@ namespace hardware_interface {
  */
 class TernaryCommandHandle : public TernaryStateHandle {
 public:
-  TernaryCommandHandle() : TernaryStateHandle(), cmd_(0) {}
+  TernaryCommandHandle() : TernaryStateHandle(), cmd_(nullptr) {}
 
   /**
    * \param state_handle This joint's state handle
    * \param cmd A pointer to the storage for this joint's output command
    */
   TernaryCommandHandle(const TernaryStateHandle& state_handle, TernaryState* cmd)
-    : TernaryStateHandle(state_handle), cmd_(cmd) {
+      : TernaryStateHandle(state_handle), cmd_(cmd) {
     if (!cmd_)
       throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
   }
 
-  void setCommand(TernaryState command) {assert(cmd_); *cmd_ = command;}
-  TernaryState getCommand() const {assert(cmd_); return *cmd_;}
+  void setCommand(TernaryState command) {
+    assert(cmd_);
+    *cmd_ = command;
+  }
+
+  TernaryState getCommand() const {
+    assert(cmd_);
+    return *cmd_;
+  }
 
 private:
   TernaryState* cmd_;
@@ -61,6 +68,6 @@ private:
 /** \brief Hardware interface to support commanding an array of ternary actuators. */
 class TernaryCommandInterface : public HardwareResourceManager<TernaryCommandHandle, ClaimResources> {};
 
-}
+}  // namespace hardware_interface
 
 #endif
