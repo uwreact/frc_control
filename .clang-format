@@ -7,8 +7,20 @@ IndentWidth:        2
 UseTab:             Never
 BreakBeforeBraces:  Custom
 BraceWrapping:
-  BeforeCatch: true
-  BeforeElse: true
+  AfterClass:             false
+  AfterControlStatement:  false
+  AfterEnum:              false
+  AfterFunction:          false
+  AfterNamespace:         false
+  AfterStruct:            false
+  AfterUnion:             false
+  AfterExternBlock:       false
+  BeforeCatch:            true
+  BeforeElse:             true
+  IndentBraces:           false
+  SplitEmptyFunction:     false
+  SplitEmptyRecord:       false
+  SplitEmptyNamespace:    false
 
 
 ## Single liners
