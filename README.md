@@ -18,6 +18,19 @@ Once the workspace has been setup for cross-compilation, you can native or cross
     $ catkin profile set <native|cross>
     $ catkin build
 
+## Code Style
+
+We largely follow the ROS coding guidelines, with a few noteable exceptions. To make development easy, we provide configuration files for standard linting and static analysis tools such as [clang-format](https://clang.llvm.org/docs/ClangFormat.html), [clang-tidy](https://clang.llvm.org/extra/clang-tidy) and [yapf](https://github.com/google/yapf).
+
+Install the linters:
+
+    $ sudo apt install clang-format-7 clang-tidy-7 yapf
+
+To run the linters:
+
+    $ find . -name "*.h" -o -name "*.cpp" | xargs clang-format-7 -i -style=file
+    $ yapf -ir .
+
 ## Contributing
 
 We facilitate a completely open source environment for all of our projects, and are always welcoming contributors.

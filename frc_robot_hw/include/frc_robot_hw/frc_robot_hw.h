@@ -147,7 +147,7 @@ public:
                         const std::list<hardware_interface::ControllerInfo>& stop_list) override;
 
   /// Enforce limits for all values before writing.
-  virtual void enforceLimits(ros::Duration& period){};
+  virtual void enforceLimits(ros::Duration& period) {};
 
   /// Get the short name of the class.
   inline std::string getName() const { return name_; }
