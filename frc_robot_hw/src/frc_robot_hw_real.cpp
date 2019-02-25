@@ -207,7 +207,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
       // TODO: Get associated TalonSRX by name
     };
 
-    pigeons_[pair.first] = boost::apply_visitor(Visitor{}, pair.second.interface);
+    pigeons_[pair.first] = boost::apply_visitor(Visitor(), pair.second.interface);
   }
 #endif
 
