@@ -25,8 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef BINARY_COMMAND_INTERFACE_H
-#define BINARY_COMMAND_INTERFACE_H
+#pragma once
 
 #include <binary_state_controller/binary_state_interface.h>
 #include <hardware_interface/internal/hardware_resource_manager.h>
@@ -65,5 +64,3 @@ private:
 class BinaryCommandInterface : public HardwareResourceManager<BinaryCommandHandle, ClaimResources> {};
 
 }  // namespace hardware_interface
-
-#endif

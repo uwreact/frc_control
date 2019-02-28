@@ -25,8 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDP_STATE_INTERFACE_H
-#define PDP_STATE_INTERFACE_H
+#pragma once
 
 #include <hardware_interface/internal/hardware_resource_manager.h>
 #include <string>
@@ -124,5 +123,3 @@ private:
 class PDPStateInterface : public HardwareResourceManager<PDPStateHandle> {};
 
 }  // namespace hardware_interface
-
-#endif

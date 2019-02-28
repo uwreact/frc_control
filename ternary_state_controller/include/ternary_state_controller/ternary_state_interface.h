@@ -25,8 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef TERNARY_STATE_INTERFACE_H
-#define TERNARY_STATE_INTERFACE_H
+#pragma once
 
 #include <hardware_interface/internal/hardware_resource_manager.h>
 #include <string>
@@ -74,5 +73,3 @@ private:
 class TernaryStateInterface : public HardwareResourceManager<TernaryStateHandle> {};
 
 }  // namespace hardware_interface
-
-#endif

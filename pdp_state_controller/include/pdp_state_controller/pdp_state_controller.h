@@ -25,8 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDP_STATE_CONTROLLER_H
-#define PDP_STATE_CONTROLLER_H
+#pragma once
 
 // ROS
 #include <controller_interface/controller.h>
@@ -77,5 +76,3 @@ private:
 };
 
 }  // namespace pdp_state_controller
-
-#endif

@@ -38,8 +38,6 @@ bool PDPStateController::init(hardware_interface::PDPStateInterface* hw,
 
   // Get all PDP names from the hardware interface
   const std::vector<std::string>& pdp_names = hw->getNames();
-  for (unsigned i = 0; i < pdp_names.size(); i++)
-    ROS_DEBUG("Got pdp %s", pdp_names[i].c_str());
 
   // Get publishing period
   if (!controller_nh.getParam("publish_rate", publish_rate_)) {
@@ -48,10 +46,11 @@ bool PDPStateController::init(hardware_interface::PDPStateInterface* hw,
   }
 
   // Setup publishers
-  for (unsigned i = 0; i < pdp_names.size(); i++) {
-    pdp_states_.push_back(hw->getHandle(pdp_names[i]));
+  for (const auto& pdp_name : pdp_names) {
+    ROS_DEBUG("Got pdp %s", pdp_name.c_str());
+    pdp_states_.push_back(hw->getHandle(pdp_name));
 
-    RtPublisherPtr rt_pub(new realtime_tools::RealtimePublisher<PDPData>(root_nh, pdp_names[i], 4));
+    RtPublisherPtr rt_pub(new realtime_tools::RealtimePublisher<PDPData>(root_nh, pdp_name, 4));
     realtime_pubs_.push_back(rt_pub);
   }
 

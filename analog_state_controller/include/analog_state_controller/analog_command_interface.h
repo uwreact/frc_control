@@ -25,8 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef ANALOG_COMMAND_INTERFACE_H
-#define ANALOG_COMMAND_INTERFACE_H
+#pragma once
 
 #include <analog_state_controller/analog_state_interface.h>
 #include <hardware_interface/internal/hardware_resource_manager.h>
@@ -65,5 +64,3 @@ private:
 class AnalogCommandInterface : public HardwareResourceManager<AnalogCommandHandle, ClaimResources> {};
 
 }  // namespace hardware_interface
-
-#endif
