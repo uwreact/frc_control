@@ -27,7 +27,6 @@
 
 #include <frc_robot_hw/frc_robot_hw_real.h>
 
-#include <boost/make_unique.hpp>
 #include <hal/HAL.h>
 #include <sensor_msgs/Joy.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -133,7 +132,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                   << " w/ scale " << pair.second.scale     // Non-wpilib feature
                                   << " w/ offset " << pair.second.offset); // Non-wpilib feature
     // clang-format on
-    analog_inputs_[pair.first] = boost::make_unique<frc::AnalogInput>(pair.second.id);
+    analog_inputs_[pair.first] = std::make_unique<frc::AnalogInput>(pair.second.id);
   }
 
   // Create DigitalInputs
@@ -143,7 +142,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                   << " on channel " << pair.second.id
                                   << " w/ inverted=" << pair.second.inverted); // Non-wpilib feature
     // clang-format on
-    digital_inputs_[pair.first] = boost::make_unique<frc::DigitalInput>(pair.second.id);
+    digital_inputs_[pair.first] = std::make_unique<frc::DigitalInput>(pair.second.id);
   }
 
   // Create Encoders
@@ -164,10 +163,10 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     else
       encoding = frc::CounterBase::EncodingType::k4X;
 
-    encoders_[pair.first] = boost::make_unique<frc::Encoder>(pair.second.ch_a,
-                                                             pair.second.ch_b,
-                                                             pair.second.inverted,
-                                                             encoding);
+    encoders_[pair.first] = std::make_unique<frc::Encoder>(pair.second.ch_a,
+                                                           pair.second.ch_b,
+                                                           pair.second.inverted,
+                                                           encoding);
   }
 
   // Create navXs
@@ -181,11 +180,11 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     // clang-format on
 
     if (pair.second.interface == "i2c")
-      navxs_[pair.first] = boost::make_unique<AHRS>((frc::I2C::Port) pair.second.id);
+      navxs_[pair.first] = std::make_unique<AHRS>((frc::I2C::Port) pair.second.id);
     else if (pair.second.interface == "serial")
-      navxs_[pair.first] = boost::make_unique<AHRS>((frc::SerialPort::Port) pair.second.id);
+      navxs_[pair.first] = std::make_unique<AHRS>((frc::SerialPort::Port) pair.second.id);
     else
-      navxs_[pair.first] = boost::make_unique<AHRS>((frc::SPI::Port) pair.second.id);
+      navxs_[pair.first] = std::make_unique<AHRS>((frc::SPI::Port) pair.second.id);
   }
 #endif
 
@@ -202,8 +201,8 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     using PigeonIMUPtr = std::unique_ptr<PigeonIMU>;
 
     struct Visitor : public boost::static_visitor<PigeonIMUPtr> {
-      PigeonIMUPtr operator()(const int& i) const { return boost::make_unique<PigeonIMU>(i); }
-      PigeonIMUPtr operator()(const std::string& s) const { return boost::make_unique<PigeonIMU>(0); }
+      PigeonIMUPtr operator()(const int& i) const { return std::make_unique<PigeonIMU>(i); }
+      PigeonIMUPtr operator()(const std::string& s) const { return std::make_unique<PigeonIMU>(0); }
       // TODO: Get associated TalonSRX by name
     };
 
@@ -222,7 +221,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                   << " w/ scale " << pair.second.scale     // Non-wpilib feature
                                   << " w/ offset " << pair.second.offset); // Non-wpilib feature
     // clang-format on
-    analog_outputs_[pair.first] = boost::make_unique<frc::AnalogOutput>(pair.second.id);
+    analog_outputs_[pair.first] = std::make_unique<frc::AnalogOutput>(pair.second.id);
   }
 
   // Create DigitalOutputs
@@ -232,7 +231,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                   << " on channel " << pair.second.id
                                   << " w/ inverted=" << pair.second.inverted); // Non-wpilib feature
     // clang-format on
-    digital_outputs_[pair.first] = boost::make_unique<frc::DigitalOutput>(pair.second.id);
+    digital_outputs_[pair.first] = std::make_unique<frc::DigitalOutput>(pair.second.id);
   }
 
   // Create DoubleSolenoids
@@ -243,9 +242,9 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                   << " rev:" << pair.second.reverse_id
                                   << " on PCM  " << pair.second.pcm_id);
     // clang-format on
-    double_solenoids_[pair.first] = boost::make_unique<frc::DoubleSolenoid>(pair.second.pcm_id,
-                                                                            pair.second.forward_id,
-                                                                            pair.second.reverse_id);
+    double_solenoids_[pair.first] = std::make_unique<frc::DoubleSolenoid>(pair.second.pcm_id,
+                                                                          pair.second.forward_id,
+                                                                          pair.second.reverse_id);
   }
 
   // Create Relays
@@ -269,7 +268,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
         dir = frc::Relay::Direction::kReverseOnly;
         break;
     }
-    relays_[pair.first] = boost::make_unique<frc::Relay>(pair.second.id, dir);
+    relays_[pair.first] = std::make_unique<frc::Relay>(pair.second.id, dir);
   }
 
   // Create Servos
@@ -278,7 +277,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib Servo " << pair.first
                                   << " on channel " << pair.second);
     // clang-format on
-    servos_[pair.first] = boost::make_unique<frc::Servo>(pair.second);
+    servos_[pair.first] = std::make_unique<frc::Servo>(pair.second);
   }
 
   // Create Solenoids
@@ -288,7 +287,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                   << " on channel " << pair.second.id
                                   << " on PCM  " << pair.second.pcm_id);
     // clang-format on
-    solenoids_[pair.first] = boost::make_unique<frc::Solenoid>(pair.second.pcm_id, pair.second.id);
+    solenoids_[pair.first] = std::make_unique<frc::Solenoid>(pair.second.pcm_id, pair.second.id);
   }
 
   // Create simple SpeedControllers
@@ -308,18 +307,18 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     std::unique_ptr<frc::SpeedController> controller;
     switch (pair.second.type) {
       // clang-format off
-      case Type::DMC60:         controller = boost::make_unique<frc::DMC60>(id);        break;
-      case Type::Jaguar:        controller = boost::make_unique<frc::Jaguar>(id);       break;
-      case Type::PWMTalonSRX:   controller = boost::make_unique<frc::PWMTalonSRX>(id);  break;
-      case Type::PWMVictorSPX:  controller = boost::make_unique<frc::PWMVictorSPX>(id); break;
-      case Type::SD540:         controller = boost::make_unique<frc::SD540>(id);        break;
-      case Type::Spark:         controller = boost::make_unique<frc::Spark>(id);        break;
-      case Type::Talon:         controller = boost::make_unique<frc::Talon>(id);        break;
-      case Type::Victor:        controller = boost::make_unique<frc::Victor>(id);       break;
-      case Type::VictorSP:      controller = boost::make_unique<frc::VictorSP>(id);     break;
-      case Type::Nidec:         controller = boost::make_unique<frc::NidecBrushless>(id, dio_id); break;
+      case Type::DMC60:         controller = std::make_unique<frc::DMC60>(id);        break;
+      case Type::Jaguar:        controller = std::make_unique<frc::Jaguar>(id);       break;
+      case Type::PWMTalonSRX:   controller = std::make_unique<frc::PWMTalonSRX>(id);  break;
+      case Type::PWMVictorSPX:  controller = std::make_unique<frc::PWMVictorSPX>(id); break;
+      case Type::SD540:         controller = std::make_unique<frc::SD540>(id);        break;
+      case Type::Spark:         controller = std::make_unique<frc::Spark>(id);        break;
+      case Type::Talon:         controller = std::make_unique<frc::Talon>(id);        break;
+      case Type::Victor:        controller = std::make_unique<frc::Victor>(id);       break;
+      case Type::VictorSP:      controller = std::make_unique<frc::VictorSP>(id);     break;
+      case Type::Nidec:         controller = std::make_unique<frc::NidecBrushless>(id, dio_id); break;
 #if USE_CTRE
-      case Type::CANVictorSPX:  controller = boost::make_unique<ctre::phoenix::motorcontrol::can::WPI_VictorSPX>(id); break;
+      case Type::CANVictorSPX:  controller = std::make_unique<ctre::phoenix::motorcontrol::can::WPI_VictorSPX>(id); break;
 #endif
         // clang-format on
     }
@@ -338,7 +337,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib Compressor " << pair.first
                                   << " on PCM  " << pair.second);
     // clang-format on
-    compressors_[pair.first] = boost::make_unique<frc::Compressor>(pair.second);
+    compressors_[pair.first] = std::make_unique<frc::Compressor>(pair.second);
   }
 
   // Create PDPs
@@ -347,7 +346,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     ROS_DEBUG_STREAM_NAMED(name_, "Creating PDP " << pair.first
                                   << " with ID " << pair.second);
     // clang-format on
-    pdps_[pair.first] = boost::make_unique<frc::PowerDistributionPanel>(pair.second);
+    pdps_[pair.first] = std::make_unique<frc::PowerDistributionPanel>(pair.second);
   }
 
   // Start up the HAL thread to setup the HAL and report robot code ready to the FMS

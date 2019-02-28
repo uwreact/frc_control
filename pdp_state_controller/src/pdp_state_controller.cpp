@@ -50,8 +50,7 @@ bool PDPStateController::init(hardware_interface::PDPStateInterface* hw,
     ROS_DEBUG("Got pdp %s", pdp_name.c_str());
     pdp_states_.push_back(hw->getHandle(pdp_name));
 
-    RtPublisherPtr rt_pub(new realtime_tools::RealtimePublisher<PDPData>(root_nh, pdp_name, 4));
-    realtime_pubs_.push_back(rt_pub);
+    realtime_pubs_.push_back(std::make_shared<RtPublisher>(root_nh, pdp_name, 4));
   }
 
   // Last published times

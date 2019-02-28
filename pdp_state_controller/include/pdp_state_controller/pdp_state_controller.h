@@ -31,9 +31,6 @@
 #include <controller_interface/controller.h>
 #include <realtime_tools/realtime_publisher.h>
 
-// Boost
-#include <boost/shared_ptr.hpp>
-
 // Custom
 #include <pdp_state_controller/PDPData.h>
 #include <pdp_state_controller/pdp_state_interface.h>
@@ -67,7 +64,8 @@ public:
   virtual void stopping(const ros::Time& time);
 
 private:
-  typedef boost::shared_ptr<realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>> RtPublisherPtr;
+  using RtPublisher = realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>;
+  using RtPublisherPtr = std::shared_ptr<RtPublisher>;
 
   std::vector<hardware_interface::PDPStateHandle> pdp_states_;
   std::vector<RtPublisherPtr>                     realtime_pubs_;
