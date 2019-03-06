@@ -64,8 +64,9 @@ public:
   virtual void stopping(const ros::Time& time);
 
 private:
-  using RtPublisher = realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>;
-  using RtPublisherPtr = std::shared_ptr<RtPublisher>;
+  using RtPublisher         = realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>;
+  using RtPublisherPtr      = std::shared_ptr<RtPublisher>;
+  using RtPublisherConstPtr = std::shared_ptr<const RtPublisher>;
 
   std::vector<hardware_interface::PDPStateHandle> pdp_states_;
   std::vector<RtPublisherPtr>                     realtime_pubs_;
