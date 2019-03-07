@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2018, UW REACT
+// Copyright (C) 2019, UW REACT
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -25,8 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef TERNARY_COMMAND_INTERFACE_H
-#define TERNARY_COMMAND_INTERFACE_H
+#pragma once
 
 #include <hardware_interface/internal/hardware_resource_manager.h>
 #include <ternary_state_controller/ternary_state_interface.h>
@@ -69,5 +68,3 @@ private:
 class TernaryCommandInterface : public HardwareResourceManager<TernaryCommandHandle, ClaimResources> {};
 
 }  // namespace hardware_interface
-
-#endif

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2018, UW REACT
+// Copyright (C) 2019, UW REACT
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -25,15 +25,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDP_STATE_CONTROLLER_H
-#define PDP_STATE_CONTROLLER_H
+#pragma once
 
 // ROS
 #include <controller_interface/controller.h>
 #include <realtime_tools/realtime_publisher.h>
-
-// Boost
-#include <boost/shared_ptr.hpp>
 
 // Custom
 #include <pdp_state_controller/PDPData.h>
@@ -68,7 +64,9 @@ public:
   virtual void stopping(const ros::Time& time);
 
 private:
-  typedef boost::shared_ptr<realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>> RtPublisherPtr;
+  using RtPublisher         = realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>;
+  using RtPublisherPtr      = std::shared_ptr<RtPublisher>;
+  using RtPublisherConstPtr = std::shared_ptr<const RtPublisher>;
 
   std::vector<hardware_interface::PDPStateHandle> pdp_states_;
   std::vector<RtPublisherPtr>                     realtime_pubs_;
@@ -77,5 +75,3 @@ private:
 };
 
 }  // namespace pdp_state_controller
-
-#endif

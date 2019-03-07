@@ -27,7 +27,6 @@
 
 #include <frc_robot_hw/robot_control_loop.h>
 
-#include <boost/make_unique.hpp>
 #include <frc_robot_hw/frc_robot_hw.h>
 #include <ros/callback_queue.h>
 
@@ -38,7 +37,7 @@ public:
   explicit RobotHWControlLoop(const ros::NodeHandle& nh) : RobotControlLoop("robot_hw_control_loop", nh) {
 
     // Load RobotHW and controller manager
-    robot_hw_ = boost::make_unique<FRCRobotHW>();
+    robot_hw_ = std::make_unique<FRCRobotHW>();
     if (!init())
       throw std::runtime_error("Failed to initialize RobotHW");
 
