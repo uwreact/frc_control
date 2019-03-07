@@ -126,7 +126,7 @@ public:
    * For example, it could specify a CANTalon with builtin encoder feedback, a VictorSP with
    * an encoder on the specified port, etc
    */
-  void loadJoints(const ros::NodeHandle nh, const std::string& param_name);
+  void loadJoints(const ros::NodeHandle& nh, const std::string& param_name);
 
   /**
    * @brief Update all the Joint States of the robot

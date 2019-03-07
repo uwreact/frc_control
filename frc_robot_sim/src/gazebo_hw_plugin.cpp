@@ -72,7 +72,7 @@ void GazeboHWPlugin::Load(gazebo::physics::ModelPtr model, sdf::ElementPtr sdf) 
 
   // Listen to the world update event. This event is broadcast every simulation step.
   update_connection_ = gazebo::event::Events::ConnectWorldUpdateBegin(
-      std::bind(&GazeboHWPlugin::WorldUpdate, this, std::placeholders::_1));
+      std::bind(&GazeboHWPlugin::worldUpdate, this, std::placeholders::_1));
 
   ROS_INFO_STREAM_NAMED(name_, "Loaded " << name_);
 }
@@ -83,7 +83,7 @@ void GazeboHWPlugin::Reset() {
   last_update_time_ = ros::Time();
 }
 
-void GazeboHWPlugin::WorldUpdate(const gazebo::common::UpdateInfo& info) {
+void GazeboHWPlugin::worldUpdate(const gazebo::common::UpdateInfo& info) {
   const ros::Time now(info.simTime.sec, info.simTime.nsec);
   const bool&     update_controllers = (now - last_update_time_) > control_period_;
 
