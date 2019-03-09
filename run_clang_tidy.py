@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import argparse
 import json
+import multiprocessing.pool
 import subprocess
 import os
-
-from multiprocessing.pool import ThreadPool as Pool
 
 
 def check_package(pkg_name):
@@ -59,6 +58,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Wrapper for running clang-tidy on a catkin workspace')
     parser.add_argument('-f', '--fix', help='Attempt to automatically fix issues', action='store_true')
+    parser.add_argument('-j', '--jobs', help='Number of packages to tidy concurrently (default=4)', default=4, type=int)
     parser.add_argument('-q', '--quiet', help='Do not produce any stdout output', action='store_true')
     parser.add_argument('-v', '--verbose', help='Output generated changefiles to stdout', action='store_true')
     parser.add_argument('packages', nargs='*', help='List of packages to tidy')
@@ -69,16 +69,18 @@ if __name__ == '__main__':
         exit(-1)
 
     cwd = os.path.dirname(os.path.realpath(__file__))
-    ws = subprocess.check_output(['catkin', 'locate'], cwd=cwd).strip()
-    build_dir = '/'.join([ws, 'build_native'])
+    ws = subprocess.check_output(['catkin', 'locate'], cwd=cwd).decode('utf-8').strip()
+    build_dir = subprocess.check_output(
+        'catkin config | grep "Build Space:" | grep -o /.*"', cwd=cwd, shell=True).decode('utf-8').strip()
 
     # Generate the list of packages to check
     package_list = []
     if len(args.packages) > 0:
 
         # Find all packages in the workspace src directory
-        src_pkgs = subprocess.check_output(['find', ws + '/src', '-name', 'package.xml']).split('\n')
-        src_pkgs = [path.replace(ws, '') for path in src_pkgs if len(path) > 0]
+        src_pkgs = subprocess.check_output(['find', ws + '/src', '-name',
+                                            'package.xml']).decode('utf-8').strip().split('\n')
+        src_pkgs = [path.replace(ws, '') for path in src_pkgs]
         src_pkgs = [path.replace('src/', '') for path in src_pkgs]
         src_pkgs = [path.replace('/package.xml', '') for path in src_pkgs]
 
@@ -94,12 +96,12 @@ if __name__ == '__main__':
     else:
         package_list = os.listdir(build_dir)
 
-    pool = Pool(4)
+    pool = multiprocessing.pool.ThreadPool(args.jobs)
     returns = pool.map(check_package, package_list)
 
     if True in returns:
         if not args.quiet:
-            print 'Changes required'
+            print('Changes required')
         exit(1)
     else:
         exit(0)
