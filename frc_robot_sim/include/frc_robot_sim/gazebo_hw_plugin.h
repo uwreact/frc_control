@@ -45,7 +45,7 @@ public:
   void Reset() override;
 
   /// Update ros_control (read & write, maybe update) every simulation step
-  void WorldUpdate(const gazebo::common::UpdateInfo& info);
+  void worldUpdate(const gazebo::common::UpdateInfo& info);
 
 private:
   /// Namespace to spawn the robot in

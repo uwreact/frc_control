@@ -63,7 +63,7 @@ void FRCRobotHW::loadURDF(const ros::NodeHandle& nh, const std::string& param_na
   }
 }
 
-void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_name) {
+void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_name) {
   using XmlValue = XmlRpc::XmlRpcValue;
   using namespace hardware_template;
 
@@ -88,6 +88,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle nh, const std::string& param_n
   }
 
   // Parse each joint and store it in its respective map
+  // NOLINTNEXTLINE(modernize-loop-convert)
   for (uint i = 0; i < joint_param_list.size(); i++) {
     XmlValue cur_joint = joint_param_list[i];
     ROS_INFO_STREAM(cur_joint);
@@ -882,11 +883,11 @@ void FRCRobotHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& s
   }
 }
 
-void FRCRobotHW::read(const ros::Time& time, const ros::Duration& period) {
+void FRCRobotHW::read(const ros::Time& /*time*/, const ros::Duration& /*period*/) {
   ROS_INFO_THROTTLE_NAMED(1, name_, "Reading Data - Overload me!");
 }
 
-void FRCRobotHW::write(const ros::Time& time, const ros::Duration& period) {
+void FRCRobotHW::write(const ros::Time& /*time*/, const ros::Duration& /*period*/) {
   ROS_INFO_THROTTLE_NAMED(1, name_, "Writing Data - Overload me!");
 }
 
