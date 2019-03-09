@@ -61,6 +61,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--fix', help='Attempt to automatically fix issues', action='store_true')
     parser.add_argument('-q', '--quiet', help='Do not produce any stdout output', action='store_true')
     parser.add_argument('-v', '--verbose', help='Output generated changefiles to stdout', action='store_true')
+    parser.add_argument('packages', nargs='*', help='List of packages to tidy')
     args = parser.parse_args()
 
     if args.verbose and args.quiet:
@@ -71,8 +72,30 @@ if __name__ == '__main__':
     ws = subprocess.check_output(['catkin', 'locate'], cwd=cwd).strip()
     build_dir = '/'.join([ws, 'build_native'])
 
+    # Generate the list of packages to check
+    package_list = []
+    if len(args.packages) > 0:
+
+        # Find all packages in the workspace src directory
+        src_pkgs = subprocess.check_output(['find', ws + '/src', '-name', 'package.xml']).split('\n')
+        src_pkgs = [path.replace(ws, '') for path in src_pkgs if len(path) > 0]
+        src_pkgs = [path.replace('src/', '') for path in src_pkgs]
+        src_pkgs = [path.replace('/package.xml', '') for path in src_pkgs]
+
+        # Find matching packages in the workspace src directory
+        src_matches = []
+        for search_key in args.packages:
+            src_matches.extend([pkg.split('/')[-1] for pkg in src_pkgs if search_key in pkg])
+
+        # Find matching packages in the workspace build directory
+        build_pkgs = os.listdir(build_dir)
+        for key in src_matches:
+            package_list.extend([pkg for pkg in build_pkgs if key in pkg])
+    else:
+        package_list = os.listdir(build_dir)
+
     pool = Pool(4)
-    returns = pool.map(check_package, [pkg_name for pkg_name in os.listdir(build_dir)])
+    returns = pool.map(check_package, package_list)
 
     if True in returns:
         if not args.quiet:
