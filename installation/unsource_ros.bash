@@ -1,13 +1,14 @@
 #!/bin/bash
 
-echo "This script is currently broken!"
-exit
-
 if [ -z "$PS1" ] ; then
-    echo -e "This script must be sourced. Use \"source unsource_ros.bash\" instead."
+    echo "This script must be sourced rather than executed."
+    echo "Use \"source unsource_ros.bash\" instead."
     exit
 fi
 
-cp ~/.bashrc ~/.bashrc_noros
-sed -e '/source \/opt\/ros/ s/^#*/#/' -i ~/.bashrc_noros
-exec -c $SHELL --rcfile ~/.bashrc_noros
+VARS=$(env | cut -d= -f1)
+for VAR in $VARS; do
+    if [[ $VAR == "ROS"* ]]; then
+        unset $VAR
+    fi
+done
