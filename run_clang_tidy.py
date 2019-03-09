@@ -73,7 +73,7 @@ if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
     ws = subprocess.check_output(['catkin', 'locate'], cwd=cwd).decode('utf-8').strip()
     build_dir = subprocess.check_output(
-        'catkin config | grep "Build Space:" | grep -o /.*"', cwd=cwd, shell=True).decode('utf-8').strip()
+        'catkin config | grep "Build Space:" | grep -o "/.*"', cwd=cwd, shell=True).decode('utf-8').strip()
 
     # Generate the list of packages to check
     package_list = []
