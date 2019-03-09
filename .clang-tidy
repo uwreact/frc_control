@@ -7,10 +7,10 @@ Checks:  '-*,
           modernize-*,
           performance-*,
           readability-*,
-          -modernize-raw-string-literal,
-          -cppcoreguidelines-pro-type-vararg,
           -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
           -cppcoreguidelines-pro-bounds-constant-array-index,
+          -cppcoreguidelines-pro-type-vararg,
+          -modernize-raw-string-literal,
           -readability-braces-around-statements,
           -readability-misleading-indentation'
 
@@ -19,16 +19,16 @@ Checks:  '-*,
 # cppcoreguidelines-pro-bounds-array-to-pointer-decay
 
 ## Handled by clang-format:
-# readability-braces-around-statements
 # readability-misleading-indentation
 
 ## Disabled:
-# modernize-raw-string-literal
 # cppcoreguidelines-pro-bounds-constant-array-index
+# modernize-raw-string-literal
+# readability-braces-around-statements
 
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
+AnalyzeTemporaryDtors: false # TODO: Figure out what this does
 FormatStyle: none
 CheckOptions:
   # Prefer assignment over brace initialization
