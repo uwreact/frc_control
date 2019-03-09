@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(frc_robot_sim)
 
-add_compile_options(-std=c++11)
-
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
   roscpp

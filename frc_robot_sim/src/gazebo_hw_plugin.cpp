@@ -27,7 +27,6 @@
 
 #include <frc_robot_sim/gazebo_hw_plugin.h>
 
-#include <boost/make_unique.hpp>
 #include <frc_robot_sim/frc_robot_hw_sim.h>
 #include <functional>
 
@@ -57,7 +56,7 @@ void GazeboHWPlugin::Load(gazebo::physics::ModelPtr model, sdf::ElementPtr sdf) 
   nh_ = ros::NodeHandle(robot_namespace_);
 
   // Setup the RobotHW
-  robot_hw_ = boost::make_unique<FRCRobotHWSim>(parent_model_);
+  robot_hw_ = std::make_unique<FRCRobotHWSim>(parent_model_);
 
   // Setup the control loop
   try {

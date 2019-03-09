@@ -29,7 +29,6 @@
 
 // #include <transmission_interface/simple_transmission.h>
 // #include <transmission_interface/differential_transmission.h>
-#include <boost/make_unique.hpp>
 
 namespace frc_robot_hw {
 
@@ -474,9 +473,9 @@ void FRCRobotHW::registerTransmissions() {
   // using namespace transmission_interface;
 
   //   if(pair.second.type_ == "SimpleTransmission")
-  //     transmissions_[pair.first] = boost::make_unique<SimpleTransmission>(0, 0); // TODO
+  //     transmissions_[pair.first] = std::make_unique<SimpleTransmission>(0, 0); // TODO
   //   else if (pair.second.type_ == "DifferentialTransmission")
-  //     transmissions_[pair.first] = boost::make_unique<DifferentialTransmission>(
+  //     transmissions_[pair.first] = std::make_unique<DifferentialTransmission>(
   //                                   std::vector<double>(pair.second.actuators_.size(), 0.0),
   //                                   std::vector<double>(pair.second.joints_.size(), 0.0)); // TODO
 

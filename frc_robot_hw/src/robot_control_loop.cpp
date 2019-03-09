@@ -27,8 +27,6 @@
 
 #include <frc_robot_hw/robot_control_loop.h>
 
-#include <boost/make_unique.hpp>
-
 namespace frc_robot_hw {
 
 bool RobotControlLoop::init() {
@@ -41,7 +39,7 @@ bool RobotControlLoop::init() {
   // Ensure that robot_hw_ exists
   if (!robot_hw_) {
     ROS_WARN_NAMED(name_, "No RobotHW initialized, falling back on default base class");
-    robot_hw_ = boost::make_unique<FRCRobotHW>();
+    robot_hw_ = std::make_unique<FRCRobotHW>();
   }
 
   // Initialize the RobotHW
@@ -52,7 +50,7 @@ bool RobotControlLoop::init() {
   }
 
   // Initialize the controller manager
-  controller_manager_ = boost::make_unique<controller_manager::ControllerManager>(robot_hw_.get(), nh_);
+  controller_manager_ = std::make_unique<controller_manager::ControllerManager>(robot_hw_.get(), nh_);
   return true;
 }
 
