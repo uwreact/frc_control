@@ -61,8 +61,7 @@ void GazeboHWPlugin::Load(gazebo::physics::ModelPtr model, sdf::ElementPtr sdf) 
   // Setup the control loop
   try {
     init();
-  }
-  catch (const std::exception& e) {
+  } catch (const std::exception& e) {
     ROS_FATAL_STREAM_NAMED(name_, e.what());
     // TODO: Shutdown
   }

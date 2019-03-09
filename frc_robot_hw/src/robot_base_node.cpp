@@ -76,8 +76,7 @@ int main(int argc, char** argv) {
   try {
     frc_robot_hw::RobotHWControlLoop robot_control_loop(nh);
     robot_control_loop.run();  // Blocks until shutdown signal recieved
-  }
-  catch (const std::runtime_error& e) {
+  } catch (const std::runtime_error& e) {
     ROS_FATAL(e.what());
   }
 
