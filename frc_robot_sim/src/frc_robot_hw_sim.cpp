@@ -31,14 +31,14 @@ namespace frc_robot_sim {
 
 bool FRCRobotHWSim::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   if (!FRCRobotHW::init(root_nh, robot_hw_nh))
-    return false;
+    return false;  // NOLINT(readability-simplify-boolean-expr)
 
   // TODO: Any other require initialization
 
   return true;
 }
 
-void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
+void FRCRobotHWSim::read(const ros::Time& /*time*/, const ros::Duration& /*period*/) {
 
   // Read all simple speed controllers
   for (const auto& pair : simple_speed_controller_templates_) {
@@ -88,7 +88,7 @@ void FRCRobotHWSim::read(const ros::Time& time, const ros::Duration& period) {
   // TODO: Support DigitalInput, AnalogInput, IMUs
 }
 
-void FRCRobotHWSim::write(const ros::Time& time, const ros::Duration& period) {
+void FRCRobotHWSim::write(const ros::Time& /*time*/, const ros::Duration& /*period*/) {
 
   // Command all simple speed controllers
   for (const auto& pair : simple_speed_controller_templates_) {
