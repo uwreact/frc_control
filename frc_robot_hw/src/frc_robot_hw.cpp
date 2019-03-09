@@ -57,8 +57,7 @@ void FRCRobotHW::loadURDF(const ros::NodeHandle& nh, const std::string& param_na
   // Note: We could pass the XML doc in here, but it is more efficient to just pass in the raw string
   if (!urdf_model_.initString(urdf_string)) {
     ROS_ERROR_NAMED(name_, "Unable to load URDF model");
-  }
-  else {
+  } else {
     ROS_INFO_NAMED(name_, "Loaded URDF from parameter server");
   }
 }
@@ -110,8 +109,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     try {
       SmartSpeedController::stringToType(joint_type);
       is_smart_speed_controller = true;
-    }
-    catch (const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
       is_smart_speed_controller = false;
     }
 
@@ -119,8 +117,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     try {
       SimpleSpeedController::stringToType(joint_type);
       is_simple_speed_controller = true;
-    }
-    catch (const std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
       is_simple_speed_controller = false;
     }
 
@@ -144,8 +141,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id       = (int) cur_joint["id"],
           .inverted = inverted,
       };
-    }
-    else if (is_simple_speed_controller) {
+    } else if (is_simple_speed_controller) {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
 
@@ -203,24 +199,20 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .pdp_ch   = pdp_ch,
           .k_eff    = k_eff,
       };
-    }
-    else if (joint_type == "pdp") {
+    } else if (joint_type == "pdp") {
       if (validateJointParamMember(cur_joint, "id", XmlValue::TypeInt, false, true)) {
         pdp_templates_[joint_name] = cur_joint["id"];
-      }
-      else {
+      } else {
         ROS_WARN_STREAM_NAMED(name_,
                               "No PowerDistributionPanel ID specified, using default ID 0 for PDP '" << joint_name
                                                                                                      << "'");
         pdp_templates_[joint_name] = 0;
       }
-    }
-    else if (joint_type == "servo") {
+    } else if (joint_type == "servo") {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
       servo_templates_[joint_name] = cur_joint["id"];
-    }
-    else if (joint_type == "relay") {
+    } else if (joint_type == "relay") {
       if (!validateJointParamMember(cur_joint, "relay_id", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "direction", XmlValue::TypeString))
         continue;
@@ -229,8 +221,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       Direction direction;
       try {
         direction = Relay::stringToDirection(cur_joint["direction"]);
-      }
-      catch (const std::runtime_error& e) {
+      } catch (const std::runtime_error& e) {
         ROS_WARN_STREAM_NAMED(name_, e.what() << ". Using default 'both'");
         direction = Direction::kBoth;
         // TODO: Should probably throw a bigger error here, since running the relay with incorrect direction could fry
@@ -241,8 +232,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id        = cur_joint["relay_id"],
           .direction = direction,
       };
-    }
-    else if (joint_type == "solenoid") {
+    } else if (joint_type == "solenoid") {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
 
@@ -256,8 +246,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id     = cur_joint["id"],
           .pcm_id = pcm_id,
       };
-    }
-    else if (joint_type == "double_solenoid") {
+    } else if (joint_type == "double_solenoid") {
       if (!validateJointParamMember(cur_joint, "forward_id", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "reverse_id", XmlValue::TypeInt))
         continue;
@@ -273,8 +262,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .reverse_id = cur_joint["reverse_id"],
           .pcm_id     = pcm_id,
       };
-    }
-    else if (joint_type == "compressor") {
+    } else if (joint_type == "compressor") {
       int pcm_id;
       if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
         pcm_id = (int) cur_joint["pcm_id"];
@@ -282,8 +270,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
         pcm_id = 0;
 
       compressor_templates_[joint_name] = pcm_id;
-    }
-    else if (joint_type == "digital_input") {
+    } else if (joint_type == "digital_input") {
       if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
         continue;
 
@@ -295,8 +282,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id       = cur_joint["dio_channel"],
           .inverted = inverted,
       };
-    }
-    else if (joint_type == "digital_output") {
+    } else if (joint_type == "digital_output") {
       if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
         continue;
 
@@ -308,8 +294,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id       = cur_joint["digital_output"],
           .inverted = inverted,
       };
-    }
-    else if (joint_type == "analog_input") {
+    } else if (joint_type == "analog_input") {
       if (!validateJointParamMember(cur_joint, "ain_channel", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble)
           || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
@@ -321,8 +306,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .scale  = cur_joint["scale"],
           .offset = cur_joint["offset"],
       };
-    }
-    else if (joint_type == "analog_output") {
+    } else if (joint_type == "analog_output") {
       if (!validateJointParamMember(cur_joint, "aout_channel", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble)
           || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
@@ -340,8 +324,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .scale  = cur_joint["scale"],
           .offset = cur_joint["offset"],
       };
-    }
-    else if (joint_type == "encoder") {
+    } else if (joint_type == "encoder") {
       if (!validateJointParamMember(cur_joint, "ch_a", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "ch_b", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "dist_per_pulse", XmlValue::TypeDouble))
@@ -409,17 +392,14 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       boost::variant<int, std::string> interface;
       if (has_can_id && !has_talon_name) {
         interface = (int) cur_joint["id"];
-      }
-      else if (!has_can_id && has_talon_name) {
+      } else if (!has_can_id && has_talon_name) {
         interface = (std::string) cur_joint["talon"];
-      }
-      else if (has_can_id && has_talon_name) {
+      } else if (has_can_id && has_talon_name) {
         ROS_WARN_STREAM_NAMED(name_,
                               "Skipping pigeon_imu '" << joint_name << "', two interfaces specified! "
                                                       << "Please specify either 'id' or 'talon' but not both");
         continue;
-      }
-      else {
+      } else {
         ROS_WARN_STREAM_NAMED(name_,
                               "Skipping pigeon_imu '"
                                   << joint_name
@@ -865,16 +845,13 @@ void FRCRobotHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& s
         if (claimed.hardware_interface == "hardware_interface::PositionJointInterface") {
           joint_commands_[resource].type = JointCmd::Type::kPos;
           joint_commands_[resource].data = joint_states_[resource].pos;
-        }
-        else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
+        } else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
           joint_commands_[resource].type = JointCmd::Type::kVel;
           joint_commands_[resource].data = 0.0;
-        }
-        else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
+        } else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
           joint_commands_[resource].type = JointCmd::Type::kEff;
           joint_commands_[resource].data = 0.0;
-        }
-        else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
+        } else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
           joint_commands_[resource].type = JointCmd::Type::kVolt;
           joint_commands_[resource].data = 0.0;
         }
