@@ -10,7 +10,8 @@ SCRIPTPATH=`dirname "$SCRIPT"`
 WSPATH=`realpath "$1"`
 
 cd "${WSPATH}"
-if [[ $(catkin locate 2>/dev/null) == "" ]]; then
+WSPATH=$(catkin locate 2>/dev/null)
+if [[ "$WSPATH" == "" ]]; then
   echo "Please specify a valid ROS workspace"
   exit 1
 fi
@@ -24,13 +25,11 @@ catkin config --extend ~/frc2019/roborio/arm-frc2019-linux-gnueabi/opt/ros/melod
               --space-suffix _cross\
               --blacklist frc_robot_sim\
               -DCMAKE_TOOLCHAIN_FILE="${WSPATH}/rostoolchain.cmake"\
-              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON\
-              -DCMAKE_CXX_CLANG_TIDY=clang-tidy-7
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 # Setup the native compile profile
 catkin profile add native
 catkin profile set native
 catkin config --extend /opt/ros/melodic\
               --space-suffix _native\
-              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON\
-              -DCMAKE_CXX_CLANG_TIDY=clang-tidy-7
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
