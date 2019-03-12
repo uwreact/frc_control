@@ -15,8 +15,10 @@ Full instructions for cross-compiling ROS for the roboRIO and linking the WPI li
 
 Once the workspace has been setup for cross-compilation, you can native or cross compile the code using:
 
-    $ catkin profile set <native|cross>
-    $ catkin build
+```
+catkin profile set <native|cross>
+catkin build
+```
 
 ## Code Style
 
@@ -24,13 +26,27 @@ We largely follow the ROS coding guidelines, with a few noteable exceptions. To 
 
 Install the linters:
 
-    $ sudo apt install clang-format-7 clang-tidy-7
-    $ pip install yapf pylint
+```
+sudo apt install clang-format-7 clang-tidy-7
+pip install yapf pylint --user
+
+# If ~/.local/bin is not on your path:
+echo "PATH=\"$PATH:$HOME/.local/bin\"" >> ~/.bashrc
+```
 
 To run the formatters:
 
-    $ find . -name "*.h" -o -name "*.cpp" | xargs clang-format-7 -i -style=file
-    $ python -m yapf -ir .
+```
+find . -name "*.h" -o -name "*.cpp" | xargs clang-format-7 -i -style=file
+yapf -ir .
+```
+
+To run the linters:
+
+```
+./run_clang_tidy.py uwreact_robot
+find . -iname "*.py" -o -iregex ".*/scripts/.*" | xargs pylint
+```
 
 ## Contributing
 
