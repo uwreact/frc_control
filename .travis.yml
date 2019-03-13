@@ -11,9 +11,15 @@ notifications:
     on_failure: change #[always|never|change] # default: always
 
 env:
-  # global:
+  global:
   #   - CLANG_FORMAT_CHECK="file"
   #   - CLANG_FORMAT_VERSION="7"
+
+        # TODO(matt.reynolds): Figure out how to run code analysis before catkin building.
+        # The reason this isn't currently done is because clang-tidy relies on the build to
+        # determine which files to lint and their relationship to each other.
+      - CATKIN_CONFIG='-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+      - AFTER_SCRIPT="./check_code_style.sh"
   matrix:
     - ROS_DISTRO="melodic"   ROS_REPO="ros"
     - ROS_DISTRO="melodic"   ROS_REPO="ros-shadow-fixed"
@@ -22,6 +28,3 @@ install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
   - .ci_config/travis.sh
-  - ./check_code_style.sh # TODO(matt.reynolds): Figure out how to run code analysis before catkin building
-                          # The reason this isn't currently done is because clang-tidy relies on catkin to
-                          # determine which files to lint and their relationship to each other.
