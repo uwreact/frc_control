@@ -7,7 +7,7 @@
 # before erroring out so that all required changes can be addressed at once.
 
 echo "Checking C++ code with clang-tidy"
-command -v clang-tidy-7 || apt install clang-tidy-7
+command -v clang-tidy-7 || apt install clang-tidy-7 -y
 ./run_clang_tidy.py frc_control --verbose
 if [ $? -ne 0 ]; then
     echo >&2 "Code does not meet style requirements!"
@@ -17,7 +17,7 @@ echo "clang-tidy passed successfully\n"
 
 
 echo "Checking C++ code formatting with clang-format"
-command -v clang-format-7 || apt install clang-format-7
+command -v clang-format-7 || apt install clang-format-7 -y
 changes_required=$(find . -name "*.h" -o -name "*.cpp" |\
                    xargs clang-format-7 -style=file -output-replacements-xml |\
                    grep -c "<replacement ")
