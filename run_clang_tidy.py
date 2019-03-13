@@ -77,7 +77,7 @@ def check_package(parameters):
     if args.fix:
         if not args.quiet:
             print('Finished tidying ' + pkg_name)
-        return False
+        return_val = False
 
     # If not fixing, determine if required changes were found
     else:
@@ -91,7 +91,9 @@ def check_package(parameters):
                 print('Finished checking ' + pkg_name + ', changes required! See ' + output_file)
             if args.verbose:
                 print(open(output_file).read())
-        return found_changes
+        return_val = found_changes
+
+    return return_val
 
 
 def main():

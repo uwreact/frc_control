@@ -21,4 +21,5 @@ env:
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
+  - ./check_code_style.sh
   - .ci_config/travis.sh
