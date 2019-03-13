@@ -11,9 +11,9 @@ notifications:
     on_failure: change #[always|never|change] # default: always
 
 env:
-  global:
-    - CLANG_FORMAT_CHECK="file"
-    - CLANG_FORMAT_VERSION="7"
+  # global:
+  #   - CLANG_FORMAT_CHECK="file"
+  #   - CLANG_FORMAT_VERSION="7"
   matrix:
     - ROS_DISTRO="melodic"   ROS_REPO="ros"
     - ROS_DISTRO="melodic"   ROS_REPO="ros-shadow-fixed"
