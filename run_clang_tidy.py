@@ -107,6 +107,7 @@ def main():
     parser.add_argument('-f', '--fix', help='Attempt to automatically fix issues', action='store_true')
     parser.add_argument('-j', '--jobs', help='Number of packages to tidy concurrently (default=4)', default=4, type=int)
     parser.add_argument('-q', '--quiet', help='Do not produce any stdout output', action='store_true')
+    parser.add_argument('-w', '--workspace', help='The ROS workspace containing the package', default=None)
     parser.add_argument('-v', '--verbose', help='Output generated changefiles to stdout', action='store_true')
     parser.add_argument('packages', nargs='*', help='List of packages to tidy')
     args = parser.parse_args()
@@ -116,10 +117,18 @@ def main():
         exit(-1)
 
     # Determine the ROS workspace and build space
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    args.ws = subprocess.check_output(['catkin', 'locate'], cwd=cwd).decode('utf-8').strip()
-    args.build_dir = subprocess.check_output(
-        'catkin config | grep "Build Space:" | grep -o "/.*"', cwd=cwd, shell=True).decode('utf-8').strip()
+    if args.workspace is None:
+        cwd = os.path.dirname(os.path.abspath(__file__))
+    else:
+        cwd = args.workspace
+
+    try:
+        args.ws = subprocess.check_output(['catkin', 'locate'], cwd=cwd).decode('utf-8').strip()
+        args.build_dir = subprocess.check_output(
+            'catkin config | grep "Build Space:" | grep -o "/.*"', cwd=cwd, shell=True).decode('utf-8').strip()
+    except subprocess.CalledProcessError as e:
+        print(e)
+        exit(1)
 
     # Generate the list of packages to check
     package_list = []

@@ -8,7 +8,13 @@
 
 echo "Checking C++ code with clang-tidy"
 command -v clang-tidy-7 || apt install clang-tidy-7 -y -qq --no-install-recommends
-./run_clang_tidy.py frc_control --verbose
+workspace=$(catkin locate 2> /dev/null)
+if [ $? -eq 0 ]; then
+    ./run_clang_tidy.py frc_control --verbose
+else
+    ./run_clang_tidy.py -w /root/catkin_ws frc_control --verbose
+fi
+
 if [ $? -ne 0 ]; then
     echo >&2 "Code does not meet style requirements!"
     exit 1
