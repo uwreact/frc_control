@@ -31,7 +31,7 @@ Launch the driver station
 """
 
 from python_qt_binding.QtWidgets import QApplication
-from network_visualizer.window import MainWindow
+from driver_station.window import MainWindow
 
 
 def main():
