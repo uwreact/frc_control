@@ -5,5 +5,5 @@
 ### macOS ###
 .DS_Store
 
-### Python Binary###
+### Python Binary ###
 *.pyc
