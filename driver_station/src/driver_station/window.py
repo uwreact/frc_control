@@ -24,7 +24,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
-
 """
 TODO(Ivan-Z): Module docstring
 """
@@ -39,4 +38,4 @@ class MainWindow(QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        self.setWindowTitle("UW React Planning Visualization")
+        self.setWindowTitle("driver station (in development)")
