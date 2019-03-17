@@ -21,6 +21,7 @@
   <exec_depend>binary_state_controller</exec_depend>
   <exec_depend>ternary_state_controller</exec_depend>
   <exec_depend>pdp_state_controller</exec_depend>
+  <exec_depend>driver_station</exec_depend>
 
   <export>
     <metapackage/>

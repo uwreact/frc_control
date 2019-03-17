@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>driver_station</name>
+  <version>0.0.0</version>
+  <description>Driver station based on FRC Driver Station</description>
+
+  <maintainer email="kaelan.ms@uwreact.ca">Kaelan Moffett-Steinke</maintainer>
+
+  <license>BSD-3</license>
+
+  <url type="website">http://uwreact.ca</url>
+  <url type="bugtracker">https://github.com/uwreact/frc_control/issues</url>
+  <url type="repository">https://github.com/uwreact/frc_control</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>python_qt_binding</depend>
+
+</package>
