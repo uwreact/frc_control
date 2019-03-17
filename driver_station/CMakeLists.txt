@@ -3,7 +3,7 @@ project(driver_station)
 find_package(catkin REQUIRED)
 catkin_package()
 catkin_python_setup()
+
 install(PROGRAMS scripts/driver_station
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
