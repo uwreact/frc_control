@@ -25,7 +25,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 """
-TODO(Ivan-Z): Module docstring
+TODO(Kaelan): Module docstring
 """
 
 from python_qt_binding.QtWidgets import QMainWindow
