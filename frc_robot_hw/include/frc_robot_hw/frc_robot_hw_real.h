@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2018, UW REACT
+// Copyright (C) 2019, UW REACT
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -29,9 +29,17 @@
 
 #include <frc_robot_hw/frc_robot_hw.h>
 
-#include <frc_msgs/JoyFeedback.h>
-
 #include <thread>
+
+#include <realtime_tools/realtime_publisher.h>
+
+// Custom messages
+#include <frc_msgs/DriverStationMode.h>
+#include <frc_msgs/JoyArray.h>
+#include <frc_msgs/JoyFeedback.h>
+#include <frc_msgs/MatchData.h>
+#include <frc_msgs/MatchTime.h>
+#include <frc_msgs/RobotState.h>
 
 // WPILib headers
 #include <frc/DriverStation.h>
@@ -142,6 +150,16 @@ private:
                                                              frc::Joystick(3),
                                                              frc::Joystick(4),
                                                              frc::Joystick(5)};
+
+  // TODO(matt.reynolds): Make this configurable via yaml
+  ros::Duration publish_period_ {0.1};
+
+  realtime_tools::RealtimePublisher<frc_msgs::DriverStationMode> ds_mode_pub_;
+  realtime_tools::RealtimePublisher<frc_msgs::JoyArray>          joy_pub_;
+  realtime_tools::RealtimePublisher<frc_msgs::MatchData>         match_data_pub_;
+  realtime_tools::RealtimePublisher<frc_msgs::MatchTime>         match_time_pub_;
+  realtime_tools::RealtimePublisher<frc_msgs::RobotState>        robot_state_pub_;
+  ros::Subscriber                                                joy_feedback_sub_;
 };
 
 }  // namespace frc_robot_hw
