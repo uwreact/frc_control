@@ -231,6 +231,10 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
   if (!initHAL())
     return false;
 
+  double publish_freq;
+  robot_hw_nh.param("frc_msg_publish_frequency", publish_freq, 10.0);
+  setPublishRate(publish_freq);
+
   // Setup the realtime publishers
   ds_mode_pub_.init(root_nh, "frc/ds_mode", 10);
   joy_pub_.init(root_nh, "frc/joys", 10);

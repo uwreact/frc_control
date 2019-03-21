@@ -106,6 +106,8 @@ public:
   void read(const ros::Time& time, const ros::Duration& period) override;
   void write(const ros::Time& time, const ros::Duration& period) override;
 
+  inline void setPublishRate(double rate) { publish_period_ = ros::Duration(1.0 / rate); }
+
 private:
   /**
    * @brief Maintain a loop to get data from the driver station.
@@ -151,8 +153,7 @@ private:
                                                              frc::Joystick(4),
                                                              frc::Joystick(5)};
 
-  // TODO(matt.reynolds): Make this configurable via yaml
-  ros::Duration publish_period_ {0.1};
+  ros::Duration publish_period_;
 
   realtime_tools::RealtimePublisher<frc_msgs::DriverStationMode> ds_mode_pub_;
   realtime_tools::RealtimePublisher<frc_msgs::JoyArray>          joy_pub_;
