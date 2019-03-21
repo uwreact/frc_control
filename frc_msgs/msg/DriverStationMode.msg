@@ -1,3 +1,4 @@
+# Corresponds to frc::DriverStation
 uint8 MODE_ESTOP = 0
 uint8 MODE_DISABLED = 1
 uint8 MODE_OPERATOR = 2

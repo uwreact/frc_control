@@ -16,6 +16,7 @@ add_message_files(
     JoyArray.msg
     JoyFeedback.msg
     MatchData.msg
+    MatchTime.msg
     RobotState.msg
 )
 

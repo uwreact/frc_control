@@ -20,3 +20,6 @@ float32 current_6v
 bool enabled_6v
 #int32 fault_count_6v
 CANStatus can_status
+
+# Corresponds to frc::DriverStation::GetBatteryVoltage()
+float32 battery_voltage
