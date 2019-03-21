@@ -29,8 +29,13 @@
 
 #include <frc_robot_hw/frc_robot_hw.h>
 
-// WPILib driver station
+#include <frc_msgs/JoyFeedback.h>
+
+#include <thread>
+
+// WPILib headers
 #include <frc/DriverStation.h>
+#include <frc/Joystick.h>
 
 // WPILib & vendor sensors/actuators
 #include <frc/AnalogInput.h>
@@ -88,6 +93,12 @@ public:
    */
   bool initHAL();
 
+  // Overrides
+  bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
+  void read(const ros::Time& time, const ros::Duration& period) override;
+  void write(const ros::Time& time, const ros::Duration& period) override;
+
+private:
   /**
    * @brief Maintain a loop to get data from the driver station.
    *
@@ -98,12 +109,8 @@ public:
    */
   void runHAL();
 
-  // Overrides
-  bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
-  void read(const ros::Time& time, const ros::Duration& period) override;
-  void write(const ros::Time& time, const ros::Duration& period) override;
+  void joyFeedbackCallback(const frc_msgs::JoyFeedbackConstPtr& msg);
 
-private:
   // Maps of the WPILib objects used to interact with the HAL
   // TODO: Probably can't have generic type for smart_speed_controllers_
   std::map<std::string, std::unique_ptr<frc::SpeedController>>        smart_speed_controllers_;
@@ -127,8 +134,14 @@ private:
 #endif
 
   std::thread hal_thread_;
+  bool        robot_code_ready_ = false;
 
-  bool robot_code_ready_ = false;
+  frc::Joystick sticks_[frc::DriverStation::kJoystickPorts] {frc::Joystick(0),
+                                                             frc::Joystick(1),
+                                                             frc::Joystick(2),
+                                                             frc::Joystick(3),
+                                                             frc::Joystick(4),
+                                                             frc::Joystick(5)};
 };
 
 }  // namespace frc_robot_hw

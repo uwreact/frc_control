@@ -27,10 +27,17 @@
 
 #include <frc_robot_hw/frc_robot_hw_real.h>
 
+// WPILib headers
+#include <frc/RobotController.h>
 #include <hal/HAL.h>
+
+// Custom messages
 #include <frc_msgs/DriverStationMode.h>
 #include <frc_msgs/JoyArray.h>
 #include <frc_msgs/MatchData.h>
+#include <frc_msgs/MatchTime.h>
+#include <frc_msgs/RobotState.h>
+
 #include <sensor_msgs/Joy.h>
 #include <std_msgs/Time.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -44,9 +51,7 @@ bool FRCRobotHWReal::initHAL() {
   }
 
   HAL_Report(HALUsageReporting::kResourceType_Language, HALUsageReporting::kLanguage_CPlusPlus);
-
-  // TODO: Waiting for 2019
-  // HAL_Report(HALUsageReporting::kResourceType_Framework, HALUsageReporting::kFramework_ROS);
+  HAL_Report(HALUsageReporting::kResourceType_Framework, HALUsageReporting::kFramework_ROS);
 
   ROS_INFO_NAMED(name_, "HAL successfully initialized");
   return true;
@@ -83,35 +88,40 @@ void FRCRobotHWReal::runHAL() {
       // Note: Buttons, unlike axes, are indexed from 1 rather than 0
       stick.buttons.resize(ds.GetStickButtonCount(i));
       for (unsigned button = 0; button < ds.GetStickButtonCount(i); button++)
-        stick.buttons[button] = ds.GetStickButton(i, button+1);
+        stick.buttons[button] = ds.GetStickButton(i, button + 1);
 
       // TODO: Ensure POV hat is covered. If not, append it to axes and buttons
 
       joys.sticks[i] = stick;
-      joys.type[i] = ds.GetJoystickType(i);
-      joys.name[i] = ds.GetJoystickName(i);
+      joys.types[i]  = ds.GetJoystickType(i);
+      joys.names[i]  = ds.GetJoystickName(i);
     }
 
 
     // Get match data
     frc_msgs::MatchData match_data;
+    match_data.header.stamp          = ros::Time::now();
     match_data.game_specific_message = ds.GetGameSpecificMessage();
-    match_data.event_name = ds.GetEventName();
-    match_data.match_type = ds.GetMatchType(); // kNone, kPractice, kQualification, kElimination
-    match_data.match_number = ds.GetMatchNumber();
-    match_data.replay_number = ds.GetReplayNumber(); // Presumably will increment on each replay of a match, since match number is no longer unique
-    match_data.alliance = ds.GetAlliance(); // kRed, kBlue, or kInvalid
-    match_data.location = ds.GetLocation(); // 1, 2, or 3. 0 if invalid
+    match_data.event_name            = ds.GetEventName();
+    match_data.match_type            = ds.GetMatchType();  // kNone, kPractice, kQualification, kElimination
+    match_data.match_number          = ds.GetMatchNumber();
+    match_data.replay_number = ds.GetReplayNumber();  // Presumably will increment on each replay of a match, since
+                                                      // match number is no longer unique
+    match_data.alliance = ds.GetAlliance();           // kRed, kBlue, or kInvalid
+    match_data.location = ds.GetLocation();           // 1, 2, or 3. 0 if invalid
 
-    // Get current match data
+    // Get match time
     // APPROXIMATE remaining time in current period (auto or teleop), in seconds.
     // Note: The FMS does not report official match time to robots, thus this may be imprecise.
-    std_msgs::Time match_time;
-    match_time.data = ros::Time(ds.GetMatchTime());
+    frc_msgs::MatchTime match_time;
+    match_time.header.stamp   = ros::Time::now();
+    match_time.remaining_time = ds.GetMatchTime();
 
-    // Get robot state
+    // Get driver station mode
     frc_msgs::DriverStationMode ds_mode;
-    //TODO: Estop
+    ds_mode.header.stamp = ros::Time::now();
+
+    // TODO(matt.reynolds): Estop
     if (ds.IsDisabled())
       ds_mode.mode = frc_msgs::DriverStationMode::MODE_DISABLED;
     else if (ds.IsOperatorControl())
@@ -123,8 +133,42 @@ void FRCRobotHWReal::runHAL() {
     else
       ds_mode.mode = frc_msgs::DriverStationMode::MODE_DISABLED;
 
-    ds_mode.is_ds_attached = ds.IsDSAttached();
+    ds_mode.is_ds_attached  = ds.IsDSAttached();
     ds_mode.is_fms_attached = ds.IsFMSAttached();
+
+    // Get robot state
+    frc_msgs::RobotState robot_state;
+    robot_state.header.stamp = ros::Time::now();
+
+    robot_state.fpga_version    = frc::RobotController::GetFPGAVersion();
+    robot_state.fpga_revision   = frc::RobotController::GetFPGARevision();
+    robot_state.fpga_time       = frc::RobotController::GetFPGATime();
+    robot_state.user_button     = frc::RobotController::GetUserButton();
+    robot_state.sys_active      = frc::RobotController::IsSysActive();
+    robot_state.browned_out     = frc::RobotController::IsBrownedOut();
+    robot_state.input_voltage   = frc::RobotController::GetInputVoltage();
+    robot_state.input_current   = frc::RobotController::GetInputCurrent();
+    robot_state.voltage_3v3     = frc::RobotController::GetVoltage3V3();
+    robot_state.current_3v3     = frc::RobotController::GetCurrent3V3();
+    robot_state.enabled_3v3     = frc::RobotController::GetEnabled3V3();
+    robot_state.fault_count_3v3 = frc::RobotController::GetFaultCount3V3();
+    robot_state.voltage_5v      = frc::RobotController::GetVoltage5V();
+    robot_state.current_5v      = frc::RobotController::GetCurrent5V();
+    robot_state.enabled_5v      = frc::RobotController::GetEnabled5V();
+    robot_state.fault_count_5v  = frc::RobotController::GetFaultCount5V();
+    robot_state.voltage_6v      = frc::RobotController::GetVoltage6V();
+    robot_state.current_6v      = frc::RobotController::GetCurrent6V();
+    robot_state.enabled_6v      = frc::RobotController::GetEnabled6V();
+    robot_state.fault_count_6v  = frc::RobotController::GetFaultCount6V();
+
+    frc::CANStatus can_status                      = frc::RobotController::GetCANStatus();
+    robot_state.can_status.percent_bus_utilization = can_status.percentBusUtilization;
+    robot_state.can_status.bus_off_count           = can_status.busOffCount;
+    robot_state.can_status.tx_full_count           = can_status.txFullCount;
+    robot_state.can_status.receive_error_count     = can_status.receiveErrorCount;
+    robot_state.can_status.transmit_error_count    = can_status.transmitErrorCount;
+
+    robot_state.battery_voltage = ds.GetBatteryVoltage();
 
     // TODO: Publish NetworkTables.
 
@@ -132,6 +176,22 @@ void FRCRobotHWReal::runHAL() {
 
     // Wait for driver station data so the loop doesn't hog the CPU
     ds.WaitForData();
+  }
+}
+
+void FRCRobotHWReal::joyFeedbackCallback(const frc_msgs::JoyFeedbackConstPtr& msg) {
+  using RumbleType = frc::GenericHID::RumbleType;
+
+  if (msg->left_rumbles.size() != msg->right_rumbles.size() || msg->left_rumbles.size() != msg->outputs.size()) {
+    ROS_WARN_NAMED(name_, "Invalid joystick feeedback! Both rumble vectors and the output vector must be the same size.");
+  } else if (msg->left_rumbles.size() > 6) {
+    ROS_WARN_NAMED(name_, "Invalid joystick feedback! More than 6 joysticks specified.");
+  } else {
+    for (int i = 0; i < msg->left_rumbles.size(); i++) {
+      sticks_[i].SetRumble(RumbleType::kLeftRumble, msg->left_rumbles[i]);
+      sticks_[i].SetRumble(RumbleType::kRightRumble, msg->right_rumbles[i]);
+      sticks_[i].SetOutputs(msg->outputs[i]);
+    }
   }
 }
 

@@ -27,5 +27,5 @@ int8 HID_1ST_PERSON = 24
 # They do not count towards the axis limits
 Header header
 sensor_msgs/Joy[] sticks
-int8[] type
-string[] name
+int8[] types
+string[] names
