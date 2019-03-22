@@ -75,6 +75,8 @@ void FRCRobotHWReal::runHAL() {
       joy_pub_.msg_.header.stamp = time;
 
       for (unsigned i = 0; i < frc::DriverStation::kJoystickPorts; i++) {
+        // NOTE(matt.reynolds): Driver station axes are shortened from double (float64)
+        // to float (float32) to be packed in sensor_msgs::Joy.
 
         sensor_msgs::Joy stick;
         stick.header.stamp = time;
@@ -88,7 +90,8 @@ void FRCRobotHWReal::runHAL() {
         for (unsigned button = 0; button < ds.GetStickButtonCount(i); button++)
           stick.buttons[button] = ds.GetStickButton(i, button + 1);
 
-        // TODO: Ensure POV hat is covered. If not, append it to axes and buttons
+        // TODO(matt.reynolds): Ensure POV hat is covered. If not, either append it to buttons and axes, or add new array
+        // See https://github.com/uwreact/frc_control/issues/51
 
         joy_pub_.msg_.sticks[i] = stick;
         joy_pub_.msg_.types[i]  = ds.GetJoystickType(i);

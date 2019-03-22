@@ -19,7 +19,7 @@ Header header
 string game_specific_message
 string event_name
 uint8 match_type
-uint8 match_number
-uint8 replay_number
+int32 match_number
+int32 replay_number
 uint8 alliance
 uint8 location
