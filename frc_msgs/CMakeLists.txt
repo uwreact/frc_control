@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-# Generate messages in the 'msg' folder
+# List messages for generation
 add_message_files(
   FILES
     CANStatus.msg
@@ -20,25 +20,11 @@ add_message_files(
     RobotState.msg
 )
 
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#     Service1.srv
-#     Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
-# Generate added messages and services with any dependencies listed here
+# Generate messages with the specified dependencies
 generate_messages(
   DEPENDENCIES
-  std_msgs
-  sensor_msgs
+    std_msgs
+    sensor_msgs
 )
 
 # Declare a catkin package
