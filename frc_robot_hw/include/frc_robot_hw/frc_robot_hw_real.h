@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2018, UW REACT
+// Copyright (C) 2019, UW REACT
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -29,8 +29,21 @@
 
 #include <frc_robot_hw/frc_robot_hw.h>
 
-// WPILib driver station
+#include <thread>
+
+#include <realtime_tools/realtime_publisher.h>
+
+// Custom messages
+#include <frc_msgs/DriverStationMode.h>
+#include <frc_msgs/JoyArray.h>
+#include <frc_msgs/JoyFeedback.h>
+#include <frc_msgs/MatchData.h>
+#include <frc_msgs/MatchTime.h>
+#include <frc_msgs/RobotState.h>
+
+// WPILib headers
 #include <frc/DriverStation.h>
+#include <frc/Joystick.h>
 
 // WPILib & vendor sensors/actuators
 #include <frc/AnalogInput.h>
@@ -88,6 +101,14 @@ public:
    */
   bool initHAL();
 
+  // Overrides
+  bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
+  void read(const ros::Time& time, const ros::Duration& period) override;
+  void write(const ros::Time& time, const ros::Duration& period) override;
+
+  inline void setPublishRate(double rate) { publish_period_ = ros::Duration(1.0 / rate); }
+
+private:
   /**
    * @brief Maintain a loop to get data from the driver station.
    *
@@ -98,12 +119,8 @@ public:
    */
   void runHAL();
 
-  // Overrides
-  bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
-  void read(const ros::Time& time, const ros::Duration& period) override;
-  void write(const ros::Time& time, const ros::Duration& period) override;
+  void joyFeedbackCallback(const frc_msgs::JoyFeedbackConstPtr& msg);
 
-private:
   // Maps of the WPILib objects used to interact with the HAL
   // TODO: Probably can't have generic type for smart_speed_controllers_
   std::map<std::string, std::unique_ptr<frc::SpeedController>>        smart_speed_controllers_;
@@ -127,8 +144,23 @@ private:
 #endif
 
   std::thread hal_thread_;
+  bool        robot_code_ready_ = false;
 
-  bool robot_code_ready_ = false;
+  frc::Joystick sticks_[frc::DriverStation::kJoystickPorts] {frc::Joystick(0),
+                                                             frc::Joystick(1),
+                                                             frc::Joystick(2),
+                                                             frc::Joystick(3),
+                                                             frc::Joystick(4),
+                                                             frc::Joystick(5)};
+
+  ros::Duration publish_period_;
+
+  realtime_tools::RealtimePublisher<frc_msgs::DriverStationMode> ds_mode_pub_;
+  realtime_tools::RealtimePublisher<frc_msgs::JoyArray>          joy_pub_;
+  realtime_tools::RealtimePublisher<frc_msgs::MatchData>         match_data_pub_;
+  realtime_tools::RealtimePublisher<frc_msgs::MatchTime>         match_time_pub_;
+  realtime_tools::RealtimePublisher<frc_msgs::RobotState>        robot_state_pub_;
+  ros::Subscriber                                                joy_feedback_sub_;
 };
 
 }  // namespace frc_robot_hw

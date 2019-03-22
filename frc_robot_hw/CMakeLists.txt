@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   binary_state_controller
   ternary_state_controller
   pdp_state_controller
+  frc_msgs
 )
 
 # Declare a catkin package
@@ -36,6 +37,7 @@ catkin_package(
     binary_state_controller
     ternary_state_controller
     pdp_state_controller
+    frc_msgs
 )
 
 # Specify additional locations of header files
