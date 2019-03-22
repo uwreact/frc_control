@@ -90,7 +90,7 @@ void FRCRobotHWReal::runHAL() {
         for (unsigned button = 0; button < ds.GetStickButtonCount(i); button++)
           stick.buttons[button] = ds.GetStickButton(i, button + 1);
 
-        // TODO(matt.reynolds): Ensure POV hat is covered. If not, either append it to buttons and axes, or add new array
+        // TODO(matt.reynolds): Ensure POV hat is covered. If not, append it to buttons[] and axes[] or add new array
         // See https://github.com/uwreact/frc_control/issues/51
 
         joy_pub_.msg_.sticks[i] = stick;
