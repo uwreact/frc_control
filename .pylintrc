@@ -6,7 +6,7 @@ enable = all
 disable = len-as-condition, too-many-locals, locally-disabled, suppressed-message
 
 # Allow some single-letter variable names
-good-names=i,j,k,f,x,y,_
+good-names=i,j,k,f,x,y,z,_
 
 # Don't warn on TODOs
 notes =
