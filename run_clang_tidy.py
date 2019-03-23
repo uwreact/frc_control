@@ -126,6 +126,8 @@ def main():
         config = subprocess.check_output(['catkin', 'config'], cwd=cwd).decode('utf-8').strip().split('\n')
         config = [c for c in config if 'Build Space:' in c][0]
         args.build_dir = '/' + config.split('/', 1)[1]
+        print(args.ws)
+        print(args.build_dir)
     except subprocess.CalledProcessError as error:
         print(error)
         exit(1)

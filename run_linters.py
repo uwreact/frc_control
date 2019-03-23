@@ -85,7 +85,9 @@ def test_clang_format():
         return 1
 
     # Ensure we are on a clean tree
-    if subprocess.check_output(['git', 'status', '-s']).decode('utf-8').strip() != '':
+    out = subprocess.check_output(['git', 'status', '-s']).decode('utf-8').strip()
+    print(out)
+    if out != '':
         print('Script must be run on a clean working tree!')
         return 1
 
