@@ -33,6 +33,7 @@ Run all of our linters and CI checks to ensure we only commit quality code
 
 from __future__ import print_function
 
+import filecmp
 import os
 import subprocess
 
@@ -73,7 +74,7 @@ def test_git_diff():
     return 0
 
 
-def test_clang_format():
+def test_clang_format_old():
     """
     Check if clang-format wants to make changes
     """
@@ -104,6 +105,44 @@ def test_clang_format():
     if subprocess.check_output(['git', 'status', '-s', '-uno']).decode('utf-8').strip() != '':
         print(subprocess.check_output(['git', 'diff', '-U0']))
         subprocess.call(['git', 'reset', 'HEAD', '--hard'], stdout=open(os.devnull, 'w'))
+        print('Code does not meet style requirements! Please run clang-format to format the code.')
+        return 1
+
+    print('clang-format passed successfully')
+    return 0
+
+
+def test_clang_format():
+    """
+    Check if clang-format wants to make changes
+    """
+
+    print('\nChecking C++ code formatting with clang-format')
+
+    # Ensure clang-format-7 is installed
+    if install_program('clang-format-7') != 0:
+        return 1
+
+    # List all files to format
+    files = subprocess.check_output(['find', '-L', '.', '-name', '*.h', '-o', '-name', '*.cpp'])
+    files = files.decode('utf-8').strip().split('\n')
+    files = [f for f in files if '.ci_config' not in f]
+
+    changes_required = False
+
+    # Check each file for required changes
+    for in_file in files:
+        formatted = subprocess.check_output(['clang-format-7', '-style=file', in_file])
+        open('.clang_format_output', 'w').write(formatted)
+        if not filecmp.cmp(in_file, '.clang_format_output', shallow=False):
+            changes_required = True
+
+            print('File {0} requires changes!'.format(in_file))
+            subprocess.call(['diff', in_file, '.clang_format_output'])
+
+        os.remove('.clang_format_output')
+
+    if changes_required:
         print('Code does not meet style requirements! Please run clang-format to format the code.')
         return 1
 
