@@ -47,7 +47,7 @@ def install_program(program, pip=False):
         print('{0} not installed!'.format(program))
         if pip:
             print('Installing via pip...')
-            ret = subprocess.call(['pip', 'install', program, '-q'])
+            ret = subprocess.call(['pip', 'install', program])#, '-q'])
         else:
             print('Installing via apt...')
             ret = subprocess.call(['apt', 'install', program, '-y', '-qq', '--no-install-recommends'])
@@ -85,7 +85,7 @@ def test_clang_format():
         return 1
 
     # Ensure we are on a clean tree
-    out = subprocess.check_output(['git', 'status', '-s']).decode('utf-8').strip()
+    out = subprocess.check_output(['git', 'status', '-s', '-uno']).decode('utf-8').strip()
     print(out)
     if out != '':
         print('Script must be run on a clean working tree!')
@@ -100,7 +100,7 @@ def test_clang_format():
         return 1
 
     # Check if any changes were made
-    if subprocess.check_output(['git', 'status', '-s']).decode('utf-8').strip() != '':
+    if subprocess.check_output(['git', 'status', '-s', '-uno']).decode('utf-8').strip() != '':
         print(subprocess.check_output(['git', 'diff', '-U0']))
         subprocess.call(['git', 'reset', 'HEAD', '--hard'], stdout=open(os.devnull, 'w'))
         print('Code does not meet style requirements! Please run clang-format to format the code.')

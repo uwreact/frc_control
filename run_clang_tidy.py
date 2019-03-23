@@ -99,6 +99,7 @@ def main():
     """
     Main function
     """
+
     parser = argparse.ArgumentParser(
         description='Wrapper for running clang-tidy on a catkin workspace.',
         epilog='Note: In order for clang-tidy to understand which files to tidy, ' +
@@ -126,8 +127,6 @@ def main():
         config = subprocess.check_output(['catkin', 'config'], cwd=cwd).decode('utf-8').strip().split('\n')
         config = [c for c in config if 'Build Space:' in c][0]
         args.build_dir = '/' + config.split('/', 1)[1]
-        print(args.ws)
-        print(args.build_dir)
     except subprocess.CalledProcessError as error:
         print(error)
         exit(1)
@@ -156,6 +155,7 @@ def main():
         package_list = [(args, pkg) for pkg in os.listdir(args.build_dir)]
 
     # Run clang-tidy on all matching packages
+    print(package_list)
     pool = multiprocessing.pool.ThreadPool(args.jobs)
     returns = pool.map(check_package, package_list)
 
