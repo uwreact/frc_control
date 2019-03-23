@@ -33,10 +33,11 @@ Run all of our linters and CI checks to ensure we only commit quality code
 
 from __future__ import print_function
 
-import filecmp
+import difflib
 import os
 import subprocess
 
+badStyle    =   12
 
 def install_program(program, pip=False):
     """
@@ -64,7 +65,8 @@ def test_git_diff():
     Run git diff --check
     """
 
-    print('\nChecking for trailing whitespace, correct EOF with git diff')
+    print('\n----------\n')
+    print('Checking for trailing whitespace, correct EOF with git diff')
     ret = subprocess.call(['git', 'diff', '--check'])
     if ret != 0:
         print('git diff failed!')
@@ -74,50 +76,13 @@ def test_git_diff():
     return 0
 
 
-def test_clang_format_old():
-    """
-    Check if clang-format wants to make changes
-    """
-
-    print('\nChecking C++ code formatting with clang-format')
-
-    # Ensure clang-format-7 is installed
-    if install_program('clang-format-7') != 0:
-        return 1
-
-    # Ensure we are on a clean tree
-    out = subprocess.check_output(['git', 'status', '-s', '-uno']).decode('utf-8').strip()
-    print(out)
-    if out != '':
-        print('Script must be run on a clean working tree!')
-        return 1
-
-    # Run clang-format on all the header and cpp files
-    files = subprocess.check_output(['find', '-L', '.', '-name', '*.h', '-o', '-name', '*.cpp'])
-    files = files.decode('utf-8').strip().split('\n')
-    files = [f for f in files if '.ci_config' not in f]
-    ret = subprocess.call(['clang-format-7', '-verbose', '-style=file', '-i'] + files)
-    if ret != 0:
-        print('clang-format failed!')
-        return 1
-
-    # Check if any changes were made
-    if subprocess.check_output(['git', 'status', '-s', '-uno']).decode('utf-8').strip() != '':
-        print(subprocess.check_output(['git', 'diff', '-U0']))
-        subprocess.call(['git', 'reset', 'HEAD', '--hard'], stdout=open(os.devnull, 'w'))
-        print('Code does not meet style requirements! Please run clang-format to format the code.')
-        return 1
-
-    print('clang-format passed successfully')
-    return 0
-
-
 def test_clang_format():
     """
     Check if clang-format wants to make changes
     """
 
-    print('\nChecking C++ code formatting with clang-format')
+    print('\n----------\n')
+    print('Checking C++ code formatting with clang-format')
 
     # Ensure clang-format-7 is installed
     if install_program('clang-format-7') != 0:
@@ -131,16 +96,16 @@ def test_clang_format():
     changes_required = False
 
     # Check each file for required changes
-    for in_file in files:
-        formatted = subprocess.check_output(['clang-format-7', '-style=file', in_file])
-        open('.clang_format_output', 'w').write(formatted)
-        if not filecmp.cmp(in_file, '.clang_format_output', shallow=False):
+    for filepath in files:
+        with open(filepath, 'r') as f:
+            unformatted = f.read()
+        formatted = subprocess.check_output(['clang-format-7', '-style=file', filepath])
+        if unformatted != formatted:
             changes_required = True
-
-            print('File {0} requires changes!'.format(in_file))
-            subprocess.call(['diff', in_file, '.clang_format_output'])
-
-        os.remove('.clang_format_output')
+            print('File {0} requires changes:'.format(filepath))
+            diff = difflib.unified_diff(unformatted.splitlines(), formatted.splitlines(), n=0, lineterm='')
+            for line in diff:
+                print('    {0}'.format(line))
 
     if changes_required:
         print('Code does not meet style requirements! Please run clang-format to format the code.')
@@ -155,7 +120,8 @@ def test_clang_tidy():
     Check code quality with clang-tidy
     """
 
-    print('\nChecking C++ code quality with clang-tidy')
+    print('\n----------\n')
+    print('Checking C++ code quality with clang-tidy')
 
     # Ensure clang-tidy-7 is installed
     if install_program('clang-tidy-7') != 0:
@@ -186,7 +152,8 @@ def test_yapf():
     Run pylint
     """
 
-    print('\nChecking for python code formatting with yapf')
+    print('\n----------\n')
+    print('Checking for python code formatting with yapf')
 
     # Ensure pylint is installed
     if install_program('yapf', pip=True) != 0:
@@ -206,7 +173,8 @@ def test_pylint():
     Run pylint
     """
 
-    print('\nChecking for python code quality with pylint')
+    print('\n----------\n')
+    print('Checking for python code quality with pylint')
 
     # Ensure pylint is installed
     if install_program('pylint', pip=True) != 0:
@@ -230,7 +198,8 @@ def test_catkin_lint():
     Run catkin_lint
     """
 
-    print('\nChecking for catkin files for validity')
+    print('\n----------\n')
+    print('Checking for catkin files for validity')
 
     # Ensure pylint is installed
     if install_program('catkin_lint', pip=True) != 0:
