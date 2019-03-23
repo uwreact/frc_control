@@ -151,6 +151,11 @@ def main():
         build_pkgs = os.listdir(args.build_dir)
         for key in src_matches:
             package_list.extend([(args, pkg) for pkg in build_pkgs if key in pkg])
+
+        print(args.packages)
+        print(src_pkgs)
+        print(src_matches)
+        print(build_pkgs)
     else:
         package_list = [(args, pkg) for pkg in os.listdir(args.build_dir)]
 

@@ -94,6 +94,7 @@ def test_clang_format():
     # Run clang-format on all the header and cpp files
     files = subprocess.check_output(['find', '.', '-name', '*.h', '-o', '-name', '*.cpp'])
     files = files.decode('utf-8').strip().split('\n')
+    files = [f for f in files if '.ci_config' not in f]
     ret = subprocess.call(['clang-format-7', '-style=file', '-i'] + files)
     if ret != 0:
         print('clang-format failed!')
