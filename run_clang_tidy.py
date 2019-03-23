@@ -138,11 +138,8 @@ def main():
         # Find all packages in the workspace src directory
         src_pkgs = subprocess.check_output(['find', '-L', args.ws + '/src', '-name', 'package.xml'])
         src_pkgs = src_pkgs.decode('utf-8').strip().split('\n')
-        print(src_pkgs)
         src_pkgs = [path.replace(args.ws + '/src/', '') for path in src_pkgs]
-        print(src_pkgs)
         src_pkgs = [path.replace('/package.xml', '') for path in src_pkgs]
-        print(src_pkgs)
 
         # Find matching packages in the workspace src directory
         src_matches = []
@@ -153,16 +150,10 @@ def main():
         build_pkgs = os.listdir(args.build_dir)
         for key in src_matches:
             package_list.extend([(args, pkg) for pkg in build_pkgs if key in pkg])
-
-        print(args.packages)
-        print(src_pkgs)
-        print(src_matches)
-        print(build_pkgs)
     else:
         package_list = [(args, pkg) for pkg in os.listdir(args.build_dir)]
 
     # Run clang-tidy on all matching packages
-    print(package_list)
     pool = multiprocessing.pool.ThreadPool(args.jobs)
     returns = pool.map(check_package, package_list)
 

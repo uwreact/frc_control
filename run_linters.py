@@ -213,7 +213,7 @@ def main():
     """
 
     # Make sure pip is up to date
-    subprocess.call(['pip', 'install', '--upgrade', 'pip' '-q'])
+    subprocess.call(['pip', 'install', '--upgrade', 'pip', '-q'])
 
     fails = 0
 
