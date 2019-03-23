@@ -32,8 +32,6 @@
 
 namespace frc_robot_hw {
 
-int badStyle   =   123;
-
 void FRCRobotHW::loadURDF(const ros::NodeHandle& nh, const std::string& param_name) {
 
   // Search through the node_handle's namespace for the specified parameter

@@ -37,7 +37,6 @@ import difflib
 import os
 import subprocess
 
-badStyle    =   12
 
 def install_program(program, pip=False):
     """
