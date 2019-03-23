@@ -150,7 +150,7 @@ def test_yapf():
     if install_program('yapf', pip=True) != 0:
         return 1
 
-    ret = subprocess.call(['yapf', '--diff', '--recursive', '.'])
+    ret = subprocess.call(['yapf', '--diff', '--recursive', '-e', '.ci_config/*', '.'])
     if ret != 0:
         print('Code does not meet style requirements! Please run yapf to format the code.')
         return 1
@@ -172,6 +172,7 @@ def test_pylint():
 
     files = subprocess.check_output(['find', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/.*'])
     files = files.decode('utf-8').strip().split('\n')
+    files = [f for f in files if '.ci_config' not in f]
     ret = subprocess.call(['pylint', '-s', 'n'] + files)
 
     if ret != 0:
