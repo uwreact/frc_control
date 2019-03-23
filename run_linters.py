@@ -37,15 +37,20 @@ import os
 import subprocess
 
 
-def install_program(program):
+def install_program(program, pip=False):
     """
     Check if the specified function is installed on the system. If not, install it.
     """
 
     ret = subprocess.call('command -v {0} > /dev/null'.format(program), shell=True)
     if ret != 0:
-        print('{0} not installed! Installing via apt...'.format(program))
-        ret = subprocess.call(['apt', 'install', program, '-y', '-qq', '--no-install-recommends'])
+        print('{0} not installed!'.format(program))
+        if pip:
+            print('Installing via pip...')
+            ret = subprocess.call(['pip', 'install', program, '-q'])
+        else:
+            print('Installing via apt...')
+            ret = subprocess.call(['apt', 'install', program, '-y', '-qq', '--no-install-recommends'])
 
     if ret != 0:
         print('Unable to find or install {0}! Aborting...'.format(program))
@@ -94,10 +99,8 @@ def test_clang_format():
 
     # Check if any changes were made
     if subprocess.check_output(['git', 'status', '-s']).decode('utf-8').strip() != '':
-        print('Changes required!\n')
         print(subprocess.check_output(['git', 'diff', '-U0']))
         subprocess.call(['git', 'reset', 'HEAD', '--hard'], stdout=open(os.devnull, 'w'))
-
         print('Code does not meet style requirements! Please run clang-format to format the code.')
         return 1
 
@@ -118,7 +121,7 @@ def test_clang_tidy():
 
     # Find the catkin workspace to run in. Default to '/root/catkin_ws', the directory used in our CI config.
     try:
-        workspace = subprocess.check_output(['catkin', 'locate'])
+        workspace = subprocess.check_output(['catkin', 'locate'], stderr=open(os.devnull, 'w'))
         workspace = workspace.decode('utf-8').strip()
         print('Using workspace {0}'.format(workspace))
     except subprocess.CalledProcessError:
@@ -144,7 +147,7 @@ def test_yapf():
     print('\nChecking for python code formatting with yapf')
 
     # Ensure pylint is installed
-    if install_program('yapf') != 0:
+    if install_program('yapf', pip=True) != 0:
         return 1
 
     ret = subprocess.call(['yapf', '--diff', '--recursive', '.'])
@@ -164,7 +167,7 @@ def test_pylint():
     print('\nChecking for python code quality with pylint')
 
     # Ensure pylint is installed
-    if install_program('pylint') != 0:
+    if install_program('pylint', pip=True) != 0:
         return 1
 
     files = subprocess.check_output(['find', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/.*'])
@@ -187,7 +190,7 @@ def test_catkin_lint():
     print('\nChecking for catkin files for validity')
 
     # Ensure pylint is installed
-    if install_program('catkin_lint') != 0:
+    if install_program('catkin_lint', pip=True) != 0:
         return 1
 
     ret = subprocess.check_output(['catkin_lint', '.', '--resolve-env', '-W1', '-q']).decode('utf-8').strip()
