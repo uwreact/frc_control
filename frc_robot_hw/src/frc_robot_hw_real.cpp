@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2018, UW REACT
+// Copyright (C) 2019, UW REACT
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -27,8 +27,10 @@
 
 #include <frc_robot_hw/frc_robot_hw_real.h>
 
+// WPILib headers
+#include <frc/RobotController.h>
 #include <hal/HAL.h>
-#include <sensor_msgs/Joy.h>
+
 #include <tf2/LinearMath/Quaternion.h>
 
 namespace frc_robot_hw {
@@ -40,9 +42,7 @@ bool FRCRobotHWReal::initHAL() {
   }
 
   HAL_Report(HALUsageReporting::kResourceType_Language, HALUsageReporting::kLanguage_CPlusPlus);
-
-  // TODO: Waiting for 2019
-  // HAL_Report(HALUsageReporting::kResourceType_Framework, HALUsageReporting::kFramework_ROS);
+  HAL_Report(HALUsageReporting::kResourceType_Framework, HALUsageReporting::kFramework_ROS);
 
   ROS_INFO_NAMED(name_, "HAL successfully initialized");
   return true;
@@ -59,57 +59,170 @@ void FRCRobotHWReal::runHAL() {
   // Tell the DS that the robot is ready to be enabled ('Robot code ready')
   HAL_ObserveUserProgramStarting();
 
-  sensor_msgs::Joy joysticks[frc::DriverStation::kJoystickPorts];
-
   frc::DriverStation& ds = frc::DriverStation::GetInstance();
+  ros::Time           time;
 
+  // We use realtime publishers here because we must publish ds_mode and joysticks deterministically since they are
+  // safety-related. We populate the messages here in the HAL thread, but punt the actual writing to the socket to
+  // another thread so that we don't delay this thread.
   while (ros::ok()) {
-    // TODO: Limit update & publish rate of match data?
 
-    // Read all joysticks
-    for (unsigned stick = 0; stick < frc::DriverStation::kJoystickPorts; stick++) {
+    // Publish joysticks
+    time = ros::Time::now();
+    static ros::Time last_joy_pub_time;
+    if (!publish_period_.isZero() && last_joy_pub_time + publish_period_ < time && joy_pub_.trylock()) {
+      last_joy_pub_time          = time;
+      joy_pub_.msg_.header.stamp = time;
 
-      joysticks[stick].header.stamp = ros::Time::now();
+      for (unsigned i = 0; i < frc::DriverStation::kJoystickPorts; i++) {
+        // NOTE(matt.reynolds): Driver station axes are shortened from double (float64)
+        // to float (float32) to be packed in sensor_msgs::Joy.
 
-      joysticks[stick].axes.resize(ds.GetStickAxisCount(stick));
-      for (unsigned axis = 0; axis < ds.GetStickAxisCount(stick); axis++)
-        joysticks[stick].axes[axis] = ds.GetStickAxis(stick, axis);
+        sensor_msgs::Joy stick;
+        stick.header.stamp = time;
 
-      // Note: Buttons, unlike axes, are indexed from 1 rather than 0
-      joysticks[stick].buttons.resize(ds.GetStickButtonCount(stick));
-      for (unsigned button = 0; button < ds.GetStickButtonCount(stick); button++)
-        joysticks[stick].buttons[button] = ds.GetStickButton(stick, button + 1);
+        stick.axes.resize(ds.GetStickAxisCount(i));
+        for (unsigned axis = 0; axis < ds.GetStickAxisCount(i); axis++)
+          stick.axes[axis] = ds.GetStickAxis(i, axis);
 
-      // TODO: Ensure POV hat is covered. If not, append it to axes and/or buttons
+        // Note: Buttons, unlike axes, are indexed from 1 rather than 0
+        stick.buttons.resize(ds.GetStickButtonCount(i));
+        for (unsigned button = 0; button < ds.GetStickButtonCount(i); button++)
+          stick.buttons[button] = ds.GetStickButton(i, button + 1);
+
+        // TODO(matt.reynolds): Ensure POV hat is covered. If not, append it to buttons[] and axes[] or add new array
+        // See https://github.com/uwreact/frc_control/issues/51
+
+        joy_pub_.msg_.sticks[i] = stick;
+        joy_pub_.msg_.types[i]  = ds.GetJoystickType(i);
+        joy_pub_.msg_.names[i]  = ds.GetJoystickName(i);
+      }
+
+      joy_pub_.unlockAndPublish();
     }
 
-    // Get match data
-    ds.GetGameSpecificMessage();
-    ds.GetEventName();
-    ds.GetMatchType();  // kNone, kPractice, kQualification, kElimination
-    ds.GetMatchNumber();
-    ds.GetReplayNumber();
-    ds.GetAlliance();  // kRed, kBlue, or kInvalid
-    ds.GetLocation();  // 1, 2, or 3. 0 if invalid
 
-    // Get current match data
-    ds.GetMatchTime();  // APPROXIMATE remaining time in current period (auto or teleop), in seconds.
-                        // Note: The FMS does not report official match time to robots, thus this may be imprecise.
+    // Publish match data
+    time = ros::Time::now();
+    static ros::Time last_match_data_pub_time;
+    if (!publish_period_.isZero() && last_match_data_pub_time + publish_period_ < time && match_data_pub_.trylock()) {
+      last_match_data_pub_time          = time;
+      match_data_pub_.msg_.header.stamp = time;
 
-    // Get robot state
-    ds.IsEnabled();
-    ds.IsAutonomous();
-    ds.IsOperatorControl();
-    ds.IsTest();
-    ds.IsDSAttached();
-    ds.IsFMSAttached();
+      match_data_pub_.msg_.game_specific_message = ds.GetGameSpecificMessage();
+      match_data_pub_.msg_.event_name            = ds.GetEventName();
+      match_data_pub_.msg_.match_type            = ds.GetMatchType();  // kNone, kPractice, kQualification, kElimination
+      match_data_pub_.msg_.match_number          = ds.GetMatchNumber();
+      match_data_pub_.msg_.replay_number         = ds.GetReplayNumber();
+      match_data_pub_.msg_.alliance              = ds.GetAlliance();  // kRed, kBlue, or kInvalid
+      match_data_pub_.msg_.location              = ds.GetLocation();  // 1, 2, or 3. 0 if invalid
+
+      match_data_pub_.unlockAndPublish();
+    }
+
+
+    // Publish match time
+    // APPROXIMATE remaining time in current period (auto or teleop), in seconds.
+    // Note: The FMS does not report official match time to robots, thus this may be imprecise.
+    time = ros::Time::now();
+    static ros::Time last_match_time_pub_time;
+    if (!publish_period_.isZero() && last_match_time_pub_time + publish_period_ < time && match_time_pub_.trylock()) {
+      last_match_time_pub_time          = time;
+      match_time_pub_.msg_.header.stamp = time;
+
+      match_time_pub_.msg_.remaining_time = ds.GetMatchTime();
+
+      match_time_pub_.unlockAndPublish();
+    }
+
+
+    // Publish driver station mode
+    time = ros::Time::now();
+    static ros::Time last_ds_mode_pub_time;
+    if (!publish_period_.isZero() && last_ds_mode_pub_time + publish_period_ < time && ds_mode_pub_.trylock()) {
+      last_ds_mode_pub_time          = time;
+      ds_mode_pub_.msg_.header.stamp = time;
+
+      // TODO(matt.reynolds): Estop
+      if (ds.IsDisabled())
+        ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_DISABLED;
+      else if (ds.IsOperatorControl())
+        ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_OPERATOR;
+      else if (ds.IsAutonomous())
+        ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_AUTONOMOUS;
+      else if (ds.IsTest())
+        ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_TEST;
+      else
+        ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_DISABLED;
+
+      ds_mode_pub_.msg_.is_ds_attached  = ds.IsDSAttached();
+      ds_mode_pub_.msg_.is_fms_attached = ds.IsFMSAttached();
+
+      ds_mode_pub_.unlockAndPublish();
+    }
+
+
+    // Publish robot state
+    time = ros::Time::now();
+    static ros::Time last_robot_state_pub_time;
+    if (!publish_period_.isZero() && last_robot_state_pub_time + publish_period_ < time && robot_state_pub_.trylock()) {
+      last_robot_state_pub_time          = time;
+      robot_state_pub_.msg_.header.stamp = time;
+
+      robot_state_pub_.msg_.fpga_version    = frc::RobotController::GetFPGAVersion();
+      robot_state_pub_.msg_.fpga_revision   = frc::RobotController::GetFPGARevision();
+      robot_state_pub_.msg_.fpga_time       = frc::RobotController::GetFPGATime();
+      robot_state_pub_.msg_.user_button     = frc::RobotController::GetUserButton();
+      robot_state_pub_.msg_.sys_active      = frc::RobotController::IsSysActive();
+      robot_state_pub_.msg_.browned_out     = frc::RobotController::IsBrownedOut();
+      robot_state_pub_.msg_.input_voltage   = frc::RobotController::GetInputVoltage();
+      robot_state_pub_.msg_.input_current   = frc::RobotController::GetInputCurrent();
+      robot_state_pub_.msg_.voltage_3v3     = frc::RobotController::GetVoltage3V3();
+      robot_state_pub_.msg_.current_3v3     = frc::RobotController::GetCurrent3V3();
+      robot_state_pub_.msg_.enabled_3v3     = frc::RobotController::GetEnabled3V3();
+      robot_state_pub_.msg_.fault_count_3v3 = frc::RobotController::GetFaultCount3V3();
+      robot_state_pub_.msg_.voltage_5v      = frc::RobotController::GetVoltage5V();
+      robot_state_pub_.msg_.current_5v      = frc::RobotController::GetCurrent5V();
+      robot_state_pub_.msg_.enabled_5v      = frc::RobotController::GetEnabled5V();
+      robot_state_pub_.msg_.fault_count_5v  = frc::RobotController::GetFaultCount5V();
+      robot_state_pub_.msg_.voltage_6v      = frc::RobotController::GetVoltage6V();
+      robot_state_pub_.msg_.current_6v      = frc::RobotController::GetCurrent6V();
+      robot_state_pub_.msg_.enabled_6v      = frc::RobotController::GetEnabled6V();
+      robot_state_pub_.msg_.fault_count_6v  = frc::RobotController::GetFaultCount6V();
+
+      const frc::CANStatus& can_status                         = frc::RobotController::GetCANStatus();
+      robot_state_pub_.msg_.can_status.percent_bus_utilization = can_status.percentBusUtilization;
+      robot_state_pub_.msg_.can_status.bus_off_count           = can_status.busOffCount;
+      robot_state_pub_.msg_.can_status.tx_full_count           = can_status.txFullCount;
+      robot_state_pub_.msg_.can_status.receive_error_count     = can_status.receiveErrorCount;
+      robot_state_pub_.msg_.can_status.transmit_error_count    = can_status.transmitErrorCount;
+
+      robot_state_pub_.msg_.battery_voltage = ds.GetBatteryVoltage();
+
+      robot_state_pub_.unlockAndPublish();
+    }
 
     // TODO: Publish NetworkTables.
 
-    // TODO: Publish data. Use RT pub?
-
     // Wait for driver station data so the loop doesn't hog the CPU
     ds.WaitForData();
+  }
+}
+
+void FRCRobotHWReal::joyFeedbackCallback(const frc_msgs::JoyFeedbackConstPtr& msg) {
+  using RumbleType = frc::GenericHID::RumbleType;
+
+  if (msg->left_rumbles.size() != msg->right_rumbles.size() || msg->left_rumbles.size() != msg->outputs.size()) {
+    ROS_WARN_NAMED(name_,
+                   "Invalid joystick feeedback! Both rumble vectors and the output vector must be the same size.");
+  } else if (msg->left_rumbles.size() > 6) {
+    ROS_WARN_NAMED(name_, "Invalid joystick feedback! More than 6 joysticks specified.");
+  } else {
+    for (int i = 0; i < msg->left_rumbles.size(); i++) {
+      sticks_[i].SetRumble(RumbleType::kLeftRumble, msg->left_rumbles[i]);
+      sticks_[i].SetRumble(RumbleType::kRightRumble, msg->right_rumbles[i]);
+      sticks_[i].SetOutputs(msg->outputs[i]);
+    }
   }
 }
 
@@ -120,6 +233,21 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
 
   if (!initHAL())
     return false;
+
+  double publish_freq;
+  robot_hw_nh.param("frc_msg_publish_frequency", publish_freq, 10.0);
+  setPublishRate(publish_freq);
+
+  // Setup the realtime publishers
+  ds_mode_pub_.init(root_nh, "frc/ds_mode", 10);
+  joy_pub_.init(root_nh, "frc/joys", 10);
+  match_data_pub_.init(root_nh, "frc/match_data", 10);
+  match_time_pub_.init(root_nh, "frc/match_time", 10);
+  robot_state_pub_.init(root_nh, "frc/robot_state", 10);
+
+  // Setup the subscribers
+  joy_feedback_sub_ = root_nh.subscribe("frc/joy_feedback", 1, &FRCRobotHWReal::joyFeedbackCallback, this);
+
 
   // =*=*=*=*=*=*=*= Sensors =*=*=*=*=*=*=*=
 
@@ -306,7 +434,7 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
 
     std::unique_ptr<frc::SpeedController> controller;
     switch (pair.second.type) {
-      // clang-format off
+        // clang-format off
       case Type::DMC60:         controller = std::make_unique<frc::DMC60>(id);        break;
       case Type::Jaguar:        controller = std::make_unique<frc::Jaguar>(id);       break;
       case Type::PWMTalonSRX:   controller = std::make_unique<frc::PWMTalonSRX>(id);  break;
@@ -366,8 +494,8 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     rate_states_[pair.first].state = pair.second->GetVoltage() / 5.0 * config.scale + config.offset;
 
     // Sloppy rate calculation
-    // TODO: Use hardware rate when available (AnalogGyro). Actually, we should probably treat AnalogGyros as IMUs, and
-    // reserve AnalogInputs for pots, linear transducers, analog ultrasonics, etc.
+    // TODO: Use hardware rate when available (AnalogGyro). Actually, we should probably treat AnalogGyros as IMUs,
+    // and reserve AnalogInputs for pots, linear transducers, analog ultrasonics, etc.
     static double last_time       = ros::Time::now().toSec();
     double        cur_time        = ros::Time::now().toSec();
     rate_states_[pair.first].rate = (rate_states_[pair.first].state - last_state) / (cur_time - last_time);
