@@ -138,9 +138,11 @@ def main():
         # Find all packages in the workspace src directory
         src_pkgs = subprocess.check_output(['find', args.ws + '/src', '-name',
                                             'package.xml']).decode('utf-8').strip().split('\n')
-        src_pkgs = [path.replace(args.ws, '') for path in src_pkgs]
-        src_pkgs = [path.replace('src/', '') for path in src_pkgs]
+        print(src_pkgs)
+        src_pkgs = [path.replace(args.ws + '/src/', '') for path in src_pkgs]
+        print(src_pkgs)
         src_pkgs = [path.replace('/package.xml', '') for path in src_pkgs]
+        print(src_pkgs)
 
         # Find matching packages in the workspace src directory
         src_matches = []
