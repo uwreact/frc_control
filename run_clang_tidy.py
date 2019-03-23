@@ -70,8 +70,7 @@ def check_package(parameters):
         additional_args = ['-export-fixes', output_file]
 
     devnull = open(os.devnull, 'w')
-    subprocess.check_call(
-        ['run-clang-tidy-7', '-j', '8', '-p', cur_dir] + additional_args, stdout=devnull, stderr=devnull)
+    subprocess.call(['run-clang-tidy-7', '-j', '8', '-p', cur_dir] + additional_args, stdout=devnull, stderr=devnull)
 
     # If fixing, assume that all changes were addressed and the file is now perfect
     if args.fix:
@@ -124,10 +123,11 @@ def main():
 
     try:
         args.ws = subprocess.check_output(['catkin', 'locate'], cwd=cwd).decode('utf-8').strip()
-        args.build_dir = subprocess.check_output(
-            'catkin config | grep "Build Space:" | grep -o "/.*"', cwd=cwd, shell=True).decode('utf-8').strip()
-    except subprocess.CalledProcessError as e:
-        print(e)
+        config = subprocess.check_output(['catkin', 'config'], cwd=cwd).decode('utf-8').strip().split('\n')
+        config = [c for c in config if 'Build Space:' in c][0]
+        args.build_dir = '/' + config.split('/', 1)[1]
+    except subprocess.CalledProcessError as error:
+        print(error)
         exit(1)
 
     # Generate the list of packages to check

@@ -1,0 +1,239 @@
+#!/usr/bin/env python
+
+##############################################################################
+# Copyright (C) 2019, UW REACT
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of UW REACT, nor the names of its
+#     contributors may be used to endorse or promote products derived from
+#     this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+##############################################################################
+
+"""
+Run all of our linters and CI checks to ensure we only commit quality code
+"""
+
+from __future__ import print_function
+
+import os
+import subprocess
+
+
+def install_program(program):
+    """
+    Check if the specified function is installed on the system. If not, install it.
+    """
+
+    ret = subprocess.call('command -v {0} > /dev/null'.format(program), shell=True)
+    if ret != 0:
+        print('{0} not installed! Installing via apt...'.format(program))
+        ret = subprocess.call(['apt', 'install', program, '-y', '-qq', '--no-install-recommends'])
+
+    if ret != 0:
+        print('Unable to find or install {0}! Aborting...'.format(program))
+
+    return ret
+
+
+def test_git_diff():
+    """
+    Run git diff --check
+    """
+
+    print('\nChecking for trailing whitespace, correct EOF with git diff')
+    ret = subprocess.call(['git', 'diff', '--check'])
+    if ret != 0:
+        print('git diff failed!')
+        return 1
+
+    print('git diff passed successfully!')
+    return 0
+
+
+def test_clang_format():
+    """
+    Check if clang-format wants to make changes
+    """
+
+    print('\nChecking C++ code formatting with clang-format')
+
+    # Ensure clang-format-7 is installed
+    if install_program('clang-format-7') != 0:
+        return 1
+
+    # Ensure we are on a clean tree
+    if subprocess.check_output(['git', 'status', '-s']).decode('utf-8').strip() != '':
+        print('Script must be run on a clean working tree!')
+        return 1
+
+    # Run clang-format on all the header and cpp files
+    files = subprocess.check_output(['find', '.', '-name', '*.h', '-o', '-name', '*.cpp'])
+    files = files.decode('utf-8').strip().split('\n')
+    ret = subprocess.call(['clang-format-7', '-style=file', '-i'] + files)
+    if ret != 0:
+        print('clang-format failed!')
+        return 1
+
+    # Check if any changes were made
+    if subprocess.check_output(['git', 'status', '-s']).decode('utf-8').strip() != '':
+        print('Changes required!\n')
+        print(subprocess.check_output(['git', 'diff', '-U0']))
+        subprocess.call(['git', 'reset', 'HEAD', '--hard'], stdout=open(os.devnull, 'w'))
+
+        print('Code does not meet style requirements! Please run clang-format to format the code.')
+        return 1
+
+    print('clang-format passed successfully')
+    return 0
+
+
+def test_clang_tidy():
+    """
+    Check code quality with clang-tidy
+    """
+
+    print('\nChecking C++ code quality with clang-tidy')
+
+    # Ensure clang-tidy-7 is installed
+    if install_program('clang-tidy-7') != 0:
+        return 1
+
+    # Find the catkin workspace to run in. Default to '/root/catkin_ws', the directory used in our CI config.
+    try:
+        workspace = subprocess.check_output(['catkin', 'locate'])
+        workspace = workspace.decode('utf-8').strip()
+        print('Using workspace {0}'.format(workspace))
+    except subprocess.CalledProcessError:
+        workspace = '/root/catkin_ws'
+        print('Using default workspace {0}'.format(workspace))
+
+    # Run clang-tidy
+    ret = subprocess.call(['./run_clang_tidy.py', '-w', workspace, 'frc_control', '--verbose'])
+
+    if ret != 0:
+        print('C++ code does not meet quality requirements!')
+        return 1
+
+    print('clang-tidy passed successfully!')
+    return 0
+
+
+def test_yapf():
+    """
+    Run pylint
+    """
+
+    print('\nChecking for python code formatting with yapf')
+
+    # Ensure pylint is installed
+    if install_program('yapf') != 0:
+        return 1
+
+    ret = subprocess.call(['yapf', '--diff', '--recursive', '.'])
+    if ret != 0:
+        print('Code does not meet style requirements! Please run yapf to format the code.')
+        return 1
+
+    print('yapf passed successfully!')
+    return 0
+
+
+def test_pylint():
+    """
+    Run pylint
+    """
+
+    print('\nChecking for python code quality with pylint')
+
+    # Ensure pylint is installed
+    if install_program('pylint') != 0:
+        return 1
+
+    files = subprocess.check_output(['find', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/.*'])
+    files = files.decode('utf-8').strip().split('\n')
+    ret = subprocess.call(['pylint', '-s', 'n'] + files)
+
+    if ret != 0:
+        print('Python code does not meet quality requirements!')
+        return 1
+
+    print('pylint passed successfully!')
+    return 0
+
+
+def test_catkin_lint():
+    """
+    Run catkin_lint
+    """
+
+    print('\nChecking for catkin files for validity')
+
+    # Ensure pylint is installed
+    if install_program('catkin_lint') != 0:
+        return 1
+
+    ret = subprocess.check_output(['catkin_lint', '.', '--resolve-env', '-W1', '-q']).decode('utf-8').strip()
+    if ret != '':
+        print(ret)
+        print('Test `catkin_lint` failed!')
+        return 1
+
+    print('Test `catkin_lint` OK')
+    return 0
+
+
+def main():
+    """
+    Main function
+    """
+
+    fails = 0
+
+    # Trailing whitespace, general file formatting
+    fails += test_git_diff()
+
+    # Catkin files
+    fails += test_catkin_lint()
+
+    # C++ code format
+    fails += test_clang_format()
+
+    # C++ code quality
+    fails += test_clang_tidy()
+
+    # Python code format
+    fails += test_yapf()
+
+    # Python code quality
+    fails += test_pylint()
+
+    print('\n----------------------------------------\n')
+
+    if fails != 0:
+        print('{0} checks failed!'.format(fails))
+        return 1
+
+    print('All checks passed, codebase meets requirements')
+    return 0
+
+
+if __name__ == '__main__':
+    exit(main())

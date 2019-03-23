@@ -19,7 +19,7 @@ env:
         # The reason this isn't currently done is because clang-tidy relies on the build to
         # determine which files to lint and their relationship to each other.
       - CATKIN_CONFIG='-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
-      - AFTER_SCRIPT="cd /root/catkin_ws/src/frc_control; ./check_code_style.sh"
+      - AFTER_SCRIPT="cd /root/catkin_ws/src/frc_control; ./run_linters.py"
   matrix:
     - ROS_DISTRO="melodic"   ROS_REPO="ros"
     - ROS_DISTRO="melodic"   ROS_REPO="ros-shadow-fixed"
