@@ -12,12 +12,6 @@ notifications:
 
 env:
   global:
-  #   - CLANG_FORMAT_CHECK="file"
-  #   - CLANG_FORMAT_VERSION="7"
-
-        # TODO(matt.reynolds): Figure out how to run code analysis before catkin building.
-        # The reason this isn't currently done is because clang-tidy relies on the build to
-        # determine which files to lint and their relationship to each other.
       - CATKIN_CONFIG='-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
       - AFTER_SCRIPT="cd /root/catkin_ws/src/frc_control; ./run_linters.py"
   matrix:
