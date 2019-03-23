@@ -6,17 +6,17 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   hardware_interface
   joint_limits_interface
-  transmission_interface
   realtime_tools
   roscpp
   #tinyxml2 #TODO: cmake_modules
+  transmission_interface
   urdf
 
   analog_state_controller
   binary_state_controller
+  frc_msgs
   ternary_state_controller
   pdp_state_controller
-  frc_msgs
 )
 
 # Declare a catkin package
@@ -27,17 +27,17 @@ catkin_package(
     controller_manager
     hardware_interface
     joint_limits_interface
-    transmission_interface
     realtime_tools
     roscpp
     #tinyxml2
+    transmission_interface
     urdf
 
     analog_state_controller
     binary_state_controller
+    frc_msgs
     ternary_state_controller
     pdp_state_controller
-    frc_msgs
 )
 
 # Specify additional locations of header files
