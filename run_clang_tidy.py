@@ -136,8 +136,8 @@ def main():
     if len(args.packages) > 0:
 
         # Find all packages in the workspace src directory
-        src_pkgs = subprocess.check_output(['find', args.ws + '/src', '-name',
-                                            'package.xml']).decode('utf-8').strip().split('\n')
+        src_pkgs = subprocess.check_output(['find', '-L', args.ws + '/src', '-name', 'package.xml'])
+        src_pkgs = src_pkgs.decode('utf-8').strip().split('\n')
         print(src_pkgs)
         src_pkgs = [path.replace(args.ws + '/src/', '') for path in src_pkgs]
         print(src_pkgs)

@@ -47,7 +47,7 @@ def install_program(program, pip=False):
         print('{0} not installed!'.format(program))
         if pip:
             print('Installing via pip...')
-            ret = subprocess.call(['pip', 'install', program])#, '-q'])
+            ret = subprocess.call(['pip', 'install', program, '-q'])
         else:
             print('Installing via apt...')
             ret = subprocess.call(['apt', 'install', program, '-y', '-qq', '--no-install-recommends'])
@@ -92,10 +92,10 @@ def test_clang_format():
         return 1
 
     # Run clang-format on all the header and cpp files
-    files = subprocess.check_output(['find', '.', '-name', '*.h', '-o', '-name', '*.cpp'])
+    files = subprocess.check_output(['find', '-L', '.', '-name', '*.h', '-o', '-name', '*.cpp'])
     files = files.decode('utf-8').strip().split('\n')
     files = [f for f in files if '.ci_config' not in f]
-    ret = subprocess.call(['clang-format-7', '-style=file', '-i'] + files)
+    ret = subprocess.call(['clang-format-7', '-verbose', '-style=file', '-i'] + files)
     if ret != 0:
         print('clang-format failed!')
         return 1
@@ -173,7 +173,7 @@ def test_pylint():
     if install_program('pylint', pip=True) != 0:
         return 1
 
-    files = subprocess.check_output(['find', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/.*'])
+    files = subprocess.check_output(['find', '-L', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/.*'])
     files = files.decode('utf-8').strip().split('\n')
     files = [f for f in files if '.ci_config' not in f]
     ret = subprocess.call(['pylint', '-s', 'n'] + files)
@@ -211,6 +211,9 @@ def main():
     """
     Main function
     """
+
+    # Make sure pip is up to date
+    subprocess.call(['pip', 'install', '--upgrade', 'pip' '-q'])
 
     fails = 0
 
