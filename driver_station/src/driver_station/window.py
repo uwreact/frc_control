@@ -24,17 +24,20 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
+
 """
 TODO(Kaelan): Module docstring
 """
 
-from python_qt_binding.QtWidgets import QMainWindow
+from python_qt_binding.QtWidgets import QMainWindow  # pylint: disable=import-error, no-name-in-module
 
 
 class MainWindow(QMainWindow):
     """
     Main window for the visualizer
     """
+
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)

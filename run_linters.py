@@ -210,10 +210,10 @@ def test_catkin_lint():
     ret = subprocess.check_output(['catkin_lint', '.', '--resolve-env', '-W1', '-q']).decode('utf-8').strip()
     if ret != '':
         print(ret)
-        print('Test `catkin_lint` failed!')
+        print('catkin_lint failed!')
         return 1
 
-    print('Test `catkin_lint` OK')
+    print('catkin_lint passed successfully!')
     return 0
 
 

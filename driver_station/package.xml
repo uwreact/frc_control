@@ -9,10 +9,12 @@
   <license>BSD-3</license>
 
   <url type="website">http://uwreact.ca</url>
+  <!-- <url type="website">http://wiki.ros.org/frc_control</url> -->
   <url type="bugtracker">https://github.com/uwreact/frc_control/issues</url>
   <url type="repository">https://github.com/uwreact/frc_control</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>python_qt_binding</depend>
+
+  <exec_depend>python_qt_binding</exec_depend>
 
 </package>
