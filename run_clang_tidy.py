@@ -58,9 +58,6 @@ def check_package(parameters):
     json.dump(valid_entries, open(cur_file, 'w'))
 
     # Determine the output file, where required changes will be written
-    output_dir = '/'.join([args.ws, 'clang-tidy-fixes'])
-    if not os.path.isdir(output_dir):
-        os.mkdir(output_dir)
     output_file = '/'.join([args.ws, 'clang-tidy-fixes', pkg_name + '_fixes'])
 
     # Setup and run clang-tidy
@@ -152,6 +149,11 @@ def main():
             package_list.extend([(args, pkg) for pkg in build_pkgs if key in pkg])
     else:
         package_list = [(args, pkg) for pkg in os.listdir(args.build_dir)]
+
+    # Create output dir
+    output_dir = '/'.join([args.ws, 'clang-tidy-fixes'])
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
 
     # Run clang-tidy on all matching packages
     pool = multiprocessing.pool.ThreadPool(args.jobs)

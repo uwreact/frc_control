@@ -51,8 +51,11 @@ def install_program(program, pip=False):
             print('Installing via pip...')
             ret = subprocess.call(['pip', 'install', program, '-q'])
         else:
+            # -qq isn't very helpful here, since dpkg will continue to output to stdout
+            # Therefore, we simply pipe stdout to /dev/null
             print('Installing via apt...')
-            ret = subprocess.call(['apt', 'install', program, '-y', '-qq', '--no-install-recommends'])
+            ret = subprocess.call(['apt', 'install', program, '-y', '--no-install-recommends'],
+                                  stdout=open(os.devnull, 'w'))
 
     if ret != 0:
         print('Unable to find or install {0}! Aborting...'.format(program))
