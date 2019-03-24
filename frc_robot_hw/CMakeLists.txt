@@ -6,17 +6,17 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   hardware_interface
   joint_limits_interface
-  transmission_interface
   realtime_tools
   roscpp
   #tinyxml2 #TODO: cmake_modules
+  transmission_interface
   urdf
 
   analog_state_controller
   binary_state_controller
+  frc_msgs
   ternary_state_controller
   pdp_state_controller
-  frc_msgs
 )
 
 # Declare a catkin package
@@ -27,17 +27,17 @@ catkin_package(
     controller_manager
     hardware_interface
     joint_limits_interface
-    transmission_interface
     realtime_tools
     roscpp
     #tinyxml2
+    transmission_interface
     urdf
 
     analog_state_controller
     binary_state_controller
+    frc_msgs
     ternary_state_controller
     pdp_state_controller
-    frc_msgs
 )
 
 # Specify additional locations of header files
@@ -108,12 +108,9 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   endforeach()
 
   # Setup linker to link WPILib libraries
-  set (WPILIB_LIB_DIR $ENV{HOME}/frc2019/extracted/libathena)
+  set(WPILIB_LIB_DIR $ENV{HOME}/frc2019/extracted/libathena)
   file(GLOB WPILIB_LIBS ${WPILIB_LIB_DIR}/*/*.so
                         ${WPILIB_LIB_DIR}/*/*.so.[0-9]*) #TODO: This is super hackey, but it filters out so.debugs
-  link_directories(
-    ${WPILIB_LIB_DIR}
-  )
 
   add_executable(robot_base_node
     src/frc_robot_hw_real.cpp
@@ -128,6 +125,8 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
     ${WPILIB_LIBS}
   )
 
+  set(extra_targets robot_base_node)
+
 # If we're compiling for a normal Ubuntu image, do not compile real-robot WPILib code
 else()
   message(STATUS "Performing native compile, NOT linking WPILib")
@@ -140,7 +139,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 # Install libraries
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} ${extra_targets}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

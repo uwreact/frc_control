@@ -3,9 +3,9 @@ project(frc_msgs)
 
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
-  std_msgs
-  sensor_msgs
   message_generation
+  sensor_msgs
+  std_msgs
 )
 
 # List messages for generation
@@ -23,14 +23,14 @@ add_message_files(
 # Generate messages with the specified dependencies
 generate_messages(
   DEPENDENCIES
-    std_msgs
     sensor_msgs
+    std_msgs
 )
 
 # Declare a catkin package
 catkin_package(
   CATKIN_DEPENDS
-    std_msgs
-    sensor_msgs
     message_runtime
+    sensor_msgs
+    std_msgs
 )

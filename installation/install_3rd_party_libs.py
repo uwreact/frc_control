@@ -92,6 +92,10 @@ def main():
     """
     Main function
     """
+
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c', '--catkin_ws', default=os.getcwd(), help='The workspace in which to enable the vendor library')

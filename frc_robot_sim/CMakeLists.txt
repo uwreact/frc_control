@@ -3,9 +3,9 @@ project(frc_robot_sim)
 
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  gazebo_ros
   frc_robot_hw
+  gazebo_ros
+  roscpp
 )
 
 # System dependencies are found with CMake's conventions
@@ -16,9 +16,9 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
+    frc_robot_hw
     gazebo_ros
     roscpp
-    frc_robot_hw
   DEPENDS GAZEBO
 )
 
@@ -31,8 +31,8 @@ include_directories(
 
 # Compile the Gazebo plugin
 add_library(${PROJECT_NAME} SHARED
-  src/gazebo_hw_plugin.cpp
   src/frc_robot_hw_sim.cpp
+  src/gazebo_hw_plugin.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

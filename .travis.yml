@@ -12,8 +12,8 @@ notifications:
 
 env:
   global:
-    - CLANG_FORMAT_CHECK="file"
-    - CLANG_FORMAT_VERSION="7"
+      - CATKIN_CONFIG='-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+      - AFTER_SCRIPT="cd /root/catkin_ws/src/frc_control; ./run_linters.py"
   matrix:
     - ROS_DISTRO="melodic"   ROS_REPO="ros"
     - ROS_DISTRO="melodic"   ROS_REPO="ros-shadow-fixed"
