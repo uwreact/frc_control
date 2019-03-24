@@ -93,7 +93,7 @@ def test_clang_format():
     # List all files to format
     files = subprocess.check_output(['find', '-L', '.', '-name', '*.h', '-o', '-name', '*.cpp'])
     files = files.decode('utf-8').strip().split('\n')
-    files = [f for f in files if '.ci_config' not in f]
+    files = [f for f in files if '.ci_config' not in f and f != '']
 
     changes_required = False
 
@@ -113,7 +113,7 @@ def test_clang_format():
         print('Code does not meet style requirements! Please run clang-format to format the code.')
         return 1
 
-    print('clang-format passed successfully')
+    print('clang-format passed successfully!')
     return 0
 
 
@@ -184,8 +184,11 @@ def test_pylint():
 
     files = subprocess.check_output(['find', '-L', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/.*'])
     files = files.decode('utf-8').strip().split('\n')
-    files = [f for f in files if '.ci_config' not in f]
-    ret = subprocess.call(['pylint', '-s', 'n'] + files)
+    files = [f for f in files if '.ci_config' not in f and f != '']
+    if len(files) != 0:
+        ret = subprocess.call(['pylint', '-s', 'n'] + files)
+    else:
+        ret = 0
 
     if ret != 0:
         print('Python code does not meet quality requirements!')
