@@ -210,8 +210,12 @@ def test_catkin_lint():
     if install_program('catkin_lint', pip=True) != 0:
         return 1
 
-    ret = subprocess.check_output(['catkin_lint', '.', '--resolve-env', '-W1', '-q']).decode('utf-8').strip()
-    if ret != '':
+    # Get the parent dir of the logical working directory in order to be compatible with the CI
+    parent = subprocess.check_output(['pwd', '-L']).decode('utf-8').strip()
+    parent = parent.rsplit('/', 1)[0]
+
+    ret = subprocess.call(['catkin_lint', '.', '--resolve-env', '-W1', '--quiet', '--strict', '--package-path', parent])
+    if ret != 0:
         print(ret)
         print('catkin_lint failed!')
         return 1
