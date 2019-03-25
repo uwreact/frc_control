@@ -471,7 +471,7 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
 hardware_template::PIDGains FRCRobotHW::parsePIDGains(XmlRpc::XmlRpcValue& value) {
   using XmlValue = XmlRpc::XmlRpcValue;
 
-  hardware_template::PIDGains gains;
+  hardware_template::PIDGains gains = {};
   gains.k_p = validateJointParamMember(value, "p", XmlValue::TypeDouble, false, true)
                     ? getXmlRpcDouble(value["p"]) : 0.0;
   gains.k_i = validateJointParamMember(value, "i", XmlValue::TypeDouble, false, true)

@@ -47,7 +47,7 @@ public:
 
   void reset();
 
-  void  setSetpoint(float sp);
+  void  setSetpoint(float setpoint);
   void  update(float input);
   float getOutput(float input);
   float getOutput() const;

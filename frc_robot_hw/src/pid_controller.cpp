@@ -55,14 +55,13 @@ bool MultiPIDController::setMode(Mode mode) {
 bool MultiPIDController::setMode(const std::string& mode) {
   if (mode == "disabled" || mode == "Disabled")
     return setMode(Mode::disabled);
-  else if (mode == "position" || mode == "Position")
+  if (mode == "position" || mode == "Position")
     return setMode(Mode::position);
-  else if (mode == "velocity" || mode == "Velocity")
+  if (mode == "velocity" || mode == "Velocity")
     return setMode(Mode::velocity);
-  else if (mode == "effort" || mode == "Effort")
+  if (mode == "effort" || mode == "Effort")
     return setMode(Mode::effort);
-  else
-    return false;
+  return false;
 }
 
 void MultiPIDController::reset() {
@@ -99,7 +98,7 @@ void MultiPIDController::update(float input) {
   integral_ += cur_gains_->k_i * error * step.toSec();
   if (cur_gains_->has_i_clamp && integral_ > cur_gains_->i_clamp)
     integral_ = cur_gains_->i_clamp;
-  else if (cur_gains_->has_i_clamp && integral_ < -cur_gains_->has_i_clamp)
+  else if (cur_gains_->has_i_clamp && integral_ < -cur_gains_->i_clamp)
     integral_ = -cur_gains_->i_clamp;
 
   // Calculate output
@@ -114,10 +113,9 @@ void MultiPIDController::update(float input) {
 }
 
 float MultiPIDController::getOutput() const {
-  if (mode_ != Mode::disabled)
-    return output_;
-  else
+  if (mode_ == Mode::disabled)
     return 0.0;
+  return output_;
 }
 
 float MultiPIDController::getOutput(float input) {
