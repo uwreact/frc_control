@@ -93,7 +93,7 @@ def test_clang_format():
     # List all files to format
     files = subprocess.check_output(['find', '-L', '.', '-name', '*.h', '-o', '-name', '*.cpp'])
     files = files.decode('utf-8').strip().split('\n')
-    files = [f for f in files if '.ci_config' not in f]
+    files = [f for f in files if '.ci_config' not in f and f != '']
 
     changes_required = False
 
@@ -113,7 +113,7 @@ def test_clang_format():
         print('Code does not meet style requirements! Please run clang-format to format the code.')
         return 1
 
-    print('clang-format passed successfully')
+    print('clang-format passed successfully!')
     return 0
 
 
@@ -184,8 +184,11 @@ def test_pylint():
 
     files = subprocess.check_output(['find', '-L', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/.*'])
     files = files.decode('utf-8').strip().split('\n')
-    files = [f for f in files if '.ci_config' not in f]
-    ret = subprocess.call(['pylint', '-s', 'n'] + files)
+    files = [f for f in files if '.ci_config' not in f and f != '']
+    if len(files) != 0:
+        ret = subprocess.call(['pylint', '-s', 'n'] + files)
+    else:
+        ret = 0
 
     if ret != 0:
         print('Python code does not meet quality requirements!')
@@ -207,8 +210,12 @@ def test_catkin_lint():
     if install_program('catkin_lint', pip=True) != 0:
         return 1
 
-    ret = subprocess.check_output(['catkin_lint', '.', '--resolve-env', '-W1', '-q']).decode('utf-8').strip()
-    if ret != '':
+    # Get the parent dir of the logical working directory in order to be compatible with the CI
+    parent = subprocess.check_output(['pwd', '-L']).decode('utf-8').strip()
+    parent = parent.rsplit('/', 1)[0]
+
+    ret = subprocess.call(['catkin_lint', '.', '--resolve-env', '-W1', '--quiet', '--strict', '--package-path', parent])
+    if ret != 0:
         print(ret)
         print('catkin_lint failed!')
         return 1
