@@ -96,12 +96,7 @@ function install_cmake ()
     tar xzf $archive --strip 1 -C $1
     cd ${1}/build
 
-
-    if [ -z ${3} ] || [ ${3} = true ]; then
-        args="-DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON"
-    else
-        args=""
-    fi
+    args="-DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF"
 
     cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi ${args} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release ..
     make install $make_args -j $num_jobs
@@ -137,7 +132,7 @@ sed -i "14i  set_target_properties(tinyxml PROPERTIES PUBLIC_HEADER tinyxml.h)" 
 # Since we're installing the header, we also need to ensure the header and the library match. We will override the ENABLE_STL behaviour
 # by forcing STL to be enabled in the header. This ensures that both the library and anyone using the header will have STL enabled
 sed -i "29i#ifndef TIXML_USE_STL\n\t#define TIXML_USE_STL\n#endif\n" tinyxml.h
-cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=~/frc2019/roborio/arm-frc2019-linux-gnueabi -DBUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release .
+cmake -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_INSTALL_PREFIX=~/frc2019/roborio/arm-frc2019-linux-gnueabi -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release .
 make install $make_args -j $num_jobs
 
 # TODO: urdfdom and urdfdom_headers can be installed either manually like this, or by merging them into the ros workspace and cloning their package.xml files. Not sure which is better
@@ -152,7 +147,7 @@ install_cmake urdfdom https://github.com/ros/urdfdom/archive/1.0.0.tar.gz
 wget -q --show-progress https://github.com/pocoproject/poco/archive/poco-1.9.0-release.tar.gz
 tar xzf poco-1.9.0-release.tar.gz
 cd poco-poco-1.9.0-release
-CROSS_COMPILE=${bin_prefix}- ./configure --no-tests --no-samples --minimal --prefix=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/local --static --cflags="-fPIC"
+CROSS_COMPILE=${bin_prefix}- ./configure --no-tests --no-samples --minimal --prefix=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/local --cflags="-fPIC"
 CROSS_COMPILE=${bin_prefix}- make install $make_args -j $num_jobs --quiet #We get TONS of warnings here if we don't compile quietly
 
 # python_orocos_kdl v1.4.0 (Mar 21 2018) requires SIP. Corresponding SIP version for this date: v4.19.8
@@ -172,10 +167,6 @@ tar xzf util-linux-2.32.1.tar.gz
 cd util-linux-2.32.1
 ./configure CC=${bin_prefix}-gcc --host=arm-frc2019-linux-gnueabi --prefix=$HOME/frc2019/roborio/arm-frc2019-linux-gnueabi/usr/local --disable-all-programs --enable-libuuid --disable-bash-completion
 make install $make_args -j $num_jobs
-
-# Install OpenCV, needed to build WPILib. Note that this must be shared, since
-# pre-build vendor libraries are linked against the shared libopencv-XXX.so.3.4 libraries
-install_cmake opencv https://github.com/opencv/opencv/archive/3.4.4.tar.gz false
 
 # Cleanup
 cd

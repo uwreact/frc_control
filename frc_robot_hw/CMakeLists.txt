@@ -78,10 +78,6 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
 
   message(STATUS "Performing cross-compile, linking WPILib")
 
-  # Find OpenCV
-  set(OpenCV_DIR ${CMAKE_FIND_ROOT_PATH}/share/OpenCV/)
-  find_package(OpenCV)
-
   # Extract WPI libraries and headers from maven archives
   add_custom_target(extract_wpilib COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../extract_archives.py)
   add_dependencies(${PROJECT_NAME} extract_wpilib)
@@ -89,28 +85,16 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   # Include WPILib and vendor headers
   file(GLOB WPILIB_HEADERS $ENV{HOME}/frc2019/extracted/include/*)
   include_directories(
-   ${WPILIB_HEADERS}
+    ${WPILIB_HEADERS}
   )
-
-  # Compile WPILib libraries from source
-  file(GLOB uncompiled_artifacts $ENV{HOME}/frc2019/extracted/src/*/)
-  foreach(artifact_path ${uncompiled_artifacts})
-    get_filename_component(artifact ${artifact_path} NAME [CACHE])
-
-    # Find all source files
-    file(GLOB_RECURSE ${artifact}_SRC ${artifact_path}/*.cpp ${artifact_path}/*.cc)
-    list(FILTER ${artifact}_SRC EXCLUDE REGEX "jni") # Ignore anything with "jni" in it
-    list(FILTER ${artifact}_SRC EXCLUDE REGEX "sim") # Ignore anything with "sim" in it
-
-    add_library(${artifact} ${${artifact}_SRC})
-    target_link_libraries(${artifact} ${OpenCV_LIBS})
-    list(APPEND build_wpilibs ${artifact})
-  endforeach()
 
   # Setup linker to link WPILib libraries
   set(WPILIB_LIB_DIR $ENV{HOME}/frc2019/extracted/libathena)
   file(GLOB WPILIB_LIBS ${WPILIB_LIB_DIR}/*/*.so
-                        ${WPILIB_LIB_DIR}/*/*.so.[0-9]*) #TODO: This is super hackey, but it filters out so.debugs
+                        ${WPILIB_LIB_DIR}/*/*.so.[0-9]*)
+  list(FILTER WPILIB_LIBS EXCLUDE REGEX "debug")
+  list(FILTER WPILIB_LIBS EXCLUDE REGEX "jni")
+  list(FILTER WPILIB_LIBS EXCLUDE REGEX "java")
 
   add_executable(robot_base_node
     src/frc_robot_hw_real.cpp
@@ -121,11 +105,10 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   target_link_libraries(robot_base_node
     ${PROJECT_NAME}
     ${catkin_LIBRARIES}
-    ${build_wpilibs}
     ${WPILIB_LIBS}
   )
 
-  set(extra_targets robot_base_node)
+  list(APPEND extra_targets robot_base_node)
 
 # If we're compiling for a normal Ubuntu image, do not compile real-robot WPILib code
 else()
@@ -138,7 +121,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
 )
 
-# Install libraries
+# Install libraries and binaries
 install(TARGETS ${PROJECT_NAME} ${extra_targets}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
