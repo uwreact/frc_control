@@ -74,6 +74,10 @@ void FRCRobotHWReal::runHAL() {
       last_joy_pub_time          = time;
       joy_pub_.msg_.header.stamp = time;
 
+      joy_pub_.msg_.sticks.resize(frc::DriverStation::kJoystickPorts);
+      joy_pub_.msg_.types.resize(frc::DriverStation::kJoystickPorts);
+      joy_pub_.msg_.names.resize(frc::DriverStation::kJoystickPorts);
+
       for (unsigned i = 0; i < frc::DriverStation::kJoystickPorts; i++) {
         // NOTE(matt.reynolds): Driver station axes are shortened from double (float64)
         // to float (float32) to be packed in sensor_msgs::Joy.
@@ -205,7 +209,8 @@ void FRCRobotHWReal::runHAL() {
     // TODO: Publish NetworkTables.
 
     // Wait for driver station data so the loop doesn't hog the CPU
-    ds.WaitForData();
+    // Timeout after 100ms so that data is published even when DS is not connected
+    ds.WaitForData(0.1);
   }
 }
 
@@ -480,6 +485,8 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
   // Start up the HAL thread to setup the HAL and report robot code ready to the FMS
   hal_thread_ = std::thread(&FRCRobotHWReal::runHAL, this);
 
+  // TODO: Set robot_code_ready once all controllers are loaded
+  robot_code_ready_ = true;
   return true;
 }
 
