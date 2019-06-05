@@ -8,6 +8,9 @@ fi
 remote="admin@roborio-$1-frc.local"
 localroot=~/frc2019/roborio/arm-frc2019-linux-gnueabi
 
+blue=$(tput setaf 4)
+normal=$(tput sgr0)
+
 run_remote() {
   ssh $remote -q "$@"
 }
@@ -20,6 +23,7 @@ append_remote() {
   run_remote "echo $1 >> $2"
 }
 
+
 # Set the date on the RIO to match the local machine
 run_remote date --set \"$(date +%y%m%d%H%M.%S)\"
 
@@ -27,13 +31,17 @@ run_remote date --set \"$(date +%y%m%d%H%M.%S)\"
 ##### Install online packages #####
 update=1
 if [ $update -gt 0 ]; then
+  printf "\n${blue}>>>>> Updating opkg${normal}\n"
   run_remote opkg update
+  printf "\n${blue}>>>>> Upgrading opkg packages${normal}\n"
   run_remote opkg upgrade
 
   # Install rsync to facilitate copying files
+  printf "\n${blue}>>>>> Installing rsync${normal}\n"
   run_remote opkg install --volatile-cache rsync # Not required to run code, but installed so we don't have to use scp
 
   # Install dependencies
+  printf "\n${blue}>>>>> Installing dependencies${normal}\n"
   run_remote opkg install --volatile-cache gcc g++ gcc-symlinks g++-symlinks binutils # Is this really needed? Kinda big
   run_remote opkg install --volatile-cache libboost-atomic1.63.0 libboost-chrono1.63.0 libboost-date-time1.63.0 libboost-filesystem1.63.0 libboost-graph1.63.0 libboost-iostreams1.63.0 libboost-program-options1.63.0 libboost-random1.63.0 libboost-regex1.63.0 libboost-signals1.63.0 libboost-system1.63.0 libboost-thread1.63.0 libboost-timer1.63.0
   run_remote opkg install --volatile-cache python-pip python-dev
@@ -44,6 +52,7 @@ fi
 
 
 ##### Copy over the ROS environment #####
+printf "\n${blue}>>>>> Uploading ROS${normal}\n"
 rsync -e 'ssh -q' -rqaH --no-i-r $localroot/opt $remote:/
 
 if ! run_remote '[ -d /usr/local/ros ]'; then
@@ -59,6 +68,7 @@ fi
 # rsync -e 'ssh -q' -rqaH --no-i-r $localroot/lib/cmake/tinyxml* $remote:/usr/local/ros/lib/cmake
 
 # Libraries
+printf "\n${blue}>>>>> Uploading ROS dependencies${normal}\n"
 rsync -e 'ssh -q' -rqaH --no-i-r $localroot/lib/libconsole_bridge.so* $remote:/usr/local/ros/lib
 rsync -e 'ssh -q' -rqaH --no-i-r $localroot/lib/libtinyxml2.so* $remote:/usr/local/ros/lib # Needed for rospack
 
@@ -66,6 +76,7 @@ rsync -e 'ssh -q' -rqaH --no-i-r $localroot/lib/libtinyxml2.so* $remote:/usr/loc
 ##### Edit os_detect to work on nilrt #####
 # Add `OS_NILRT = 'nilrt'`
 # Add `OsDetect.register_default(OS_NILRT, FdoDetect("nilrt"))`
+printf "\n${blue}>>>>> Modifying os_detect to support nilrt${normal}\n"
 f=/usr/lib/python2.7/site-packages/rospkg/os_detect.py
 if ! run_remote grep nilrt $f > /dev/null; then
 
@@ -79,12 +90,13 @@ fi
 
 
 ##### Source ROS #####
+printf "\n${blue}>>>>> Modifying .bashrc to source the ROS environment${normal}\n"
 if ! run_remote grep "\"source /opt/ros/melodic/setup.bash\"" .bashrc > /dev/null; then
   append_remote "" .bashrc
   append_remote "\# Source ROS" .bashrc
   append_remote "source /opt/ros/melodic/setup.bash" .bashrc
-  append_remote "export ROS_HOSTNAME=roborio-$1-frc.local" .bashrc
+  append_remote "export ROS_HOSTNAME=$(hostname).local" .bashrc
 fi
 
-# Make sure team number is right
-run_remote sed -i "\"s/^export ROS_HOSTNAME=.*/export ROS_HOSTNAME=roborio-$1-frc.local/\"" .bashrc
+
+printf "\n${blue}>>>>> Done\n\n"
