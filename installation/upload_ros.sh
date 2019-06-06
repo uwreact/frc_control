@@ -28,6 +28,11 @@ append_remote() {
 run_remote date --set \"$(date +%y%m%d%H%M.%S)\"
 
 
+##### Kill robot code #####
+printf "\n${blue}>>>>> Stopping previous robot code${normal}\n"
+run_remote ". /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t"
+
+
 ##### Install online packages #####
 update=1
 if [ $update -gt 0 ]; then
@@ -43,7 +48,11 @@ if [ $update -gt 0 ]; then
   # Install dependencies
   printf "\n${blue}>>>>> Installing dependencies${normal}\n"
   run_remote opkg install --volatile-cache gcc g++ gcc-symlinks g++-symlinks binutils # Is this really needed? Kinda big
-  run_remote opkg install --volatile-cache libboost-atomic1.63.0 libboost-chrono1.63.0 libboost-date-time1.63.0 libboost-filesystem1.63.0 libboost-graph1.63.0 libboost-iostreams1.63.0 libboost-program-options1.63.0 libboost-random1.63.0 libboost-regex1.63.0 libboost-signals1.63.0 libboost-system1.63.0 libboost-thread1.63.0 libboost-timer1.63.0
+  run_remote opkg install --volatile-cache libboost-atomic1.63.0 libboost-chrono1.63.0 libboost-date-time1.63.0\
+                                           libboost-filesystem1.63.0 libboost-graph1.63.0 libboost-iostreams1.63.0\
+                                           libboost-program-options1.63.0 libboost-random1.63.0 libboost-regex1.63.0\
+                                           libboost-signals1.63.0 libboost-system1.63.0 libboost-thread1.63.0\
+                                           libboost-timer1.63.0
   run_remote opkg install --volatile-cache python-pip python-dev
   run_remote pip install --no-cache-dir --upgrade pip
   run_remote pip install --no-cache-dir catkin_pkg rosdep rospkg # ROS
@@ -80,7 +89,7 @@ printf "\n${blue}>>>>> Modifying os_detect to support nilrt${normal}\n"
 f=/usr/lib/python2.7/site-packages/rospkg/os_detect.py
 if ! run_remote grep nilrt $f > /dev/null; then
 
-  # TODO: I'm bad at awk so using sed for now.
+  # TODO(matt.reynolds): I'm bad at awk so using sed for now.
   run_remote sed -i "\"/^OS_UBUNTU = 'ubuntu'/a OS_NILRT = 'nilrt'\"" $f
   run_remote sed -i "\"/^OsDetect.register_default(OS_UBUNTU, LsbDetect(\\\"Ubuntu\\\"))/a OsDetect.register_default(OS_NILRT, FdoDetect('nilrt'))\"" $f
 
@@ -99,5 +108,9 @@ append_remote "export ROS_HOSTNAME=\$(hostname).local" $f
 run_remote chmod +x $f
 
 
-printf "\n${blue}>>>>> Done\n\n"
+printf "\n${blue}>>>>> Cleaning up\n"
 run_remote ldconfig
+run_remote sync
+
+
+printf "\n${blue}>>>>> Done\n\n"
