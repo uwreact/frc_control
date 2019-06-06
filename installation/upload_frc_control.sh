@@ -40,11 +40,23 @@ rsync -e 'ssh -q' -rqaH --no-i-r $localroot/lib/liburdf* $remote:/usr/local/ros/
 rsync -e 'ssh -q' -rqaH --no-i-r $localroot/usr/local/lib/libPocoFoundation.so.60 $remote:/usr/local/ros/lib
 
 
-##### Copy over WPILib #####
+##### Copy over WPILib libraries #####
 printf "\n${blue}>>>>> Uploading WPILib${normal}\n"
 rsync -e 'ssh -q' -rqaH --no-i-r ~/frc2019/extracted/libathena/*/*d.so $remote:/usr/local/frc/third-party/lib
 rsync -e 'ssh -q' -rqaH --no-i-r ~/frc2019/extracted/libathena/opencv/libopencv_*d.so.3.4 $remote:/usr/local/frc/third-party/lib
 
+##### Copy over vendor libraries #####
+# NOTE: Disabled since vendor libs are linked statically
+#
+# printf "\n${blue}>>>>> Uploading vendor libs${normal}\n"
+# for dir in ~/frc2019/extracted/libathena/*; do
+#   case $(basename $dir) in
+#     cameraserver|chipobject|cscore|hal|netcomm|ntcore|opencv|wpilibc|wpiutil) continue;;
+#     *) ;;
+#   esac
+#
+#   rsync -e 'ssh -q' -rqaH --no-i-r $dir/*.so $remote:/usr/local/frc/third-party/lib
+# done
 
 ##### (Somewhat hackily) Install frc_control to the RIO #####
 # TODO: Delete old files
@@ -53,6 +65,12 @@ ws=$(catkin locate)
 rsync -e 'ssh -q' -rqaH --no-i-r $ws/install_cross/include $remote:/opt/ros/melodic
 rsync -e 'ssh -q' -rqaH --no-i-r $ws/install_cross/lib     $remote:/opt/ros/melodic
 rsync -e 'ssh -q' -rqaH --no-i-r $ws/install_cross/share   $remote:/opt/ros/melodic
+
+
+printf "\n${blue}>>>>> Setting permissions\n"
+run_remote chmod -R 777 /usr/local/frc/third-party/lib
+run_remote chown -R lvuser:ni /usr/local/frc/third-party/lib
+run_remote ldconfig
 
 
 printf "\n${blue}>>>>> Done\n\n"

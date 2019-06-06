@@ -88,13 +88,25 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
     ${WPILIB_HEADERS}
   )
 
-  # Setup linker to link WPILib libraries
+  # Setup linker to link WPILib and vendor libraries
   set(WPILIB_LIB_DIR $ENV{HOME}/frc2019/extracted/libathena)
-  file(GLOB WPILIB_LIBS ${WPILIB_LIB_DIR}/*/*.so
-                        ${WPILIB_LIB_DIR}/*/*.so.[0-9]*)
+  set(WPILIB_DIRS cameraserver chipobject cscore hal netcomm ntcore opencv wpilibc wpiutil)
+
+  # Link WPILib libs dynamically
+  foreach(dir ${WPILIB_DIRS})
+    file(GLOB temp ${WPILIB_LIB_DIR}/${dir}/*.so
+                   ${WPILIB_LIB_DIR}/${dir}/*.so.[0-9]*)
+    list(APPEND WPILIB_LIBS ${temp})
+  endforeach()
   list(FILTER WPILIB_LIBS EXCLUDE REGEX "debug")
   list(FILTER WPILIB_LIBS EXCLUDE REGEX "jni")
   list(FILTER WPILIB_LIBS EXCLUDE REGEX "java")
+
+  # Link vendor libs statically
+  file(GLOB VENDOR_LIBS ${WPILIB_LIB_DIR}/*/*.a)
+  foreach(dir ${WPILIB_DIRS})
+    list(FILTER VENDOR_LIBS EXCLUDE REGEX ${dir})
+  endforeach()
 
   add_executable(robot_base_node
     src/frc_robot_hw_real.cpp
@@ -102,10 +114,13 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   )
 
   # Link ROS, WPILib, and vendor libraries
+  # Note that we link the vendor libraries twice to resolve odering issues
   target_link_libraries(robot_base_node
     ${PROJECT_NAME}
     ${catkin_LIBRARIES}
     ${WPILIB_LIBS}
+    ${VENDOR_LIBS}
+    ${VENDOR_LIBS}
   )
 
   list(APPEND extra_targets robot_base_node)

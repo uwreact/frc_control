@@ -100,3 +100,4 @@ fi
 
 
 printf "\n${blue}>>>>> Done\n\n"
+run_remote ldconfig
