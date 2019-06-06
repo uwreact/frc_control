@@ -108,8 +108,10 @@ def main():
     """
     parser = argparse.ArgumentParser(description='Extract maven artifacts. \
             By default, previously extracted files will be retained and freshened from the archives as required')
-    parser.add_argument(
-        '-c', '--clean', action='store_true', help='Clean existing extracted archives before extracting')
+    parser.add_argument('-c',
+                        '--clean',
+                        action='store_true',
+                        help='Clean existing extracted archives before extracting')
     args = parser.parse_args()
 
     # Create the required directories

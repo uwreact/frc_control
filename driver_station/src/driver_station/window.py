@@ -29,7 +29,7 @@
 TODO(Kaelan): Module docstring
 """
 
-from python_qt_binding.QtWidgets import QMainWindow  # pylint: disable=import-error, no-name-in-module
+from python_qt_binding.QtWidgets import QMainWindow  # pylint: disable=import-error
 
 
 class MainWindow(QMainWindow):

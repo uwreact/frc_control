@@ -82,10 +82,19 @@ def add_cmake_flag(flag, workspace):
     """
     Add the CMake flag to the catkin configuration on both native and cross profiles
     """
-    subprocess.check_call(['catkin', 'config', '--profile', 'native', '--remove-args', flag], cwd=workspace)
-    subprocess.check_call(['catkin', 'config', '--profile', 'cross', '--remove-args', flag], cwd=workspace)
-    subprocess.check_call(['catkin', 'config', '--profile', 'native', '--append-args', flag], cwd=workspace)
-    subprocess.check_call(['catkin', 'config', '--profile', 'cross', '--append-args', flag], cwd=workspace)
+    devnull = open(os.devnull, 'w')
+    subprocess.check_call(['catkin', 'config', '--profile', 'native', '--remove-args', flag],
+                          cwd=workspace,
+                          stdout=devnull)
+    subprocess.check_call(['catkin', 'config', '--profile', 'cross', '--remove-args', flag],
+                          cwd=workspace,
+                          stdout=devnull)
+    subprocess.check_call(['catkin', 'config', '--profile', 'native', '--append-args', flag],
+                          cwd=workspace,
+                          stdout=devnull)
+    subprocess.check_call(['catkin', 'config', '--profile', 'cross', '--append-args', flag],
+                          cwd=workspace,
+                          stdout=devnull)
 
 
 def main():
@@ -97,14 +106,19 @@ def main():
     # pylint: disable=too-many-statements
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '-c', '--catkin_ws', default=os.getcwd(), help='The workspace in which to enable the vendor library')
-    parser.add_argument(
-        '-d', '--download', action='store_true', help='Only download & install libraries, do not enable them')
+    parser.add_argument('-c',
+                        '--catkin_ws',
+                        default=os.getcwd(),
+                        help='The workspace in which to enable the vendor library')
+    parser.add_argument('-d',
+                        '--download',
+                        action='store_true',
+                        help='Only download & install libraries, do not enable them')
     parser.add_argument('-a', '--all', action='store_true', help='Install all available libraries')
     for library in LIBRARIES:
-        parser.add_argument(
-            '--{0}'.format(library), action='store_true', help='Install the {0} library'.format(library))
+        parser.add_argument('--{0}'.format(library),
+                            action='store_true',
+                            help='Install the {0} library'.format(library))
 
     args = parser.parse_args()
 
