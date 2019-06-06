@@ -90,13 +90,13 @@ fi
 
 
 ##### Source ROS #####
-printf "\n${blue}>>>>> Modifying .bashrc to source the ROS environment${normal}\n"
-if ! run_remote grep "\"source /opt/ros/melodic/setup.bash\"" .bashrc > /dev/null; then
-  append_remote "" .bashrc
-  append_remote "\# Source ROS" .bashrc
-  append_remote "source /opt/ros/melodic/setup.bash" .bashrc
-  append_remote "export ROS_HOSTNAME=$(hostname).local" .bashrc
-fi
+printf "\n${blue}>>>>> Modifying /etc/profile.d to source the ROS environment${normal}\n"
+f=/etc/profile.d/ros-env.sh
+write_remote "" $f
+append_remote "\# Source ROS" $f
+append_remote "source /opt/ros/melodic/setup.bash" $f
+append_remote "export ROS_HOSTNAME=\$(hostname).local" $f
+run_remote chmod +x $f
 
 
 printf "\n${blue}>>>>> Done\n\n"
