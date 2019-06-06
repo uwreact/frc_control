@@ -67,7 +67,6 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
   using namespace hardware_template;
 
   ROS_INFO_NAMED(name_, "Loading joints");
-  return;
 
   // Read a list of joint information from the parameter server. Each entry in the list
   // specifies a name for the joint and a hardware ID corresponding
