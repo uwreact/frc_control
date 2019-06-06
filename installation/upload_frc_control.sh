@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# Deploy frc_control and any additional user code to the roboRIO.
+#
 
 # TODO(matt.reynolds): Better method to specify the bringup launch file.
 # Maybe save team number and launchfile to a config file somwhere to read as default

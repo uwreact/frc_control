@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# Install a locally cross-compiled roscore onto the roboRIO.
+#
 
 if [ $# -ne 1 ]; then
   echo "Please specify the team number"

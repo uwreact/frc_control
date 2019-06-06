@@ -136,6 +136,5 @@ Use the `upload_frc_control.sh` script to upload and install your user code to t
 You must specify the team number.
 You should also specify the launch file to be run on bootup - By default, this is `frc_robot_hw bringup.launch`, but you may customize it to whatever launch file is appropriate for your system.
 
-
     cd ~/robot_workspace/src/frc_control/installation
     ./upload_frc_control.sh 1234 frc_robot_hw bringup.launch
