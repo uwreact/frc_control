@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(analog_state_controller)
+project(analog_controller)
 
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
@@ -46,6 +46,6 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 # Install plugin file
-install(FILES analog_state_controller_plugins.xml
+install(FILES analog_controller_plugins.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

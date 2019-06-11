@@ -25,39 +25,42 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#include <analog_state_controller/analog_command_controller.h>
-#include <pluginlib/class_list_macros.hpp>
+#pragma once
 
-namespace analog_state_controller {
+#include <analog_controller/analog_state_interface.h>
+#include <hardware_interface/internal/hardware_resource_manager.h>
 
-bool AnalogCommandController::init(hardware_interface::AnalogCommandInterface* hw, ros::NodeHandle& n) {
-  std::string joint_name;
-  if (!n.getParam("joint", joint_name)) {
-    ROS_ERROR("No joint given (namespace: %s)", n.getNamespace().c_str());
-    return false;
+namespace hardware_interface {
+
+/** @brief A handle used to read and command an analog actuator. */
+class AnalogCommandHandle : public AnalogStateHandle {
+public:
+  AnalogCommandHandle() : AnalogStateHandle(), cmd_(nullptr) {}
+
+  /**
+   * @param state_handle This joint's state handle
+   * @param cmd A pointer to the storage for this joint's output command
+   */
+  AnalogCommandHandle(const AnalogStateHandle& state_handle, double* cmd) : AnalogStateHandle(state_handle), cmd_(cmd) {
+    if (!cmd_)
+      throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
   }
-  joint_       = hw->getHandle(joint_name);
 
-  if (!n.getParam("default", default_val_)) {
-    default_val_ = 0.0;
+  void setCommand(double command) {
+    assert(cmd_);
+    *cmd_ = command;
   }
 
-  sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &AnalogCommandController::commandCB, this);
-  return true;
-}
+  double getCommand() const {
+    assert(cmd_);
+    return *cmd_;
+  }
 
-void AnalogCommandController::starting(const ros::Time& /*time*/) {
-  command_buffer_.writeFromNonRT(default_val_);
-}
+private:
+  double* cmd_;
+};
 
-void AnalogCommandController::update(const ros::Time& /*time*/, const ros::Duration& /*period*/) {
-  joint_.setCommand(*command_buffer_.readFromRT());
-}
+/** @brief Hardware interface to support commanding an array of analog actuators. */
+class AnalogCommandInterface : public HardwareResourceManager<AnalogCommandHandle, ClaimResources> {};
 
-void AnalogCommandController::commandCB(const std_msgs::Float64ConstPtr& msg) {
-  command_buffer_.writeFromNonRT(msg->data);
-}
-
-}  // namespace analog_state_controller
-
-PLUGINLIB_EXPORT_CLASS(analog_state_controller::AnalogCommandController, controller_interface::ControllerBase)
+}  // namespace hardware_interface

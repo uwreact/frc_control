@@ -1,7 +1,0 @@
-<library path="lib/libanalog_state_controller">
-  <class name="analog_state_controller/AnalogCommandController" type="analog_state_controller::AnalogCommandController" base_class_type="controller_interface::ControllerBase">
-    <description>
-      Command an analog device
-    </description>
-  </class>
-</library>

@@ -25,7 +25,7 @@
   <depend>urdf</depend>
 
   <depend>frc_msgs</depend>
-  <depend>analog_state_controller</depend>
+  <depend>analog_controller</depend>
   <depend>binary_state_controller</depend>
   <depend>ternary_state_controller</depend>
   <depend>pdp_state_controller</depend>

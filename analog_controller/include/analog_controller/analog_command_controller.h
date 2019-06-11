@@ -27,7 +27,7 @@
 
 #pragma once
 
-#include <analog_state_controller/analog_command_interface.h>
+#include <analog_controller/analog_command_interface.h>
 #include <controller_interface/controller.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <realtime_tools/realtime_buffer.h>
@@ -35,7 +35,7 @@
 #include <std_msgs/Float64.h>
 
 
-namespace analog_state_controller {
+namespace analog_controller {
 
 /**
  * \brief Analog joint controller.
@@ -70,4 +70,4 @@ private:
   void            commandCB(const std_msgs::Float64ConstPtr& msg);
 };
 
-}  // namespace analog_state_controller
+}  // namespace analog_controller
