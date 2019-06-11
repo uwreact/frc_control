@@ -60,6 +60,7 @@ void RobotControlLoop::update(const ros::Time& time_now, bool update_controllers
 
   // Read from hardware
   robot_hw_->read(time_now, rw_period);
+  robot_hw_->updateRobotState();
 
   if (update_controllers) {
     ros::Duration update_period = time_now - last_update_time_;
