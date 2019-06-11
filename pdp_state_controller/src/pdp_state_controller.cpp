@@ -33,8 +33,8 @@
 namespace pdp_state_controller {
 
 bool PDPStateController::init(hardware_interface::PDPStateInterface* hw,
-                              const ros::NodeHandle&                 root_nh,
-                              const ros::NodeHandle&                 controller_nh) {
+                              ros::NodeHandle&                       root_nh,
+                              ros::NodeHandle&                       controller_nh) {
 
   // Get all PDP names from the hardware interface
   const std::vector<std::string>& pdp_names = hw->getNames();

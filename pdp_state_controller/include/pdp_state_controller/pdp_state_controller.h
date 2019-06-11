@@ -57,11 +57,11 @@ public:
   PDPStateController() : publish_rate_(15.0) {}
 
   virtual bool init(hardware_interface::PDPStateInterface* hw,
-                    const ros::NodeHandle&                 root_nh,
-                    const ros::NodeHandle&                 controller_nh);
-  virtual void starting(const ros::Time& time);
-  virtual void update(const ros::Time& time, const ros::Duration& period);
-  virtual void stopping(const ros::Time& time);
+                    ros::NodeHandle&                       root_nh,
+                    ros::NodeHandle&                       controller_nh) override;
+  virtual void starting(const ros::Time& time) override;
+  virtual void update(const ros::Time& time, const ros::Duration& period) override;
+  virtual void stopping(const ros::Time& time) override;
 
 private:
   using RtPublisher         = realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>;
