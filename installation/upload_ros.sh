@@ -65,7 +65,8 @@ fi
 
 ##### Copy over the ROS environment #####
 printf "\n${blue}>>>>> Uploading ROS${normal}\n"
-rsync -e 'ssh -q' -rqaH --no-i-r $localroot/opt $remote:/
+run_remote mkdir -p /opt/ros/
+rsync -e 'ssh -q' -rqaH --no-i-r $localroot/opt/ros/melodic/ $remote:/opt/ros/melodic/ --delete
 
 if ! run_remote '[ -d /usr/local/ros ]'; then
   run_remote mkdir /usr/local/ros
@@ -106,7 +107,7 @@ printf "\n${blue}>>>>> Modifying /etc/profile.d to source the ROS environment${n
 f=/etc/profile.d/ros-env.sh
 write_remote "" $f
 append_remote "\# Source ROS" $f
-append_remote "source /opt/ros/melodic/setup.bash" $f
+append_remote "source /opt/ros/user/setup.bash" $f
 append_remote "export ROS_HOSTNAME=\$(hostname).local" $f
 run_remote chmod +x $f
 

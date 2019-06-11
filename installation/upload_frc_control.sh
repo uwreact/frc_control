@@ -78,13 +78,16 @@ rsync -e 'ssh -q' -rqaH --no-i-r ~/frc2019/extracted/libathena/opencv/libopencv_
 # done
 
 
-##### (Somewhat hackily) Install frc_control to the RIO #####
-# TODO: Delete old files
+##### Install frc_control to the RIO #####
 printf "\n${blue}>>>>> Uploading frc_control${normal}\n"
 ws=$(catkin locate)
-rsync -e 'ssh -q' -rqaH --no-i-r $ws/install_cross/include $remote:/opt/ros/melodic
-rsync -e 'ssh -q' -rqaH --no-i-r $ws/install_cross/lib     $remote:/opt/ros/melodic
-rsync -e 'ssh -q' -rqaH --no-i-r $ws/install_cross/share   $remote:/opt/ros/melodic
+
+run_remote mkdir -p /opt/ros/user/
+rsync -e 'ssh -q' -rqaH --no-i-r $ws/install_cross/ $remote:/opt/ros/user/ --delete
+run_remote sed -i "\"s|: \\\${_CATKIN_SETUP_DIR:=.*}|: \\\${_CATKIN_SETUP_DIR:=/opt/ros/user}|g\"" /opt/ros/user/setup.sh
+run_remote sed -i "\"s|: \\\${_CATKIN_SETUP_DIR:=.*}|: \\\${_CATKIN_SETUP_DIR:=/opt/ros/user}|g\"" /opt/ros/user/local_setup.sh
+run_remote sed -i "\"s|local-name: $ws/install_cross/setup.sh|local-name: /opt/ros/user/setup.sh|g\"" /opt/ros/user/.rosinstall
+run_remote sed -i "\"s|CMAKE_PREFIX_PATH = '.*'.split(';')|CMAKE_PREFIX_PATH = '/opt/ros/user;/opt/ros/melodic'.split(';')|g\"" /opt/ros/user/_setup_util.py
 
 
 ##### Set file permissions on uploaded files #####
