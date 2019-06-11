@@ -845,21 +845,34 @@ void FRCRobotHW::updateRobotState() {
 
   // Convert DigitalOutput states
   for (const auto& pair : digital_output_templates_) {
-    if (binary_states_[pair.first])
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-    else
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+    if (urdf_model_.getJoint(pair.first)) {
+      if (binary_states_[pair.first])
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
+      else
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+    } else {
+      joint_states_[pair.first].pos = binary_states_[pair.first];
+    }
     joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
     joint_states_[pair.first].eff = 0;  // TODO: ???
   }
 
   // Convert DoubleSolenoid states
   for (const auto& pair : double_solenoid_templates_) {
-    if (ternary_states_[pair.first] == TernaryState::kForward)
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-    else if (ternary_states_[pair.first] == TernaryState::kReverse)
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
-    else {
+    if (urdf_model_.getJoint(pair.first)) {
+      if (ternary_states_[pair.first] == TernaryState::kForward)
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
+      else if (ternary_states_[pair.first] == TernaryState::kReverse)
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+      else {
+      }
+    } else {
+      if (ternary_states_[pair.first] == TernaryState::kForward)
+        joint_states_[pair.first].pos = 1;
+      else if (ternary_states_[pair.first] == TernaryState::kReverse)
+        joint_states_[pair.first].pos = 0;
+      else {
+      }
     }
     joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
     joint_states_[pair.first].eff = 0;  // TODO: Pressure?
@@ -867,10 +880,14 @@ void FRCRobotHW::updateRobotState() {
 
   // Convert Solenoid states
   for (const auto& pair : solenoid_templates_) {
-    if (binary_states_[pair.first])
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-    else
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+    if (urdf_model_.getJoint(pair.first)) {
+      if (binary_states_[pair.first])
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
+      else
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+    } else {
+      joint_states_[pair.first].pos = binary_states_[pair.first];
+    }
     joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
     joint_states_[pair.first].eff = 0;  // TODO: Pressure?
   }
@@ -892,10 +909,15 @@ void FRCRobotHW::updateRobotState() {
   for (const auto& pair : digital_input_templates_) {
     if (pair.second.joint == "none")
       continue;
-    if (binary_states_[pair.first])
-      joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->upper;
-    else
-      joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->lower;
+
+    if (urdf_model_.getJoint(pair.second.joint)) {
+      if (binary_states_[pair.first])
+        joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->upper;
+      else
+        joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->lower;
+    } else {
+      joint_states_[pair.second.joint].pos = binary_states_[pair.first];
+    }
     joint_states_[pair.second.joint].vel = 0;  // Set vel to 0, since binary joints can have no speed
     // Note: Don't set effort, since another sensor might
   }
