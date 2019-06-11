@@ -33,16 +33,19 @@
 namespace hardware_interface {
 
 /**
- * A handle used to read and command a ternary (-1, 0, 1 or reverse, off, forward) actuator
- * (eg. H-bridge relay, double-acting solenoid).
+ * @brief A handle used to read and command a ternary actuator.
+ *
+ * State can be one of [-1, 0, 1] or [kReverse, kOff, kForward].
+ *
+ * These types of joints include H-bridge relays, double-acting solenoids, etc.
  */
 class TernaryCommandHandle : public TernaryStateHandle {
 public:
   TernaryCommandHandle() : TernaryStateHandle(), cmd_(nullptr) {}
 
   /**
-   * \param state_handle This joint's state handle
-   * \param cmd A pointer to the storage for this joint's output command
+   * @param state_handle This joint's state handle
+   * @param cmd A pointer to the storage for this joint's output command
    */
   TernaryCommandHandle(const TernaryStateHandle& state_handle, TernaryState* cmd)
       : TernaryStateHandle(state_handle), cmd_(cmd) {
@@ -64,7 +67,7 @@ private:
   TernaryState* cmd_;
 };
 
-/** \brief Hardware interface to support commanding an array of ternary actuators. */
+/** @brief Hardware interface to support commanding an array of ternary actuators. */
 class TernaryCommandInterface : public HardwareResourceManager<TernaryCommandHandle, ClaimResources> {};
 
 }  // namespace hardware_interface

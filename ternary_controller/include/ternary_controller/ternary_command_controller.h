@@ -38,19 +38,15 @@
 namespace ternary_controller {
 
 /**
- * \brief ternary joint controller.
+ * @brief Ternary joint controller.
  *
- * This class passes the ternary command signal down to the joint.
+ * This class passes the ternary (tri-state) command signal down to the joint.
  *
- * \tparam T Type implementing the JointCommandInterface.
- *
- * \section ROS interface
- *
- * \param type hardware interface type.
- * \param joint Name of the joint to control.
+ * Joint commands are converted from Int8 to hardware_interface::TernaryStateHandle::TernaryState according the Int8's
+ * sign. Negative values correspond to kReverse. Positive values correspond to kForward. Zero corresponds to kOff.
  *
  * Subscribes to:
- * - \b command (std_msgs::Float64) : The joint command to apply.
+ * - @bold command (std_msgs::Int8) : The joint command to apply.
  */
 class TernaryCommandController : public controller_interface::Controller<hardware_interface::TernaryCommandInterface> {
 private:

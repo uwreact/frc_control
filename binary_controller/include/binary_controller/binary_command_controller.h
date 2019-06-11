@@ -38,19 +38,12 @@
 namespace binary_controller {
 
 /**
- * \brief Binary joint controller.
+ * @brief Binary joint controller.
  *
- * This class passes the binary command signal down to the joint.
- *
- * \tparam T Type implementing the JointCommandInterface.
- *
- * \section ROS interface
- *
- * \param type hardware interface type.
- * \param joint Name of the joint to control.
+ * This class passes the binary (dual-state) command signal down to the joint.
  *
  * Subscribes to:
- * - \b command (std_msgs::Bool) : The joint command to apply.
+ * - @bold command (std_msgs::Bool) : The joint command to apply.
  */
 class BinaryCommandController : public controller_interface::Controller<hardware_interface::BinaryCommandInterface> {
 public:

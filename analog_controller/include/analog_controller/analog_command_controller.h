@@ -38,19 +38,12 @@
 namespace analog_controller {
 
 /**
- * \brief Analog joint controller.
+ * @brief Analog joint controller.
  *
  * This class passes the analog command signal down to the joint.
  *
- * \tparam T Type implementing the JointCommandInterface.
- *
- * \section ROS interface
- *
- * \param type hardware interface type.
- * \param joint Name of the joint to control.
- *
  * Subscribes to:
- * - \b command (std_msgs::Float64) : The joint command to apply.
+ * - @bold command (std_msgs::Float64) : The joint command to apply.
  */
 class AnalogCommandController : public controller_interface::Controller<hardware_interface::AnalogCommandInterface> {
 public:

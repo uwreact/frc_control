@@ -42,11 +42,11 @@ namespace pdp_state_controller {
  * This controller publishes the state of all resources registered to a `hardware_interface::PDPStateHandle` to a
  * topic of type `pdp_state_controller/PDPData`. The following is a basic configuration of the controller.
  *
- * \code
+ * @code
  * pdp_state_controller:
  *   type: pdp_state_controller/PDPStateController
  *   publish_rate: 50
- * \endcode
+ * @endcode
  *
  * NOTE: This controller is set up to handle multiple PDPs even though FRC-compliant robots may only use a single PDP.
  * Although the FRC manual requires only one PDP be used, the WPI HAL theoretically allows multiple PDPs so we will
