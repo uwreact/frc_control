@@ -63,6 +63,7 @@ public:
 
   hardware_interface::BinaryCommandHandle joint_;
   realtime_tools::RealtimeBuffer<bool>    command_buffer_;
+  bool                                    default_val_;
 
 private:
   ros::Subscriber sub_command_;

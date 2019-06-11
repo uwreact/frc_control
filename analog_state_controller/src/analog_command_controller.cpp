@@ -37,12 +37,17 @@ bool AnalogCommandController::init(hardware_interface::AnalogCommandInterface* h
     return false;
   }
   joint_       = hw->getHandle(joint_name);
+
+  if (!n.getParam("default", default_val_)) {
+    default_val_ = 0.0;
+  }
+
   sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &AnalogCommandController::commandCB, this);
   return true;
 }
 
 void AnalogCommandController::starting(const ros::Time& /*time*/) {
-  command_buffer_.writeFromNonRT(0.0);
+  command_buffer_.writeFromNonRT(default_val_);
 }
 
 void AnalogCommandController::update(const ros::Time& /*time*/, const ros::Duration& /*period*/) {

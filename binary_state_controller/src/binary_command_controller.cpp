@@ -37,12 +37,17 @@ bool BinaryCommandController::init(hardware_interface::BinaryCommandInterface* h
     return false;
   }
   joint_       = hw->getHandle(joint_name);
+
+  if (!n.getParam("default", default_val_)) {
+    default_val_ = false;
+  }
+
   sub_command_ = n.subscribe<std_msgs::Bool>("command", 1, &BinaryCommandController::commandCB, this);
   return true;
 }
 
 void BinaryCommandController::starting(const ros::Time& /*time*/) {
-  command_buffer_.writeFromNonRT(false);
+  command_buffer_.writeFromNonRT(default_val_);
 }
 
 void BinaryCommandController::update(const ros::Time& /*time*/, const ros::Duration& /*period*/) {

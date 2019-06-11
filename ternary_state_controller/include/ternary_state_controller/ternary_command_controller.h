@@ -66,6 +66,7 @@ public:
 
   hardware_interface::TernaryCommandHandle     joint_;
   realtime_tools::RealtimeBuffer<TernaryState> command_buffer_;
+  TernaryState                                 default_val_;
 
 private:
   ros::Subscriber sub_command_;

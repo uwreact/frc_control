@@ -36,12 +36,26 @@ bool TernaryCommandController::init(hardware_interface::TernaryCommandInterface*
     return false;
   }
   joint_       = hw->getHandle(joint_name);
+
+  int def;
+  if (!n.getParam("default", def)) {
+    def = 0;
+  }
+
+  if (def < 0) {
+    default_val_ = TernaryState::kReverse;
+  } else if (def > 0) {
+    default_val_ = TernaryState::kForward;
+  } else {
+    default_val_ = TernaryState::kOff;
+  }
+
   sub_command_ = n.subscribe<std_msgs::Int8>("command", 1, &TernaryCommandController::commandCB, this);
   return true;
 }
 
 void TernaryCommandController::starting(const ros::Time& /*time*/) {
-  command_buffer_.writeFromNonRT(TernaryState::kOff);
+  command_buffer_.writeFromNonRT(default_val_);
 }
 
 void TernaryCommandController::update(const ros::Time& /*time*/, const ros::Duration& /*period*/) {

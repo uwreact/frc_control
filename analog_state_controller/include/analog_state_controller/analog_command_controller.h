@@ -63,6 +63,7 @@ public:
 
   hardware_interface::AnalogCommandHandle joint_;
   realtime_tools::RealtimeBuffer<double>  command_buffer_;
+  double                                  default_val_;
 
 private:
   ros::Subscriber sub_command_;
