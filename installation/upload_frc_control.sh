@@ -94,6 +94,7 @@ run_remote sed -i "\"s|CMAKE_PREFIX_PATH = '.*'.split(';')|CMAKE_PREFIX_PATH = '
 printf "\n${blue}>>>>> Setting permissions\n"
 run_remote chmod -R 777 /usr/local/frc/third-party/lib
 run_remote chown -R lvuser:ni /usr/local/frc/third-party/lib
+run_remote chown -R lvuser:ni /opt/ros/user
 run_remote ldconfig
 
 
