@@ -60,13 +60,13 @@ public:
   void starting(const ros::Time& /*time*/) override;
   void update(const ros::Time& /*time*/, const ros::Duration& /*period*/) override;
 
+private:
   hardware_interface::TernaryCommandHandle     joint_;
   realtime_tools::RealtimeBuffer<TernaryState> command_buffer_;
   TernaryState                                 default_val_;
 
-private:
   ros::Subscriber sub_command_;
-  void            commandCB(const std_msgs::Int8ConstPtr& msg);
+  void            commandCallback(const std_msgs::Int8ConstPtr& msg);
 };
 
 }  // namespace ternary_controller

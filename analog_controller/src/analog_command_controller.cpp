@@ -42,7 +42,7 @@ bool AnalogCommandController::init(hardware_interface::AnalogCommandInterface* h
     default_val_ = 0.0;
   }
 
-  sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &AnalogCommandController::commandCB, this);
+  sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &AnalogCommandController::commandCallback, this);
   return true;
 }
 
@@ -54,7 +54,7 @@ void AnalogCommandController::update(const ros::Time& /*time*/, const ros::Durat
   joint_.setCommand(*command_buffer_.readFromRT());
 }
 
-void AnalogCommandController::commandCB(const std_msgs::Float64ConstPtr& msg) {
+void AnalogCommandController::commandCallback(const std_msgs::Float64ConstPtr& msg) {
   command_buffer_.writeFromNonRT(msg->data);
 }
 

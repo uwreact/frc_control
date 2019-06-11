@@ -61,7 +61,6 @@ public:
                     ros::NodeHandle&                       controller_nh) override;
   virtual void starting(const ros::Time& time) override;
   virtual void update(const ros::Time& time, const ros::Duration& period) override;
-  virtual void stopping(const ros::Time& time) override;
 
 private:
   using RtPublisher         = realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>;

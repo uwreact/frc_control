@@ -54,13 +54,13 @@ public:
   void starting(const ros::Time& /*time*/) override;
   void update(const ros::Time& /*time*/, const ros::Duration& /*period*/) override;
 
+private:
   hardware_interface::AnalogCommandHandle joint_;
   realtime_tools::RealtimeBuffer<double>  command_buffer_;
   double                                  default_val_;
 
-private:
   ros::Subscriber sub_command_;
-  void            commandCB(const std_msgs::Float64ConstPtr& msg);
+  void            commandCallback(const std_msgs::Float64ConstPtr& msg);
 };
 
 }  // namespace analog_controller

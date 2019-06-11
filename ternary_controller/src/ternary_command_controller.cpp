@@ -35,7 +35,7 @@ bool TernaryCommandController::init(hardware_interface::TernaryCommandInterface*
     ROS_ERROR("No joint given (namespace: %s)", n.getNamespace().c_str());
     return false;
   }
-  joint_       = hw->getHandle(joint_name);
+  joint_ = hw->getHandle(joint_name);
 
   int def;
   if (!n.getParam("default", def)) {
@@ -50,7 +50,7 @@ bool TernaryCommandController::init(hardware_interface::TernaryCommandInterface*
     default_val_ = TernaryState::kOff;
   }
 
-  sub_command_ = n.subscribe<std_msgs::Int8>("command", 1, &TernaryCommandController::commandCB, this);
+  sub_command_ = n.subscribe<std_msgs::Int8>("command", 1, &TernaryCommandController::commandCallback, this);
   return true;
 }
 
@@ -62,7 +62,7 @@ void TernaryCommandController::update(const ros::Time& /*time*/, const ros::Dura
   joint_.setCommand(*command_buffer_.readFromRT());
 }
 
-void TernaryCommandController::commandCB(const std_msgs::Int8ConstPtr& msg) {
+void TernaryCommandController::commandCallback(const std_msgs::Int8ConstPtr& msg) {
   TernaryState state;
   if (msg->data < 0) {
     state = TernaryState::kReverse;

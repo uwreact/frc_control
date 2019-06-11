@@ -90,8 +90,6 @@ void PDPStateController::update(const ros::Time& time, const ros::Duration& /*pe
   }
 }
 
-void PDPStateController::stopping(const ros::Time& /*time*/) {}
-
 }  // namespace pdp_state_controller
 
 PLUGINLIB_EXPORT_CLASS(pdp_state_controller::PDPStateController, controller_interface::ControllerBase)

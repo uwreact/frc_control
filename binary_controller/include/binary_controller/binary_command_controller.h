@@ -54,13 +54,13 @@ public:
   void starting(const ros::Time& /*time*/) override;
   void update(const ros::Time& /*time*/, const ros::Duration& /*period*/) override;
 
+private:
   hardware_interface::BinaryCommandHandle joint_;
   realtime_tools::RealtimeBuffer<bool>    command_buffer_;
   bool                                    default_val_;
 
-private:
   ros::Subscriber sub_command_;
-  void            commandCB(const std_msgs::BoolConstPtr& msg);
+  void            commandCallback(const std_msgs::BoolConstPtr& msg);
 };
 
 }  // namespace binary_controller

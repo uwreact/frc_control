@@ -36,13 +36,13 @@ bool BinaryCommandController::init(hardware_interface::BinaryCommandInterface* h
     ROS_ERROR("No joint given (namespace: %s)", n.getNamespace().c_str());
     return false;
   }
-  joint_       = hw->getHandle(joint_name);
+  joint_ = hw->getHandle(joint_name);
 
   if (!n.getParam("default", default_val_)) {
     default_val_ = false;
   }
 
-  sub_command_ = n.subscribe<std_msgs::Bool>("command", 1, &BinaryCommandController::commandCB, this);
+  sub_command_ = n.subscribe<std_msgs::Bool>("command", 1, &BinaryCommandController::commandCallback, this);
   return true;
 }
 
@@ -54,8 +54,8 @@ void BinaryCommandController::update(const ros::Time& /*time*/, const ros::Durat
   joint_.setCommand(*command_buffer_.readFromRT());
 }
 
-void BinaryCommandController::commandCB(const std_msgs::BoolConstPtr& msg) {
-  command_buffer_.writeFromNonRT(msg->data);
+void BinaryCommandController::commandCallback(const std_msgs::BoolConstPtr& msg) {
+  command_buffer_.writeFromNonRT((bool) msg->data);
 }
 
 }  // namespace binary_controller
