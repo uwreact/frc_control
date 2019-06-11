@@ -66,7 +66,7 @@ Download the latest Linux release from [the WPILib GitHub](https://github.com/wp
 This list of packages ~~may~~**will** change as time goes on. Right now, the standard robot set of packages contains many unneeded packages and adds a lot of unnecessary dependencies. Once development of this project proceeds further, we can further customize this as required. In fact, we might consider only installing the dependencies of frc_control with no additional packages. This does mean that teams who wish to run their whole ROS stack on the RIO (Instead of the recommended config; frc_control on the RIO, everything else on other machines) will be required to either manually install their extra dependencies, or clone them into their workspace. Needs some consideration.
 
     sudo apt install python-rosinstall-generator python-wstool
-    rosinstall_generator robot ros_control realtime_tools --rosdistro melodic --deps --wet-only --tar > melodic-roborio-wet.rosinstall #Install robot plus any other dependencies
+    rosinstall_generator robot ros_control ros_controllers realtime_tools --rosdistro melodic --deps --wet-only --tar > melodic-roborio-wet.rosinstall # Install robot plus any other dependencies
     wstool init -j8 src melodic-roborio-wet.rosinstall
 
 ## 4. Manually resolve dependencies
