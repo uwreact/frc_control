@@ -14,6 +14,13 @@
   <url type="repository">https://github.com/uwreact/frc_control</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>controller_interface</depend>
   <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>realtime_tools</depend>
   <depend>roscpp</depend>
+
+  <export>
+    <controller_interface plugin="${prefix}/analog_state_controller_plugins.xml"/>
+  </export>
 </package>
