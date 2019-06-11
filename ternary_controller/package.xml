@@ -2,7 +2,7 @@
 <package format="2">
   <name>ternary_controller</name>
   <version>0.0.0</version>
-  <description>Controller to publish the state of ternary (tri-state) sensors</description>
+  <description>Controller for ternary (tri-state) sensors and actuators</description>
 
   <maintainer email="mtreynolds@uwaterloo.ca">Matt Reynolds</maintainer>
 
