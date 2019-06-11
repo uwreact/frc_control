@@ -1,0 +1,7 @@
+<library path="lib/libbinary_controller">
+  <class name="binary_controller/BinaryCommandController" type="binary_controller::BinaryCommandController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Command a binary device
+    </description>
+  </class>
+</library>

@@ -26,7 +26,7 @@
 
   <depend>frc_msgs</depend>
   <depend>analog_controller</depend>
-  <depend>binary_state_controller</depend>
+  <depend>binary_controller</depend>
   <depend>ternary_state_controller</depend>
   <depend>pdp_state_controller</depend>
 

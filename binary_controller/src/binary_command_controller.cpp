@@ -25,10 +25,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#include <binary_state_controller/binary_command_controller.h>
+#include <binary_controller/binary_command_controller.h>
 #include <pluginlib/class_list_macros.hpp>
 
-namespace binary_state_controller {
+namespace binary_controller {
 
 bool BinaryCommandController::init(hardware_interface::BinaryCommandInterface* hw, ros::NodeHandle& n) {
   std::string joint_name;
@@ -58,6 +58,6 @@ void BinaryCommandController::commandCB(const std_msgs::BoolConstPtr& msg) {
   command_buffer_.writeFromNonRT(msg->data);
 }
 
-}  // namespace binary_state_controller
+}  // namespace binary_controller
 
-PLUGINLIB_EXPORT_CLASS(binary_state_controller::BinaryCommandController, controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(binary_controller::BinaryCommandController, controller_interface::ControllerBase)

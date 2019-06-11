@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
 
   analog_controller
-  binary_state_controller
+  binary_controller
   frc_msgs
   ternary_state_controller
   pdp_state_controller
@@ -34,7 +34,7 @@ catkin_package(
     urdf
 
     analog_controller
-    binary_state_controller
+    binary_controller
     frc_msgs
     ternary_state_controller
     pdp_state_controller

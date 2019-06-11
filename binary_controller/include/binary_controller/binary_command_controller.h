@@ -27,40 +27,47 @@
 
 #pragma once
 
-#include <binary_state_controller/binary_state_interface.h>
-#include <hardware_interface/internal/hardware_resource_manager.h>
+#include <binary_controller/binary_command_interface.h>
+#include <controller_interface/controller.h>
+#include <hardware_interface/joint_command_interface.h>
+#include <realtime_tools/realtime_buffer.h>
+#include <ros/node_handle.h>
+#include <std_msgs/Bool.h>
 
-namespace hardware_interface {
 
-/** @brief A handle used to read and command a digital binary (on/off) actuator (eg. solenoid, LED, etc). */
-class BinaryCommandHandle : public BinaryStateHandle {
+namespace binary_controller {
+
+/**
+ * \brief Binary joint controller.
+ *
+ * This class passes the binary command signal down to the joint.
+ *
+ * \tparam T Type implementing the JointCommandInterface.
+ *
+ * \section ROS interface
+ *
+ * \param type hardware interface type.
+ * \param joint Name of the joint to control.
+ *
+ * Subscribes to:
+ * - \b command (std_msgs::Bool) : The joint command to apply.
+ */
+class BinaryCommandController : public controller_interface::Controller<hardware_interface::BinaryCommandInterface> {
 public:
-  BinaryCommandHandle() : BinaryStateHandle(), cmd_(nullptr) {}
+  BinaryCommandController() = default;
+  ~BinaryCommandController() { sub_command_.shutdown(); }
 
-  /**
-   * @param state_handle This joint's state handle
-   * @param cmd A pointer to the storage for this joint's output command
-   */
-  BinaryCommandHandle(const BinaryStateHandle& state_handle, bool* cmd) : BinaryStateHandle(state_handle), cmd_(cmd) {
-    if (!cmd_)
-      throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
-  }
+  bool init(hardware_interface::BinaryCommandInterface* hw, ros::NodeHandle& n) override;
+  void starting(const ros::Time& /*time*/) override;
+  void update(const ros::Time& /*time*/, const ros::Duration& /*period*/) override;
 
-  void setCommand(bool command) {
-    assert(cmd_);
-    *cmd_ = command;
-  }
-
-  bool getCommand() const {
-    assert(cmd_);
-    return *cmd_;
-  }
+  hardware_interface::BinaryCommandHandle joint_;
+  realtime_tools::RealtimeBuffer<bool>    command_buffer_;
+  bool                                    default_val_;
 
 private:
-  bool* cmd_;
+  ros::Subscriber sub_command_;
+  void            commandCB(const std_msgs::BoolConstPtr& msg);
 };
 
-/** @brief Hardware interface to support commanding an array of digital binary actuators. */
-class BinaryCommandInterface : public HardwareResourceManager<BinaryCommandHandle, ClaimResources> {};
-
-}  // namespace hardware_interface
+}  // namespace binary_controller

@@ -53,7 +53,7 @@
 
 // Custom
 #include <analog_controller/analog_command_interface.h>
-#include <binary_state_controller/binary_command_interface.h>
+#include <binary_controller/binary_command_interface.h>
 #include <pdp_state_controller/pdp_state_interface.h>
 #include <ternary_state_controller/ternary_command_interface.h>
 
