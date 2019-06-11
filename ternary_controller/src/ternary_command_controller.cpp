@@ -26,9 +26,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <pluginlib/class_list_macros.hpp>
-#include <ternary_state_controller/ternary_command_controller.h>
+#include <ternary_controller/ternary_command_controller.h>
 
-namespace ternary_state_controller {
+namespace ternary_controller {
 bool TernaryCommandController::init(hardware_interface::TernaryCommandInterface* hw, ros::NodeHandle& n) {
   std::string joint_name;
   if (!n.getParam("joint", joint_name)) {
@@ -74,6 +74,6 @@ void TernaryCommandController::commandCB(const std_msgs::Int8ConstPtr& msg) {
   command_buffer_.writeFromNonRT(state);
 }
 
-}  // namespace ternary_state_controller
+}  // namespace ternary_controller
 
-PLUGINLIB_EXPORT_CLASS(ternary_state_controller::TernaryCommandController, controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(ternary_controller::TernaryCommandController, controller_interface::ControllerBase)

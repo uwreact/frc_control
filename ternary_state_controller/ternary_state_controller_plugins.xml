@@ -1,7 +1,0 @@
-<library path="lib/libternary_state_controller">
-  <class name="ternary_state_controller/TernaryCommandController" type="ternary_state_controller::TernaryCommandController" base_class_type="controller_interface::ControllerBase">
-    <description>
-      Command an ternary device
-    </description>
-  </class>
-</library>

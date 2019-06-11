@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ternary_state_controller</name>
+  <name>ternary_controller</name>
   <version>0.0.0</version>
   <description>Controller to publish the state of ternary (tri-state) sensors</description>
 
@@ -21,6 +21,6 @@
   <depend>roscpp</depend>
 
   <export>
-    <controller_interface plugin="${prefix}/ternary_state_controller_plugins.xml"/>
+    <controller_interface plugin="${prefix}/ternary_controller_plugins.xml"/>
   </export>
 </package>

@@ -1,0 +1,7 @@
+<library path="lib/libternary_controller">
+  <class name="ternary_controller/TernaryCommandController" type="ternary_controller::TernaryCommandController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Command an ternary device
+    </description>
+  </class>
+</library>

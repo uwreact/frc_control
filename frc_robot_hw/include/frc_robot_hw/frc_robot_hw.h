@@ -55,7 +55,7 @@
 #include <analog_controller/analog_command_interface.h>
 #include <binary_controller/binary_command_interface.h>
 #include <pdp_state_controller/pdp_state_interface.h>
-#include <ternary_state_controller/ternary_command_interface.h>
+#include <ternary_controller/ternary_command_interface.h>
 
 #include <frc_robot_hw/custom_hardware_interfaces.h>
 #include <frc_robot_hw/wpilib_hardware_templates.h>

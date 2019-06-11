@@ -27,50 +27,44 @@
 
 #pragma once
 
-#include <controller_interface/controller.h>
-#include <hardware_interface/joint_command_interface.h>
-#include <realtime_tools/realtime_buffer.h>
-#include <ros/node_handle.h>
-#include <std_msgs/Int8.h>
-#include <ternary_state_controller/ternary_command_interface.h>
+#include <hardware_interface/internal/hardware_resource_manager.h>
+#include <ternary_controller/ternary_state_interface.h>
 
-
-namespace ternary_state_controller {
+namespace hardware_interface {
 
 /**
- * \brief ternary joint controller.
- *
- * This class passes the ternary command signal down to the joint.
- *
- * \tparam T Type implementing the JointCommandInterface.
- *
- * \section ROS interface
- *
- * \param type hardware interface type.
- * \param joint Name of the joint to control.
- *
- * Subscribes to:
- * - \b command (std_msgs::Float64) : The joint command to apply.
+ * A handle used to read and command a ternary (-1, 0, 1 or reverse, off, forward) actuator
+ * (eg. H-bridge relay, double-acting solenoid).
  */
-class TernaryCommandController : public controller_interface::Controller<hardware_interface::TernaryCommandInterface> {
-private:
-  using TernaryState = hardware_interface::TernaryStateHandle::TernaryState;
-
+class TernaryCommandHandle : public TernaryStateHandle {
 public:
-  TernaryCommandController() = default;
-  ~TernaryCommandController() { sub_command_.shutdown(); }
+  TernaryCommandHandle() : TernaryStateHandle(), cmd_(nullptr) {}
 
-  bool init(hardware_interface::TernaryCommandInterface* hw, ros::NodeHandle& n) override;
-  void starting(const ros::Time& /*time*/) override;
-  void update(const ros::Time& /*time*/, const ros::Duration& /*period*/) override;
+  /**
+   * \param state_handle This joint's state handle
+   * \param cmd A pointer to the storage for this joint's output command
+   */
+  TernaryCommandHandle(const TernaryStateHandle& state_handle, TernaryState* cmd)
+      : TernaryStateHandle(state_handle), cmd_(cmd) {
+    if (!cmd_)
+      throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
+  }
 
-  hardware_interface::TernaryCommandHandle     joint_;
-  realtime_tools::RealtimeBuffer<TernaryState> command_buffer_;
-  TernaryState                                 default_val_;
+  void setCommand(TernaryState command) {
+    assert(cmd_);
+    *cmd_ = command;
+  }
+
+  TernaryState getCommand() const {
+    assert(cmd_);
+    return *cmd_;
+  }
 
 private:
-  ros::Subscriber sub_command_;
-  void            commandCB(const std_msgs::Int8ConstPtr& msg);
+  TernaryState* cmd_;
 };
 
-}  // namespace ternary_state_controller
+/** \brief Hardware interface to support commanding an array of ternary actuators. */
+class TernaryCommandInterface : public HardwareResourceManager<TernaryCommandHandle, ClaimResources> {};
+
+}  // namespace hardware_interface

@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   analog_controller
   binary_controller
   frc_msgs
-  ternary_state_controller
+  ternary_controller
   pdp_state_controller
 )
 
@@ -36,7 +36,7 @@ catkin_package(
     analog_controller
     binary_controller
     frc_msgs
-    ternary_state_controller
+    ternary_controller
     pdp_state_controller
 )
 

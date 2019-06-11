@@ -20,7 +20,7 @@
   <exec_depend>frc_robot_sim</exec_depend>
   <exec_depend>analog_controller</exec_depend>
   <exec_depend>binary_controller</exec_depend>
-  <exec_depend>ternary_state_controller</exec_depend>
+  <exec_depend>ternary_controller</exec_depend>
   <exec_depend>pdp_state_controller</exec_depend>
   <exec_depend>driver_station</exec_depend>
 
