@@ -114,7 +114,7 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   )
 
   # Link ROS, WPILib, and vendor libraries
-  # Note that we link the vendor libraries twice to resolve odering issues
+  # Note that we link the vendor libraries twice to resolve ordering issues
   target_link_libraries(robot_base_node
     ${PROJECT_NAME}
     ${catkin_LIBRARIES}
