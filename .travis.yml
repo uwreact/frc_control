@@ -18,7 +18,7 @@ env:
     - AFTER_SCRIPT="cd /root/catkin_ws/src/frc_control; ./run_linters.py"
   matrix:
     - ROS_DISTRO="melodic"   ROS_REPO="ros"
-    - ROS_DISTRO="melodic"   ROS_REPO="ros-shadow-fixed"
+    - ROS_DISTRO="melodic"   ROS_REPO="ros-testing"
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
