@@ -851,7 +851,7 @@ void FRCRobotHW::updateRobotState() {
       else
         joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
     } else {
-      joint_states_[pair.first].pos = binary_states_[pair.first];
+      joint_states_[pair.first].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
     joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
     joint_states_[pair.first].eff = 0;  // TODO: ???
@@ -886,7 +886,7 @@ void FRCRobotHW::updateRobotState() {
       else
         joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
     } else {
-      joint_states_[pair.first].pos = binary_states_[pair.first];
+      joint_states_[pair.first].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
     joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
     joint_states_[pair.first].eff = 0;  // TODO: Pressure?
@@ -916,7 +916,7 @@ void FRCRobotHW::updateRobotState() {
       else
         joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->lower;
     } else {
-      joint_states_[pair.second.joint].pos = binary_states_[pair.first];
+      joint_states_[pair.second.joint].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
     joint_states_[pair.second.joint].vel = 0;  // Set vel to 0, since binary joints can have no speed
     // Note: Don't set effort, since another sensor might
