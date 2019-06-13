@@ -66,7 +66,7 @@ Download the latest Linux release from [the WPILib GitHub](https://github.com/wp
 This list of packages ~~may~~**will** change as time goes on. Right now, the standard robot set of packages contains many unneeded packages and adds a lot of unnecessary dependencies. Once development of this project proceeds further, we can further customize this as required. In fact, we might consider only installing the dependencies of frc_control with no additional packages. This does mean that teams who wish to run their whole ROS stack on the RIO (Instead of the recommended config; frc_control on the RIO, everything else on other machines) will be required to either manually install their extra dependencies, or clone them into their workspace. Needs some consideration.
 
     sudo apt install python-rosinstall-generator python-wstool
-    rosinstall_generator robot ros_control realtime_tools --rosdistro melodic --deps --wet-only --tar > melodic-roborio-wet.rosinstall #Install robot plus any other dependencies
+    rosinstall_generator robot ros_control ros_controllers realtime_tools --rosdistro melodic --deps --wet-only --tar > melodic-roborio-wet.rosinstall # Install robot plus any other dependencies
     wstool init -j8 src melodic-roborio-wet.rosinstall
 
 ## 4. Manually resolve dependencies
@@ -114,3 +114,27 @@ frc_control has built-in support for the most common 3rd party libraries; [CTRE 
 
     cd ~/robot_workspace/src/frc_control/installation
     ./install_3rd_party_libs.py --all
+
+# Setting up the roboRIO
+
+## 1. Image the roboRIO
+
+Follow the standard instructions to flash the roboRIO with the roboRIO Imaging Tool [Instructions here](https://wpilib.screenstepslive.com/s/currentCS/m/getting_started/l/1009233-imaging-your-roborio).
+Note that this requires a Windows PC and access to the NI FRC Update Suite.
+
+## 2. Install ROS
+
+Use the `upload_ros.sh` script to upload and install ROS on the RIO.
+You must specify the team number.
+
+    cd ~/robot_workspace/src/frc_control/installation
+    ./upload_ros.sh 1234
+
+## 3. Deploy user code
+
+Use the `upload_frc_control.sh` script to upload and install your user code to the RIO.
+You must specify the team number.
+You should also specify the launch file to be run on bootup - By default, this is `frc_robot_hw bringup.launch`, but you may customize it to whatever launch file is appropriate for your system.
+
+    cd ~/robot_workspace/src/frc_control/installation
+    ./upload_frc_control.sh 1234 frc_robot_hw bringup.launch

@@ -127,8 +127,7 @@ def main():
     extract(wpi_maven_prefix + '/wpiutil', 'wpiutil-cpp')
     extract(wpi_maven_prefix + '/ni-libraries', 'chipobject')
     extract(wpi_maven_prefix + '/ni-libraries', 'netcomm')
-    # extract(wpi_maven_prefix + '/thirdparty/frc2019', 'googletest')
-    # extract(wpi_maven_prefix + '/thirdparty/frc2019/opencv', 'opencv-cpp')
+    extract(wpi_maven_prefix + '/thirdparty/frc2019/opencv', 'opencv-cpp')
 
     # Extract installed vendor artifacts
     vendor_deps = FRC_PATH + '/vendordeps'
