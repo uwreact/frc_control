@@ -45,61 +45,6 @@ struct PIDGains {
   bool   has_i_clamp;
 };
 
-// "Smart" indicates that these controllers have built-in feedback
-// TODO: Might need custom templates for these since they're smart and therefore have more config data
-// TODO: Add field for feedback type. Internal, External, or None
-struct SmartSpeedController {
-  enum class Type {
-  // CANJaguar,   ///< Luminary Micro / Vex Robotics Jaguar with CAN control. Deprecated.
-
-#if USE_MINDSENSORS
-  // CANSD540,    ///< Mindsensors SD540 with CAN control
-#endif
-
-#if USE_CTRE
-    CANTalonSRX,  ///< CTRE Talon SRX with CAN control
-#endif
-  };
-
-  /**
-   * @brief Convert the string representation of the Type to its enum equivalent.
-   * @throws std::runtime_error if the input string is not a valid Type
-   */
-  static Type stringToType(const std::string& string) {
-    if (false) {
-      // TODO: This is ugly :(
-    }
-#if USE_MINDSENSORS
-    // else if (string == "can_sd540")
-    //   return Type::CANSD540;
-#endif
-#if USE_CTRE
-    else if (string == "can_talon_spx")
-      return Type::CANTalonSRX;
-#endif
-    else
-      throw std::runtime_error("Invalid smart SpeedController type '" + string + "'.");
-  }
-
-  /// Convert a Type enum to its string representation
-  static std::string typeToString(const Type& type) {
-    switch (type) {
-#if USE_MINDSENSORS
-      // case Type::CANSD540:      return "can_sd540";
-#endif
-#if USE_CTRE
-      case Type::CANTalonSRX:
-        return "can_talon_spx";
-#endif
-        // Note: No default case - Generates compile-time error if a case is missed
-    }
-  }
-
-  Type type;      ///< The type of the controller, corresponding with WPILib & vendor SpeedControllers
-  int  id;        ///< The ID/channel of the controller. Typically CAN id, based on controller type
-  bool inverted;  ///< Whether to invert the direction of the motor
-};
-
 // "Simple" indicates that these controllers do not have feedback.
 // TODO: Add field for feedback type. External, or None
 struct SimpleSpeedController {
@@ -264,6 +209,22 @@ struct NavX {
 #endif
 
 #if USE_CTRE
+
+struct CANTalonSrx {
+  int         id;              ///< The CAN ID of the controller
+  bool        inverted;        ///< Whether to invert the direction of the motor
+  std::string feedback;        ///< The type of feedback sensor attached to the Talon, or "none"
+                               ///< Can be one of "quad_encoder", "analog", "tachometer" or "pulse_width"
+  bool     feedback_inverted;  ///< Whether to invert the direction of the feedback sensor
+  double   k_eff;              ///< Scale of current to effort/torque, in N or Nm. Based on motor type and gearing.
+  PIDGains pos_gains;          ///< The set of PID gains for position control
+  PIDGains vel_gains;          ///< The set of PID gains for velocity control
+  PIDGains eff_gains;          ///< The set of PID gains for effort control
+  bool     has_pos_gains;      ///< Whether the controller specified gains for position control
+  bool     has_vel_gains;      ///< Whether the controller specified gains for velocity control
+  bool     has_eff_gains;      ///< Whether the controller specified gains for effort control
+};
+
 struct PigeonIMU {
   boost::variant<int, std::string> interface;  ///< The interface on which the PigeonIMU is connected.
                                                ///< If an int, the CAN ID of the IMU.
