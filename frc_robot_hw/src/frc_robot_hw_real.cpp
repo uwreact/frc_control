@@ -776,10 +776,18 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     binary_states_[pair.first] = pair.second->Get();
   }
 
-  // Read current smart SpeedController states
-  // for (const auto& pair : smart_speed_controllers_) {
-  //   // TODO
-  // }
+#if USE_CTRE
+
+  // Read current CANTalonSRX states
+  for (const auto& pair : can_talon_srxs_) {
+    if (can_talon_srx_templates_[pair.first].feedback != "none") {
+      joint_states_[pair.first].pos = pair.second->GetSelectedSensorPosition();
+      joint_states_[pair.first].vel = pair.second->GetSelectedSensorVelocity() / 10.0;  // Units/100ms to units/sec
+    }
+    joint_states_[pair.first].eff = pair.second->GetOutputCurrent() * can_talon_srx_templates_[pair.first].k_eff;
+  }
+#endif
+
 
   // Notice we don't read from the simple_speed_controllers, since they have no feedback.
   // We rely on merging other sensors together to form the JointState
@@ -904,15 +912,37 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
     pair.second->Set(output);
   }
 
-  // Write smart SpeedController commands
-  // for (const auto& pair : smart_speed_controllers_) {
-  //   // TODO
-  // }
-
   // Write Compressor commands
   for (const auto& pair : compressors_) {
     pair.second->SetClosedLoopControl(binary_commands_[pair.first]);
   }
+
+#if USE_CTRE
+
+  // Write CANTalonSrx commands
+  for (const auto& pair : can_talon_srxs_) {
+    using ctre::phoenix::motorcontrol::ControlMode;
+
+    switch (joint_commands_[pair.first].type) {
+      case JointCmd::Type::kNone:
+        pair.second->Set(ControlMode::Disabled, 0.0);
+        break;
+      case JointCmd::Type::kPos:
+        pair.second->Set(ControlMode::Position, joint_commands_[pair.first].data);
+        break;
+      case JointCmd::Type::kVel:
+        pair.second->Set(ControlMode::Velocity, joint_commands_[pair.first].data * 10.0);  // Units/sec to units/100ms
+        break;
+      case JointCmd::Type::kEff:
+        pair.second->Set(ControlMode::Current,
+                         joint_commands_[pair.first].data / can_talon_srx_templates_[pair.first].k_eff);
+        break;
+      case JointCmd::Type::kVolt:
+        pair.second->Set(ControlMode::PercentOutput, joint_commands_[pair.first].data / pair.second->GetBusVoltage());
+        break;
+    }
+  }
+#endif
 };
 
 }  // namespace frc_robot_hw
