@@ -566,34 +566,53 @@ void FRCRobotHWReal::doSwitch(const std::list<hardware_interface::ControllerInfo
 
   using Mode = MultiPIDController::Mode;
 
-  // Disable PID for simple speed controllers claimed by stopping controllers
+  // Disable PID for speed controllers claimed by stopping controllers
   for (const auto& controller : stop_list) {
     for (const auto& claimed : controller.claimed_resources) {
       for (const auto& resource : claimed.resources) {
-        if (simple_speed_controller_pids_.find(resource) == simple_speed_controller_pids_.end())
-          continue;
+        if (simple_speed_controller_pids_.find(resource) != simple_speed_controller_pids_.end()) {
+          simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+        }
 
-        simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+#if USE_CTRE
+        else if (can_talon_srxs_.find(resource) != can_talon_srxs_.end()) {
+          // Do nothing
+        }
+#endif
       }
     }
   }
 
-  // Set PID mode for simple speed controllers claimed by starting controllers
+  // Set PID mode for speed controllers claimed by starting controllers
   for (const auto& controller : start_list) {
     for (const auto& claimed : controller.claimed_resources) {
       for (const auto& resource : claimed.resources) {
-        if (simple_speed_controller_pids_.find(resource) == simple_speed_controller_pids_.end())
-          continue;
-
-        if (claimed.hardware_interface == "hardware_interface::PositionJointInterface") {
-          simple_speed_controller_pids_[resource]->setMode(Mode::position);
-        } else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
-          simple_speed_controller_pids_[resource]->setMode(Mode::velocity);
-        } else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
-          simple_speed_controller_pids_[resource]->setMode(Mode::effort);
-        } else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
-          simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+        if (simple_speed_controller_pids_.find(resource) != simple_speed_controller_pids_.end()) {
+          if (claimed.hardware_interface == "hardware_interface::PositionJointInterface") {
+            simple_speed_controller_pids_[resource]->setMode(Mode::position);
+          } else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
+            simple_speed_controller_pids_[resource]->setMode(Mode::velocity);
+          } else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
+            simple_speed_controller_pids_[resource]->setMode(Mode::effort);
+          } else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
+            simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+          }
         }
+
+
+#if USE_CTRE
+        else if (can_talon_srxs_.find(resource) != can_talon_srxs_.end()) {
+          if (claimed.hardware_interface == "hardware_interface::PositionJointInterface") {
+            can_talon_srxs_[resource]->SelectProfileSlot(0, 0);
+          } else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
+            can_talon_srxs_[resource]->SelectProfileSlot(1, 0);
+          } else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
+            can_talon_srxs_[resource]->SelectProfileSlot(2, 0);
+          } else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
+            // Do nothing
+          }
+        }
+#endif
       }
     }
   }
