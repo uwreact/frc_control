@@ -191,7 +191,6 @@ protected:
   // Sensors and actuator templates
   // TODO: Change servo_templates_ to struct containing scale?
   // NOTE: built_in_accelerometer_templates_ should contain at max one element
-  std::map<std::string, hardware_template::SmartSpeedController>  smart_speed_controller_templates_;
   std::map<std::string, hardware_template::SimpleSpeedController> simple_speed_controller_templates_;  // Verified
   std::map<std::string, int>                                      pdp_templates_;                      // Verified
   std::map<std::string, int>                                      servo_templates_;                    // Untested
@@ -210,7 +209,8 @@ protected:
   std::map<std::string, hardware_template::NavX> navx_templates_;  // Verified
 #endif
 #if USE_CTRE
-  std::map<std::string, hardware_template::PigeonIMU> pigeon_templates_;  // Untested
+  std::map<std::string, hardware_template::CANTalonSrx> can_talon_srx_templates_;  // Untested
+  std::map<std::string, hardware_template::PigeonIMU>   pigeon_templates_;         // Untested
 #endif
 
   // Transmissions
