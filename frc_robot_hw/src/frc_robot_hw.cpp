@@ -606,8 +606,6 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   // and any KEY additional information, eg. cross-references interfaces. We do not need to print out additional joint
   // configuration information such as ID, inverted, etc. This data is irrelevant to the state interfaces.
 
-  // TODO: Register handles for smart_motor_controllers
-
   // Register a command handle for each simple motor controller
   for (const auto& pair : simple_speed_controller_templates_) {
     // clang-format off
@@ -633,6 +631,7 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     if (pair.second.has_eff_gains)
       joint_effort_command_interface_.registerHandle(
           hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
     joint_voltage_command_interface_.registerHandle(
         hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
   }
@@ -809,8 +808,9 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
                                             imu_states_[pair.first].linear_acceleration_covariance));
   }
 
-  // Register a state handle for each navX IMU
 #if USE_KAUAI
+
+  // Register a state handle for each navX IMU
   for (const auto& pair : navx_templates_) {
     // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for navX-MXP IMU " << pair.first
@@ -831,8 +831,39 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   }
 #endif
 
-  // Register a state handle for each Pigeon IMU
 #if USE_CTRE
+
+  // Register a command handle for each CANTalonSRX
+  for (const auto& pair : can_talon_srx_templates_) {
+    // clang-format off
+    ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for CANTalonSrx " << pair.first
+                                  << " with id " << pair.second.id
+                                  << " with inverted " << pair.second.inverted);
+    // clang-format on
+    hardware_interface::JointStateHandle state_handle(pair.first,
+                                                      &joint_states_[pair.first].pos,
+                                                      &joint_states_[pair.first].vel,
+                                                      &joint_states_[pair.first].eff);
+    joint_state_interface_.registerHandle(state_handle);
+
+    // TODO: Only register pos, vel, effort handles if the controller has a feedback device?
+    if (pair.second.has_pos_gains)
+      joint_position_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+    if (pair.second.has_vel_gains)
+      joint_velocity_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+    if (pair.second.has_eff_gains)
+      joint_effort_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+    joint_voltage_command_interface_.registerHandle(
+        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+  }
+
+  // Register a state handle for each Pigeon IMU
   for (const auto& pair : pigeon_templates_) {
     // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for Pigeon IMU " << pair.first
