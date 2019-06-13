@@ -474,9 +474,62 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                                                                      pair.second.eff_gains);
   }
 
-  // Create smart SpeedControllers
-  // TODO
 
+#if USE_CTRE
+
+  // Create CANTalonSRXs
+  for (const auto& pair : can_talon_srx_templates_) {
+    // clang-format off
+    ROS_DEBUG_STREAM_NAMED(name_, "Creating CANTalonSrx " << pair.first
+                                  << " on channel " << pair.second.id
+                                  << " w/ inverted=" << pair.second.inverted);
+    // clang-format on
+
+    using ctre::phoenix::motorcontrol::FeedbackDevice;
+    using ctre::phoenix::motorcontrol::can::WPI_TalonSRX;
+
+    // Create the object
+    can_talon_srxs_[pair.first] = std::make_unique<WPI_TalonSRX>(pair.second.id);
+    can_talon_srxs_[pair.first]->SetInverted(pair.second.inverted);
+    can_talon_srxs_[pair.first]->SetSensorPhase(pair.second.feedback_inverted);
+
+    // Load position PID gains
+    can_talon_srxs_[pair.first]->Config_kP(0, pair.second.pos_gains.k_p);
+    can_talon_srxs_[pair.first]->Config_kI(0, pair.second.pos_gains.k_i);
+    can_talon_srxs_[pair.first]->Config_kD(0, pair.second.pos_gains.k_d);
+    can_talon_srxs_[pair.first]->Config_kF(0, pair.second.pos_gains.k_f);
+    can_talon_srxs_[pair.first]->ConfigMaxIntegralAccumulator(0, pair.second.pos_gains.i_clamp);
+
+    // Load velocity PID gains
+    can_talon_srxs_[pair.first]->Config_kP(1, pair.second.vel_gains.k_p);
+    can_talon_srxs_[pair.first]->Config_kI(1, pair.second.vel_gains.k_i);
+    can_talon_srxs_[pair.first]->Config_kD(1, pair.second.vel_gains.k_d);
+    can_talon_srxs_[pair.first]->Config_kF(1, pair.second.vel_gains.k_f);
+    can_talon_srxs_[pair.first]->ConfigMaxIntegralAccumulator(1, pair.second.vel_gains.i_clamp);
+
+    // Load effort PID gains
+    can_talon_srxs_[pair.first]->Config_kP(1, pair.second.eff_gains.k_p);
+    can_talon_srxs_[pair.first]->Config_kI(1, pair.second.eff_gains.k_i);
+    can_talon_srxs_[pair.first]->Config_kD(1, pair.second.eff_gains.k_d);
+    can_talon_srxs_[pair.first]->Config_kF(1, pair.second.eff_gains.k_f);
+    can_talon_srxs_[pair.first]->ConfigMaxIntegralAccumulator(1, pair.second.eff_gains.i_clamp);
+
+    // Select the sensor
+    if (pair.second.feedback == "quad_encoder") {
+      can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder);
+    } else if (pair.second.feedback == "analog") {
+      can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::Analog);
+    } else if (pair.second.feedback == "tachometer") {
+      can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::Tachometer);
+    } else if (pair.second.feedback == "pule_width") {
+      can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::PulseWidthEncodedPosition);
+    } else {
+      // No built-in feedback
+      // TODO: Support this case
+    }
+  }
+
+#endif
 
   // =*=*=*=*=*=*=*= Misc =*=*=*=*=*=*=*=
 
