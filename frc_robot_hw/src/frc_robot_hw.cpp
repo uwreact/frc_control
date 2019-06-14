@@ -425,9 +425,9 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
 
-      // TODO: Check if valid
       std::string feedback;
-      if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true))
+      if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true)
+          && hardware_template::CANTalonSrx::FEEDBACK_TYPES.count(cur_joint["feedback"]) > 0)
         feedback = (std::string) cur_joint["feedback"];
       else
         feedback = "none";
@@ -450,17 +450,17 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       PIDGains eff_gains = has_eff_gains ? parsePIDGains(cur_joint["effort_gains"]) : PIDGains();
 
       can_talon_srx_templates_[joint_name] = {
-          .id            = cur_joint["id"],
-          .inverted      = inverted,
-          .feedback      = feedback,
+          .id                = cur_joint["id"],
+          .inverted          = inverted,
+          .feedback          = feedback,
           .feedback_inverted = fb_inverted,
-          .k_eff         = k_eff,
-          .pos_gains     = pos_gains,
-          .vel_gains     = vel_gains,
-          .eff_gains     = eff_gains,
-          .has_pos_gains = has_pos_gains,
-          .has_vel_gains = has_vel_gains,
-          .has_eff_gains = has_eff_gains,
+          .k_eff             = k_eff,
+          .pos_gains         = pos_gains,
+          .vel_gains         = vel_gains,
+          .eff_gains         = eff_gains,
+          .has_pos_gains     = has_pos_gains,
+          .has_vel_gains     = has_vel_gains,
+          .has_eff_gains     = has_eff_gains,
       };
     }
 

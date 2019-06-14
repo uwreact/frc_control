@@ -29,6 +29,7 @@
 
 #include <boost/variant.hpp>
 #include <ostream>
+#include <set>
 #include <string>
 
 // TODO: This file is a mess
@@ -211,18 +212,19 @@ struct NavX {
 #if USE_CTRE
 
 struct CANTalonSrx {
-  int         id;              ///< The CAN ID of the controller
-  bool        inverted;        ///< Whether to invert the direction of the motor
-  std::string feedback;        ///< The type of feedback sensor attached to the Talon, or "none"
-                               ///< Can be one of "quad_encoder", "analog", "tachometer" or "pulse_width"
-  bool     feedback_inverted;  ///< Whether to invert the direction of the feedback sensor
-  double   k_eff;              ///< Scale of current to effort/torque, in N or Nm. Based on motor type and gearing.
-  PIDGains pos_gains;          ///< The set of PID gains for position control
-  PIDGains vel_gains;          ///< The set of PID gains for velocity control
-  PIDGains eff_gains;          ///< The set of PID gains for effort control
-  bool     has_pos_gains;      ///< Whether the controller specified gains for position control
-  bool     has_vel_gains;      ///< Whether the controller specified gains for velocity control
-  bool     has_eff_gains;      ///< Whether the controller specified gains for effort control
+  static const std::set<std::string> FEEDBACK_TYPES;  ///< The set of possible feedback types
+
+  int         id;                 ///< The CAN ID of the controller
+  bool        inverted;           ///< Whether to invert the direction of the motor
+  std::string feedback;           ///< The type of feedback sensor attached to the Talon. Must be one of FEEDBACK_TYPES
+  bool        feedback_inverted;  ///< Whether to invert the direction of the feedback sensor
+  double      k_eff;              ///< Scale of current to effort/torque, in N or Nm. Based on motor type and gearing.
+  PIDGains    pos_gains;          ///< The set of PID gains for position control
+  PIDGains    vel_gains;          ///< The set of PID gains for velocity control
+  PIDGains    eff_gains;          ///< The set of PID gains for effort control
+  bool        has_pos_gains;      ///< Whether the controller specified gains for position control
+  bool        has_vel_gains;      ///< Whether the controller specified gains for velocity control
+  bool        has_eff_gains;      ///< Whether the controller specified gains for effort control
 };
 
 struct PigeonIMU {
