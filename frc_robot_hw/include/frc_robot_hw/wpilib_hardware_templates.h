@@ -32,8 +32,6 @@
 #include <set>
 #include <string>
 
-// TODO: This file is a mess
-
 namespace frc_robot_hw {
 namespace hardware_template {
 
@@ -74,48 +72,10 @@ struct SimpleSpeedController {
    * @brief Convert the string representation of the Type to its enum equivalent.
    * @throws std::runtime_error if the input string is not a valid Type
    */
-  static Type stringToType(const std::string& string) {
-
-    // clang-format off
-    if (string == "dmc60")                return Type::DMC60;
-    else if (string == "jaguar")          return Type::Jaguar;
-    else if (string == "pwm_talon_srx")   return Type::PWMTalonSRX;
-    else if (string == "pwm_victor_spx")  return Type::PWMVictorSPX;
-    else if (string == "sd540")           return Type::SD540;
-    else if (string == "spark")           return Type::Spark;
-    else if (string == "talon")           return Type::Talon;
-    else if (string == "victor")          return Type::Victor;
-    else if (string == "victor_sp")       return Type::VictorSP;
-    else if (string == "nidec")           return Type::Nidec;
-#if USE_CTRE
-    else if (string == "can_victor_spx")  return Type::CANVictorSPX;
-#endif
-    // clang-format on
-    else
-      throw std::runtime_error("Invalid simple SpeedController type '" + string + "'.");
-  }
+  static Type stringToType(const std::string& string);
 
   /// Convert a Type enum to its string representation
-  static std::string typeToString(const Type& type) {
-    switch (type) {
-      // clang-format off
-      case Type::DMC60:         return "dmc60";
-      case Type::Jaguar:        return "jaguar";
-      case Type::PWMTalonSRX:   return "pwm_talon_srx";
-      case Type::PWMVictorSPX:  return "pwm_victor_spx";
-      case Type::SD540:         return "sd540";
-      case Type::Spark:         return "spark";
-      case Type::Talon:         return "talon";
-      case Type::Victor:        return "victor";
-      case Type::VictorSP:      return "victor_sp";
-      case Type::Nidec:         return "nidex";
-#if USE_CTRE
-      case Type::CANVictorSPX:  return "can_victor_spx";
-#endif
-        // clang-format on
-        // Note: No default case - Generates compile-time error if a case is missed
-    }
-  }
+  static std::string typeToString(const Type& type);
 
   Type        type;       ///< The type of the controller, corresponding with WPILib & vendor SpeedControllers
   int         id;         ///< The ID/channel of the controller. Can be PWM channel or CAN id, based on controller type
@@ -135,32 +95,17 @@ struct SimpleSpeedController {
 struct Relay {
   enum class Direction { kBoth, kForward, kReverse };
 
-  static Direction stringToDirection(const std::string& string) {
-    if (string == "both")
-      return Direction::kBoth;
-    else if (string == "forward")
-      return Direction::kForward;
-    else if (string == "reverse")
-      return Direction::kReverse;
-    else
-      throw std::runtime_error("Invalid relay direction '" + string
-                               + "', must be one of 'both', 'forward', 'reverse'.");
-  }
+  /**
+   * @brief Convert the string representation of the Direction to its enum equivalent.
+   * @throws std::runtime_error if the input string is not a valid Direction
+   */
+  static Direction stringToDirection(const std::string& string);
 
-  static std::string directionToString(const Direction& direction) {
-    switch (direction) {
-      case Direction::kBoth:
-        return "both";
-      case Direction::kForward:
-        return "forward";
-      case Direction::kReverse:
-        return "reverse";
-        // Note: No default case - Generates compile-time error if a case is missed
-    }
-  }
+  /// Convert a Direction enum to its string representation
+  static std::string directionToString(const Direction& direction);
 
-  int       id;
-  Direction direction;
+  int       id;         ///< The relay channel
+  Direction direction;  ///< The direction: kForward, kReverse, or kBoth
 };
 
 struct Solenoid {
