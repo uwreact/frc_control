@@ -98,7 +98,7 @@ performing the installation steps required, and restoring that line once you are
 ## 1. Run the installer script to set up catkin profiles for native and cross compilation
 
     cd ~/robot_workspace
-    ./src/frc_control/setup_catkin.bash .
+    ./src/frc_control/scripts/setup_catkin.bash .
 
 ## 2. To perform a native compilation:
 
