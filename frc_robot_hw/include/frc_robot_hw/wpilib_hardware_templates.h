@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include <boost/bimap.hpp>
 #include <boost/variant.hpp>
 #include <ostream>
 #include <set>
@@ -157,19 +158,28 @@ struct NavX {
 #if USE_CTRE
 
 struct CANTalonSrx {
-  static const std::set<std::string> FEEDBACK_TYPES;  ///< The set of possible feedback types
+  enum class FeedbackType { kNone, kQuadEncoder, kAnalog, kTachometer, kPulseWidth };
+  enum class LimitSwitchMode { kNone, kNormallyOpen, kNormallyClosed };
 
-  int         id;                 ///< The CAN ID of the controller
-  bool        inverted;           ///< Whether to invert the direction of the motor
-  std::string feedback;           ///< The type of feedback sensor attached to the Talon. Must be one of FEEDBACK_TYPES
-  bool        feedback_inverted;  ///< Whether to invert the direction of the feedback sensor
-  double      k_eff;              ///< Scale of current to effort/torque, in N or Nm. Based on motor type and gearing.
-  PIDGains    pos_gains;          ///< The set of PID gains for position control
-  PIDGains    vel_gains;          ///< The set of PID gains for velocity control
-  PIDGains    eff_gains;          ///< The set of PID gains for effort control
-  bool        has_pos_gains;      ///< Whether the controller specified gains for position control
-  bool        has_vel_gains;      ///< Whether the controller specified gains for velocity control
-  bool        has_eff_gains;      ///< Whether the controller specified gains for effort control
+  using FeedbackTypeBimap    = boost::bimap<FeedbackType, std::string>;
+  using LimitSwitchModeBimap = boost::bimap<LimitSwitchMode, std::string>;
+
+  static const FeedbackTypeBimap    FEEDBACK_TYPE_BIMAP;
+  static const LimitSwitchModeBimap LIMIT_SWITCH_MODE_BIMAP;
+
+  int             id;                  ///< The CAN ID of the controller
+  bool            inverted;            ///< Whether to invert the direction of the motor
+  FeedbackType    feedback;            ///< The type of feedback sensor attached to the Talon
+  bool            feedback_inverted;   ///< Whether to invert the direction of the feedback sensor
+  LimitSwitchMode forward_lim_switch;  ///< The mode of the forward limit switch
+  LimitSwitchMode reverse_lim_switch;  ///< The mode of the reverse limit switch
+  double          k_eff;          ///< Scale of current to effort/torque, in N or Nm. Based on motor type and gearing.
+  PIDGains        pos_gains;      ///< The set of PID gains for position control
+  PIDGains        vel_gains;      ///< The set of PID gains for velocity control
+  PIDGains        eff_gains;      ///< The set of PID gains for effort control
+  bool            has_pos_gains;  ///< Whether the controller specified gains for position control
+  bool            has_vel_gains;  ///< Whether the controller specified gains for velocity control
+  bool            has_eff_gains;  ///< Whether the controller specified gains for effort control
 };
 
 struct PigeonIMU {

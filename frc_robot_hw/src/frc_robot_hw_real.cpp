@@ -515,17 +515,23 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     can_talon_srxs_[pair.first]->ConfigMaxIntegralAccumulator(1, pair.second.eff_gains.i_clamp);
 
     // Select the sensor
-    if (pair.second.feedback == "quad_encoder") {
-      can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder);
-    } else if (pair.second.feedback == "analog") {
-      can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::Analog);
-    } else if (pair.second.feedback == "tachometer") {
-      can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::Tachometer);
-    } else if (pair.second.feedback == "pule_width") {
-      can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::PulseWidthEncodedPosition);
-    } else {
-      // No built-in feedback
-      // TODO: Support this case
+    switch (pair.second.feedback) {
+      case hardware_template::CANTalonSrx::FeedbackType::kQuadEncoder:
+        can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder);
+        break;
+      case hardware_template::CANTalonSrx::FeedbackType::kAnalog:
+        can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::Analog);
+        break;
+      case hardware_template::CANTalonSrx::FeedbackType::kTachometer:
+        can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::Tachometer);
+        break;
+      case hardware_template::CANTalonSrx::FeedbackType::kPulseWidth:
+        can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::PulseWidthEncodedPosition);
+        break;
+      case hardware_template::CANTalonSrx::FeedbackType::kNone:
+        // No built-in feedback
+        // TODO: Support this case
+        break;
     }
   }
 
@@ -799,7 +805,7 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
 
   // Read current CANTalonSRX states
   for (const auto& pair : can_talon_srxs_) {
-    if (can_talon_srx_templates_[pair.first].feedback != "none") {
+    if (can_talon_srx_templates_[pair.first].feedback != hardware_template::CANTalonSrx::FeedbackType::kNone) {
       joint_states_[pair.first].pos = pair.second->GetSelectedSensorPosition();
       joint_states_[pair.first].vel = pair.second->GetSelectedSensorVelocity() / 10.0;  // Units/100ms to units/sec
     }

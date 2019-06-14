@@ -25,6 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
+#include <boost/assign.hpp>
 #include <frc_robot_hw/wpilib_hardware_templates.h>
 
 namespace frc_robot_hw {
@@ -96,11 +97,24 @@ std::string Relay::directionToString(const Relay::Direction& direction) {
 }
 
 #if USE_CTRE
-const std::set<std::string> CANTalonSrx::FEEDBACK_TYPES = {"none",
-                                                           "quad_encoder",
-                                                           "analog",
-                                                           "tachometer",
-                                                           "pulse_width"};
+
+const CANTalonSrx::FeedbackTypeBimap
+    CANTalonSrx::FEEDBACK_TYPE_BIMAP = boost::assign::list_of<CANTalonSrx::FeedbackTypeBimap::relation>
+    // clang-format off
+    (FeedbackType::kNone,         "none")
+    (FeedbackType::kQuadEncoder,  "quad_encoder")
+    (FeedbackType::kAnalog,       "analog")
+    (FeedbackType::kTachometer,   "tachometer")
+    (FeedbackType::kPulseWidth,   "pulse_width");
+// clang-format on
+
+const CANTalonSrx::LimitSwitchModeBimap
+    CANTalonSrx::LIMIT_SWITCH_MODE_BIMAP = boost::assign::list_of<CANTalonSrx::LimitSwitchModeBimap::relation>
+    // clang-format off
+    (LimitSwitchMode::kNone,            "none")
+    (LimitSwitchMode::kNormallyOpen,    "normally_open")
+    (LimitSwitchMode::kNormallyClosed,  "kNormallyClosed");
+// clang-format on
 #endif
 
 }  // namespace hardware_template

@@ -419,48 +419,76 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
     // CAN Talon SRX smart (feedback) speed controller
     else if (joint_type == "can_talon_srx") {
-      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
-        continue;
 
+      // Ensure the required parameters are specified
+      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt)) {
+        continue;
+      }
+
+      using hardware_template::CANTalonSrx;
+      const auto& feedback_bimap   = CANTalonSrx::FEEDBACK_TYPE_BIMAP.right;
+      const auto& lim_switch_bimap = CANTalonSrx::LIMIT_SWITCH_MODE_BIMAP.right;
+
+      // Parse inverted states if valid, otherwise false
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
-
-      std::string feedback;
-      if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true)
-          && hardware_template::CANTalonSrx::FEEDBACK_TYPES.count(cur_joint["feedback"]) > 0)
-        feedback = (std::string) cur_joint["feedback"];
-      else
-        feedback = "none";
-
       bool fb_inverted = validateJointParamMember(cur_joint, "feedback_inverted", XmlValue::TypeBoolean, false, true)
                          && cur_joint["feedback_inverted"];
 
-      double k_eff;
-      if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true))
-        k_eff = getXmlRpcDouble(cur_joint["k_eff"]);
-      else
-        k_eff = 1.0;
+      // Parse the feedback type if valid, otherwise kNone
+      CANTalonSrx::FeedbackType feedback = CANTalonSrx::FeedbackType::kNone;
+      if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true)) {
+        if (feedback_bimap.count((std::string) cur_joint["feedback"]) > 0) {
+          feedback = feedback_bimap.at((std::string) cur_joint["feedback"]);
+        }
+      }
 
+      // Parse the forward limit switch mode if valid, otherwise use kNone
+      CANTalonSrx::LimitSwitchMode forward_lim_switch = CANTalonSrx::LimitSwitchMode::kNone;
+      if (validateJointParamMember(cur_joint, "forward_lim_switch", XmlValue::TypeString, false, true)) {
+        if (lim_switch_bimap.count((std::string) cur_joint["forward_lim_switch"]) > 0) {
+          forward_lim_switch = lim_switch_bimap.at((std::string) cur_joint["forward_lim_switch"]);
+        }
+      }
+
+      // Parse the reverse limit switch mode if valid, otherwise use kNone
+      CANTalonSrx::LimitSwitchMode reverse_lim_switch = CANTalonSrx::LimitSwitchMode::kNone;
+      if (validateJointParamMember(cur_joint, "reverse_lim_switch", XmlValue::TypeString, false, true)) {
+        if (lim_switch_bimap.count((std::string) cur_joint["reverse_lim_switch"]) > 0) {
+          reverse_lim_switch = lim_switch_bimap.at((std::string) cur_joint["reverse_lim_switch"]);
+        }
+      }
+
+      // Parse effort multiplier if valid, otherwise use 1.0
+      double k_eff = 1.0;
+      if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true)) {
+        k_eff = getXmlRpcDouble(cur_joint["k_eff"]);
+      }
+
+      // Check if PID gains are specified
       bool has_pos_gains = validateJointParamMember(cur_joint, "position_gains", XmlValue::TypeStruct, false, true);
       bool has_vel_gains = validateJointParamMember(cur_joint, "velocity_gains", XmlValue::TypeStruct, false, true);
       bool has_eff_gains = validateJointParamMember(cur_joint, "effort_gains", XmlValue::TypeStruct, false, true);
 
+      // Parse available PID gains
       PIDGains pos_gains = has_pos_gains ? parsePIDGains(cur_joint["position_gains"]) : PIDGains();
       PIDGains vel_gains = has_vel_gains ? parsePIDGains(cur_joint["velocity_gains"]) : PIDGains();
       PIDGains eff_gains = has_eff_gains ? parsePIDGains(cur_joint["effort_gains"]) : PIDGains();
 
       can_talon_srx_templates_[joint_name] = {
-          .id                = cur_joint["id"],
-          .inverted          = inverted,
-          .feedback          = feedback,
-          .feedback_inverted = fb_inverted,
-          .k_eff             = k_eff,
-          .pos_gains         = pos_gains,
-          .vel_gains         = vel_gains,
-          .eff_gains         = eff_gains,
-          .has_pos_gains     = has_pos_gains,
-          .has_vel_gains     = has_vel_gains,
-          .has_eff_gains     = has_eff_gains,
+          .id                 = cur_joint["id"],
+          .inverted           = inverted,
+          .feedback           = feedback,
+          .feedback_inverted  = fb_inverted,
+          .forward_lim_switch = forward_lim_switch,
+          .reverse_lim_switch = reverse_lim_switch,
+          .k_eff              = k_eff,
+          .pos_gains          = pos_gains,
+          .vel_gains          = vel_gains,
+          .eff_gains          = eff_gains,
+          .has_pos_gains      = has_pos_gains,
+          .has_vel_gains      = has_vel_gains,
+          .has_eff_gains      = has_eff_gains,
       };
     }
 
