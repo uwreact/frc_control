@@ -425,18 +425,21 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
 
-      double k_eff;
-      if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true))
-        k_eff = getXmlRpcDouble(cur_joint["k_eff"]);
-      else
-        k_eff = 1.0;
-
       // TODO: Check if valid
       std::string feedback;
       if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true))
         feedback = (std::string) cur_joint["feedback"];
       else
         feedback = "none";
+
+      bool fb_inverted = validateJointParamMember(cur_joint, "feedback_inverted", XmlValue::TypeBoolean, false, true)
+                         && cur_joint["feedback_inverted"];
+
+      double k_eff;
+      if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true))
+        k_eff = getXmlRpcDouble(cur_joint["k_eff"]);
+      else
+        k_eff = 1.0;
 
       bool has_pos_gains = validateJointParamMember(cur_joint, "position_gains", XmlValue::TypeStruct, false, true);
       bool has_vel_gains = validateJointParamMember(cur_joint, "velocity_gains", XmlValue::TypeStruct, false, true);
@@ -450,6 +453,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id            = cur_joint["id"],
           .inverted      = inverted,
           .feedback      = feedback,
+          .feedback_inverted = fb_inverted,
           .k_eff         = k_eff,
           .pos_gains     = pos_gains,
           .vel_gains     = vel_gains,
