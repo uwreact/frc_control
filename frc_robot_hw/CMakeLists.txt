@@ -12,10 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   transmission_interface
   urdf
 
-  analog_state_controller
-  binary_state_controller
+  analog_controller
+  binary_controller
   frc_msgs
-  ternary_state_controller
+  ternary_controller
   pdp_state_controller
 )
 
@@ -33,10 +33,10 @@ catkin_package(
     transmission_interface
     urdf
 
-    analog_state_controller
-    binary_state_controller
+    analog_controller
+    binary_controller
     frc_msgs
-    ternary_state_controller
+    ternary_controller
     pdp_state_controller
 )
 

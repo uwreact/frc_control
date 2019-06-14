@@ -25,46 +25,39 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include <binary_controller/binary_command_controller.h>
+#include <pluginlib/class_list_macros.hpp>
 
-#include <hardware_interface/internal/hardware_resource_manager.h>
-#include <ternary_state_controller/ternary_state_interface.h>
+namespace binary_controller {
 
-namespace hardware_interface {
+bool BinaryCommandController::init(hardware_interface::BinaryCommandInterface* hw, ros::NodeHandle& n) {
+  std::string joint_name;
+  if (!n.getParam("joint", joint_name)) {
+    ROS_ERROR("No joint given (namespace: %s)", n.getNamespace().c_str());
+    return false;
+  }
+  joint_ = hw->getHandle(joint_name);
 
-/**
- * A handle used to read and command a ternary (-1, 0, 1 or reverse, off, forward) actuator
- * (eg. H-bridge relay, double-acting solenoid).
- */
-class TernaryCommandHandle : public TernaryStateHandle {
-public:
-  TernaryCommandHandle() : TernaryStateHandle(), cmd_(nullptr) {}
-
-  /**
-   * \param state_handle This joint's state handle
-   * \param cmd A pointer to the storage for this joint's output command
-   */
-  TernaryCommandHandle(const TernaryStateHandle& state_handle, TernaryState* cmd)
-      : TernaryStateHandle(state_handle), cmd_(cmd) {
-    if (!cmd_)
-      throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
+  if (!n.getParam("default", default_val_)) {
+    default_val_ = false;
   }
 
-  void setCommand(TernaryState command) {
-    assert(cmd_);
-    *cmd_ = command;
-  }
+  sub_command_ = n.subscribe<std_msgs::Bool>("command", 1, &BinaryCommandController::commandCallback, this);
+  return true;
+}
 
-  TernaryState getCommand() const {
-    assert(cmd_);
-    return *cmd_;
-  }
+void BinaryCommandController::starting(const ros::Time& /*time*/) {
+  command_buffer_.writeFromNonRT(default_val_);
+}
 
-private:
-  TernaryState* cmd_;
-};
+void BinaryCommandController::update(const ros::Time& /*time*/, const ros::Duration& /*period*/) {
+  joint_.setCommand(*command_buffer_.readFromRT());
+}
 
-/** \brief Hardware interface to support commanding an array of ternary actuators. */
-class TernaryCommandInterface : public HardwareResourceManager<TernaryCommandHandle, ClaimResources> {};
+void BinaryCommandController::commandCallback(const std_msgs::BoolConstPtr& msg) {
+  command_buffer_.writeFromNonRT((bool) msg->data);
+}
 
-}  // namespace hardware_interface
+}  // namespace binary_controller
+
+PLUGINLIB_EXPORT_CLASS(binary_controller::BinaryCommandController, controller_interface::ControllerBase)

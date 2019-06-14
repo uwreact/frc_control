@@ -42,11 +42,11 @@ namespace pdp_state_controller {
  * This controller publishes the state of all resources registered to a `hardware_interface::PDPStateHandle` to a
  * topic of type `pdp_state_controller/PDPData`. The following is a basic configuration of the controller.
  *
- * \code
+ * @code
  * pdp_state_controller:
  *   type: pdp_state_controller/PDPStateController
  *   publish_rate: 50
- * \endcode
+ * @endcode
  *
  * NOTE: This controller is set up to handle multiple PDPs even though FRC-compliant robots may only use a single PDP.
  * Although the FRC manual requires only one PDP be used, the WPI HAL theoretically allows multiple PDPs so we will
@@ -57,11 +57,10 @@ public:
   PDPStateController() : publish_rate_(15.0) {}
 
   virtual bool init(hardware_interface::PDPStateInterface* hw,
-                    const ros::NodeHandle&                 root_nh,
-                    const ros::NodeHandle&                 controller_nh);
-  virtual void starting(const ros::Time& time);
-  virtual void update(const ros::Time& time, const ros::Duration& period);
-  virtual void stopping(const ros::Time& time);
+                    ros::NodeHandle&                       root_nh,
+                    ros::NodeHandle&                       controller_nh) override;
+  virtual void starting(const ros::Time& time) override;
+  virtual void update(const ros::Time& time, const ros::Duration& period) override;
 
 private:
   using RtPublisher         = realtime_tools::RealtimePublisher<pdp_state_controller::PDPData>;

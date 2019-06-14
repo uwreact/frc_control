@@ -27,40 +27,40 @@
 
 #pragma once
 
-#include <binary_state_controller/binary_state_interface.h>
+#include <analog_controller/analog_state_interface.h>
 #include <hardware_interface/internal/hardware_resource_manager.h>
 
 namespace hardware_interface {
 
-/** @brief A handle used to read and command a digital binary (on/off) actuator (eg. solenoid, LED, etc). */
-class BinaryCommandHandle : public BinaryStateHandle {
+/** @brief A handle used to read and command an analog actuator. */
+class AnalogCommandHandle : public AnalogStateHandle {
 public:
-  BinaryCommandHandle() : BinaryStateHandle(), cmd_(nullptr) {}
+  AnalogCommandHandle() : AnalogStateHandle(), cmd_(nullptr) {}
 
   /**
    * @param state_handle This joint's state handle
    * @param cmd A pointer to the storage for this joint's output command
    */
-  BinaryCommandHandle(const BinaryStateHandle& state_handle, bool* cmd) : BinaryStateHandle(state_handle), cmd_(cmd) {
+  AnalogCommandHandle(const AnalogStateHandle& state_handle, double* cmd) : AnalogStateHandle(state_handle), cmd_(cmd) {
     if (!cmd_)
       throw HardwareInterfaceException("Cannot create handle '" + getName() + "'. Command data pointer is null.");
   }
 
-  void setCommand(bool command) {
+  void setCommand(double command) {
     assert(cmd_);
     *cmd_ = command;
   }
 
-  bool getCommand() const {
+  double getCommand() const {
     assert(cmd_);
     return *cmd_;
   }
 
 private:
-  bool* cmd_;
+  double* cmd_;
 };
 
-/** @brief Hardware interface to support commanding an array of digital binary actuators. */
-class BinaryCommandInterface : public HardwareResourceManager<BinaryCommandHandle, ClaimResources> {};
+/** @brief Hardware interface to support commanding an array of analog actuators. */
+class AnalogCommandInterface : public HardwareResourceManager<AnalogCommandHandle, ClaimResources> {};
 
 }  // namespace hardware_interface

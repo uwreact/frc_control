@@ -1,0 +1,7 @@
+<library path="lib/libanalog_controller">
+  <class name="analog_controller/AnalogCommandController" type="analog_controller::AnalogCommandController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Command an analog device
+    </description>
+  </class>
+</library>
