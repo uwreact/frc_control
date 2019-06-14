@@ -79,7 +79,7 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
   message(STATUS "Performing cross-compile, linking WPILib")
 
   # Extract WPI libraries and headers from maven archives
-  add_custom_target(extract_wpilib COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../extract_archives.py)
+  add_custom_target(extract_wpilib COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/extract_archives.py)
   add_dependencies(${PROJECT_NAME} extract_wpilib)
 
   # Include WPILib and vendor headers
