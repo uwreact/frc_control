@@ -139,7 +139,8 @@ def test_clang_tidy():
         print('Using default workspace {0}'.format(workspace))
 
     # Run clang-tidy
-    ret = subprocess.call(['./run_clang_tidy.py', '-w', workspace, 'frc_control', '--verbose'])
+    script = os.path.dirname(os.path.abspath(__file__)) + '/run_clang_tidy.py'
+    ret = subprocess.call([script, '-w', workspace, 'frc_control', '--verbose'])
 
     if ret != 0:
         print('C++ code does not meet quality requirements!')

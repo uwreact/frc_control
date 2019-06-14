@@ -44,7 +44,7 @@ yapf -ir .
 To run the linters:
 
 ```
-./run_clang_tidy.py uwreact_robot
+./scripts/run_clang_tidy.py uwreact_robot
 find . -iname "*.py" -o -iregex ".*/scripts/.*" | xargs pylint
 ```
 
