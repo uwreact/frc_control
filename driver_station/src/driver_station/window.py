@@ -27,6 +27,9 @@
 
 """TODO: Module docstring."""
 
+# Standard imports
+from locale import atoi
+
 # ROS imports
 import rospy
 import rospkg
@@ -39,12 +42,17 @@ from python_qt_binding import QtWidgets
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
 
+
 class MainWindow(QtWidgets.QMainWindow):
     """Main window for the visualizer."""
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+
+        # TODO(): Make these values persistent
+        self.sound_enabled = False
+        self.team_number = 0
 
         # Load version info
         self.versions = {}
@@ -57,6 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.init_ui()
 
         # Display initial values
+        self._setup_team_number()
         self.update_versions()
 
     def init_ui(self):
@@ -96,6 +105,27 @@ class MainWindow(QtWidgets.QMainWindow):
         icon = utils.load_resource('icon.svg')
         self.setWindowIcon(QtGui.QIcon(icon))
         self.setWindowTitle('Driver Station')
+
+    def _setup_team_number(self):
+        """Setup the team number input."""
+
+        # Setup the team number input box
+        gui_utils.setup_int_validator(self.teamNumberInput, lambda text: str(self.team_number))
+        self.teamNumberInput.setMaxLength(4)
+        self.teamNumberInput.editingFinished.connect(self._update_team_number)
+
+        # If a default team number is set, apply it
+        if self.team_number > 0:
+            self.teamNumberInput.setText(str(self.team_number))
+            self._update_team_number(True)
+
+    def _update_team_number(self, force_update=False):
+        """Parse the value of the team numer input."""
+
+        if not force_update and atoi(self.teamNumberInput.text()) == self.team_number:
+            return
+
+        self.team_number = atoi(self.teamNumberInput.text())
 
     def update_versions(self):
         """Update the Version Information panel."""
