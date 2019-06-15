@@ -29,9 +29,43 @@
 
 # Standard imports
 import os
+import subprocess
+import threading
 
 # ROS imports
 import rospkg
+
+
+def async_popen(popen_args, callback=None):
+    """Asynchronously run subprocess.Popen, with the callback on completion."""
+
+    def _run(popen_args, callback):
+        proc = subprocess.Popen(*popen_args, stdout=open('/dev/null'), stderr=open('/dev/null'))
+        proc.wait()
+        if callback is not None:
+            callback()
+        return
+
+    thread = threading.Thread(target=_run, args=(popen_args, callback))
+    thread.start()
+    return thread
+
+
+def async_check_output(subprocess_args, success_callback=None, failure_callback=None):
+    """Asynchronously run subprocess.check_output, with the callback on completion."""
+
+    def _run(subprocess_args, success_callback, failure_callback):
+        try:
+            output = subprocess.check_output(*subprocess_args, stderr=open('/dev/null')).strip()
+            if success_callback is not None:
+                success_callback(output)
+        except subprocess.CalledProcessError as error:
+            if failure_callback is not None:
+                failure_callback(error)
+
+    thread = threading.Thread(target=_run, args=(subprocess_args, success_callback, failure_callback))
+    thread.start()
+    return thread
 
 
 def load_resource(filename):
