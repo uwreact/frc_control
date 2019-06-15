@@ -28,14 +28,16 @@
 """TODO: Module docstring."""
 
 # ROS imports
+import rospy
+import rospkg
 from python_qt_binding import loadUi as loadLayout
 from python_qt_binding import QtGui
 from python_qt_binding import QtCore
 from python_qt_binding import QtWidgets
 
 # frc_control imports
+from driver_station.utils import gui_utils
 from driver_station.utils import utils
-
 
 class MainWindow(QtWidgets.QMainWindow):
     """Main window for the visualizer."""
@@ -44,8 +46,18 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
+        # Load version info
+        self.versions = {}
+        self.versions['DS'] = rospkg.RosPack().get_manifest('driver_station').version
+        self.versions['ROS'] = '{} {}'.format(
+            rospy.get_param('rosdistro').strip().capitalize(),
+            rospy.get_param('rosversion').strip())
+
         # Setup the UI
         self.init_ui()
+
+        # Display initial values
+        self.update_versions()
 
     def init_ui(self):
         """Setup the UI elements."""
@@ -84,3 +96,8 @@ class MainWindow(QtWidgets.QMainWindow):
         icon = utils.load_resource('icon.svg')
         self.setWindowIcon(QtGui.QIcon(icon))
         self.setWindowTitle('Driver Station')
+
+    def update_versions(self):
+        """Update the Version Information panel."""
+        text = '\n'.join(['{}: {}'.format(k, self.versions[k]) for k in sorted(self.versions)])
+        self.versionsTextDisplay.setText(text)
