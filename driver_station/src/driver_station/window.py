@@ -41,6 +41,7 @@ from python_qt_binding import QtWidgets
 # frc_control imports
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
+from driver_station.widgets import major_status
 from driver_station.widgets import pc_stats
 
 
@@ -66,6 +67,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.init_ui()
 
         # Setup all the inner widgets
+        self.major_status = major_status.MajorStatusWidget(self)
         self.pc_stats = pc_stats.PcStatsWidget(self)
 
         # Display initial values
@@ -130,6 +132,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         self.team_number = atoi(self.teamNumberInput.text())
+        self.teamNumberDisplay.setText(str(self.team_number))
+        self.major_status.set_team_number(self.team_number)
 
     def update_versions(self):
         """Update the Version Information panel."""
