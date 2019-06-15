@@ -25,20 +25,36 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""
-TODO(Kaelan): Module docstring
-"""
+"""TODO: Module docstring."""
 
-from python_qt_binding.QtWidgets import QMainWindow  # pylint: disable=import-error, no-name-in-module
+# ROS imports
+from python_qt_binding import loadUi as loadLayout
+from python_qt_binding import QtGui
+from python_qt_binding import QtCore
+from python_qt_binding import QtWidgets
+
+# frc_control imports
+from driver_station.utils import utils
 
 
-class MainWindow(QMainWindow):
-    """
-    Main window for the visualizer
-    """
-
-    # pylint: disable=too-few-public-methods
+class MainWindow(QtWidgets.QMainWindow):
+    """Main window for the visualizer."""
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        self.setWindowTitle("driver station (in development)")
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+
+        # Setup the UI
+        self.init_ui()
+
+    def init_ui(self):
+        """Setup the UI elements."""
+
+        # Load the layout
+        ui_file = utils.load_resource('layout/driver-station.ui')
+        loadLayout(ui_file, self)
+
+        # Set the icon and title
+        icon = utils.load_resource('icon.svg')
+        self.setWindowIcon(QtGui.QIcon(icon))
+        self.setWindowTitle('Driver Station')
