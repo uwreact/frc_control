@@ -54,6 +54,15 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_file = utils.load_resource('layout/driver-station.ui')
         loadLayout(ui_file, self)
 
+        # Load the stylesheet
+        stylesheet = '\n'.join([
+            open(utils.load_resource('stylesheet/default.qss')).read(),
+            open(utils.load_resource('stylesheet/operations.qss')).read(),
+            open(utils.load_resource('stylesheet/setup.qss')).read(),
+            open(utils.load_resource('stylesheet/tabs.qss')).read()
+        ])
+        self.setStyleSheet(stylesheet)
+
         # Set the icon and title
         icon = utils.load_resource('icon.svg')
         self.setWindowIcon(QtGui.QIcon(icon))

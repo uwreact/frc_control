@@ -1,0 +1,27 @@
+QPushButton#enableRobotButton {
+    color: rgb(0, 45, 0);
+    font-weight: bold;
+}
+QPushButton#enableRobotButton:checked {
+    color: rgb(0, 255, 0);
+}
+
+QPushButton#disableRobotButton {
+    color: rgb(53, 0, 0);
+    font-weight: bold;
+}
+QPushButton#disableRobotButton:checked {
+    color: rgb(255, 0, 0);
+}
+
+QPushButton#estopRobotButton {
+    color: rgb(80, 0, 80);
+    font-weight: bold;
+}
+QPushButton#estopRobotButton:checked {
+    color: rgb(255, 0, 255);
+}
+
+QProgressBar#pcCpuDisplay::chunk {
+    background-color: rgb(220, 175, 0);
+}

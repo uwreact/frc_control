@@ -1,0 +1,3 @@
+QGroupBox#practiceTimingFrame > QLineEdit {
+    padding: 0px;
+}
