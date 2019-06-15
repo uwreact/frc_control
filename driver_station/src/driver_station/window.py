@@ -41,6 +41,7 @@ from python_qt_binding import QtWidgets
 # frc_control imports
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
+from driver_station.widgets import pc_stats
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -63,6 +64,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Setup the UI
         self.init_ui()
+
+        # Setup all the inner widgets
+        self.pc_stats = pc_stats.PcStatsWidget(self)
 
         # Display initial values
         self._setup_team_number()
