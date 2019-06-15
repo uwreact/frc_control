@@ -63,6 +63,23 @@ class MainWindow(QtWidgets.QMainWindow):
         ])
         self.setStyleSheet(stylesheet)
 
+        # Load tab icons
+        operations_icon = QtGui.QIcon(utils.load_resource('icons/baseline-gamepad-24px.svg'))
+        self.leftTabWidget.setTabIcon(0, operations_icon)
+        diagnostics_icon = QtGui.QIcon(utils.load_resource('icons/baseline-timeline-24px.svg'))
+        self.leftTabWidget.setTabIcon(1, diagnostics_icon)
+        settings_icon = QtGui.QIcon(utils.load_resource('icons/baseline-settings-20px.svg'))
+        self.leftTabWidget.setTabIcon(2, settings_icon)
+        usb_icon = QtGui.QIcon(utils.load_resource('icons/baseline-usb-24px.svg'))
+        self.leftTabWidget.setTabIcon(3, usb_icon)
+        power_icon = QtGui.QIcon(utils.load_resource('icons/baseline-flash_on-24px.svg'))
+        self.leftTabWidget.setTabIcon(4, power_icon)
+
+        log_icon = QtGui.QIcon(utils.load_resource('icons/baseline-mail-24px.svg'))
+        self.rightTabWidget.setTabIcon(0, log_icon)
+        fms_icon = QtGui.QIcon(utils.load_resource('icons/baseline-router-24px.svg'))
+        self.rightTabWidget.setTabIcon(1, fms_icon)
+
         # Set the icon and title
         icon = utils.load_resource('icon.svg')
         self.setWindowIcon(QtGui.QIcon(icon))
