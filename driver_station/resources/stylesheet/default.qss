@@ -1,0 +1,116 @@
+/*
+ * Standard colors:
+ *
+ * Background:            rgb(42, 42, 42)
+ * Foreground:            rgb(75, 75, 75)
+ * Borders:               rgb(30, 30, 30)
+ * Selected:              rgb(42, 42, 42)
+ *
+ * Text:                  rgb(255, 255, 255)
+ * Text boxes:            rgb(212, 212, 212)
+ *
+ * Disabled Box (Grey):   rgb(40, 40, 40)
+ * Disabled Box (Red):    rgb(255, 20, 0)
+ * Enabled Box (Green):   rgb(100, 255, 0)
+ *
+ * Progress Bar (Red):    rgb(255, 20, 0)
+ * Progress Bar (Orange): rgb(220, 175, 0)
+ * Progress Bar (Green):  rgb(0, 115, 16)
+ *
+ */
+
+/* Combo boxes */
+QComboBox {
+    background-color: rgb(75, 75, 75);
+    color: white;
+}
+QComboBox QAbstractItemView {
+    background-color: rgb(42, 42, 42);
+}
+
+/* VLine */
+QFrame[frameShape="4"] {
+    background-color: rgb(42, 42, 42);
+    border: none;
+    max-height: 1px;
+}
+
+/* HLine */
+QFrame[frameShape="5"] {
+    background-color: rgb(42, 42, 42);
+    border: none;
+    max-width: 1px;
+}
+
+/* Group boxes */
+QGroupBox {
+    background-color: rgb(42, 42, 42);
+    border: none;
+    color: white;
+    margin-top: 1.1em;
+}
+
+/* Labels */
+QLabel {
+    color: white;
+    font-size: 9;
+}
+
+/* Line Edits */
+QLineEdit {
+    background-color: rgb(212, 212, 212);
+}
+
+/* Lists */
+QListWidget{
+    background-color: rgb(42, 42, 42);
+    color: white;
+}
+QListWidget::item:selected{
+    background: rgb(70, 70, 70);
+}
+
+/* Main window */
+QMainWindow {
+    background-color: rgb(42, 42, 42);
+}
+
+/* Progress bars */
+QProgressBar{
+    background-color: rgb(42, 42, 42);
+    border: 1px solid rgb(30, 30, 30);
+    color: white;
+    font-size: 14px;
+    qproperty-alignment: 'AlignCenter';
+}
+QProgressBar::chunk {
+    background-color: rgb(0, 115, 16);
+}
+
+/* Push buttons */
+QPushButton {
+    background-color: rgb(75, 75, 75);
+    border: 1px solid rgb(30, 30, 30);
+    color: white;
+    font-size: 9;
+    padding: 4px;
+}
+QPushButton:pressed, QPushButton:checked {
+    background-color: rgb(42, 42, 42);
+}
+QPushButton:hover:!pressed:!checked {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(80, 80, 80), stop: 1 rgb(100, 100, 100));
+}
+QPushButton[notop=true] {
+    border-top: none;
+}
+QPushButton[nobot=true] {
+    border-bottom: none;
+}
+
+/* Text browsers */
+QTextBrowser {
+    background-color: rgb(42, 42, 42);
+    color: white;
+    font-size: 9;
+}

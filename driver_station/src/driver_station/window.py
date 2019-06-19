@@ -25,20 +25,109 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""
-TODO(Kaelan): Module docstring
-"""
+"""TODO: Module docstring."""
 
-from python_qt_binding.QtWidgets import QMainWindow  # pylint: disable=import-error, no-name-in-module
+# Standard imports
+from locale import atoi
+
+# ROS imports
+import rospy
+import rospkg
+from python_qt_binding import loadUi as loadLayout
+from python_qt_binding import QtGui
+from python_qt_binding import QtCore
+from python_qt_binding import QtWidgets
+
+# frc_control imports
+from driver_station.utils import gui_utils
+from driver_station.utils import utils
 
 
-class MainWindow(QMainWindow):
-    """
-    Main window for the visualizer
-    """
-
-    # pylint: disable=too-few-public-methods
+class MainWindow(QtWidgets.QMainWindow):
+    """Main window for the visualizer."""
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        self.setWindowTitle("driver station (in development)")
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+
+        # TODO(): Make these values persistent
+        self.sound_enabled = False
+        self.team_number = 0
+
+        # Load version info
+        self.versions = {}
+        self.versions['DS'] = rospkg.RosPack().get_manifest('driver_station').version
+        self.versions['ROS'] = '{} {}'.format(
+            rospy.get_param('rosdistro').strip().capitalize(),
+            rospy.get_param('rosversion').strip())
+
+        # Setup the UI
+        self.init_ui()
+
+        # Display initial values
+        self._setup_team_number()
+        self.update_versions()
+
+    def init_ui(self):
+        """Setup the UI elements."""
+
+        # Load the layout
+        ui_file = utils.load_resource('layout/driver-station.ui')
+        loadLayout(ui_file, self)
+
+        # Load the stylesheet
+        stylesheet = '\n'.join([
+            open(utils.load_resource('stylesheet/default.qss')).read(),
+            open(utils.load_resource('stylesheet/operations.qss')).read(),
+            open(utils.load_resource('stylesheet/setup.qss')).read(),
+            open(utils.load_resource('stylesheet/tabs.qss')).read()
+        ])
+        self.setStyleSheet(stylesheet)
+
+        # Load tab icons
+        operations_icon = QtGui.QIcon(utils.load_resource('icons/baseline-gamepad-24px.svg'))
+        self.leftTabWidget.setTabIcon(0, operations_icon)
+        diagnostics_icon = QtGui.QIcon(utils.load_resource('icons/baseline-timeline-24px.svg'))
+        self.leftTabWidget.setTabIcon(1, diagnostics_icon)
+        settings_icon = QtGui.QIcon(utils.load_resource('icons/baseline-settings-20px.svg'))
+        self.leftTabWidget.setTabIcon(2, settings_icon)
+        usb_icon = QtGui.QIcon(utils.load_resource('icons/baseline-usb-24px.svg'))
+        self.leftTabWidget.setTabIcon(3, usb_icon)
+        power_icon = QtGui.QIcon(utils.load_resource('icons/baseline-flash_on-24px.svg'))
+        self.leftTabWidget.setTabIcon(4, power_icon)
+
+        log_icon = QtGui.QIcon(utils.load_resource('icons/baseline-mail-24px.svg'))
+        self.rightTabWidget.setTabIcon(0, log_icon)
+        fms_icon = QtGui.QIcon(utils.load_resource('icons/baseline-router-24px.svg'))
+        self.rightTabWidget.setTabIcon(1, fms_icon)
+
+        # Set the icon and title
+        icon = utils.load_resource('icon.svg')
+        self.setWindowIcon(QtGui.QIcon(icon))
+        self.setWindowTitle('Driver Station')
+
+    def _setup_team_number(self):
+        """Setup the team number input."""
+
+        # Setup the team number input box
+        gui_utils.setup_int_validator(self.teamNumberInput, lambda text: str(self.team_number))
+        self.teamNumberInput.setMaxLength(4)
+        self.teamNumberInput.editingFinished.connect(self._update_team_number)
+
+        # If a default team number is set, apply it
+        if self.team_number > 0:
+            self.teamNumberInput.setText(str(self.team_number))
+            self._update_team_number(True)
+
+    def _update_team_number(self, force_update=False):
+        """Parse the value of the team numer input."""
+
+        if not force_update and atoi(self.teamNumberInput.text()) == self.team_number:
+            return
+
+        self.team_number = atoi(self.teamNumberInput.text())
+
+    def update_versions(self):
+        """Update the Version Information panel."""
+        text = '\n'.join(['{}: {}'.format(k, self.versions[k]) for k in sorted(self.versions)])
+        self.versionsTextDisplay.setText(text)

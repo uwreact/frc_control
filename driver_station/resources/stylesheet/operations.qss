@@ -1,0 +1,31 @@
+/* PC CPU usage is standard orange */
+QProgressBar#pcCpuDisplay::chunk {
+    background-color: rgb(220, 175, 0);
+}
+
+/* 'Enable' button is dark green when inactive, bright green when active*/
+QPushButton#enableRobotButton {
+    color: rgb(0, 45, 0);
+    font-weight: bold;
+}
+QPushButton#enableRobotButton:checked {
+    color: rgb(0, 255, 0);
+}
+
+/* 'Disable' button is dark red when inactive, bright red when active*/
+QPushButton#disableRobotButton {
+    color: rgb(53, 0, 0);
+    font-weight: bold;
+}
+QPushButton#disableRobotButton:checked {
+    color: rgb(255, 0, 0);
+}
+
+/* 'Estop' button is dark purle when inactive, bright purple when active*/
+QPushButton#estopRobotButton {
+    color: rgb(80, 0, 80);
+    font-weight: bold;
+}
+QPushButton#estopRobotButton:checked {
+    color: rgb(255, 0, 255);
+}

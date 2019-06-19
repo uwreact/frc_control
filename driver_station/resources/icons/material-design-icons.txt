@@ -1,0 +1,9 @@
+The icons in this directory are all provided by Google as part of the Material
+Design icons collection. Minor modifications such as coloring and rotation have
+been made.
+
+Icons are available under the Apache 2.0 license.
+
+License: https://www.apache.org/licenses/LICENSE-2.0.html
+Homepage: https://material.io/tools/icons/
+GitHub: https://github.com/google/material-design-icons

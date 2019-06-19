@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 ##############################################################################
 # Copyright (C) 2019, UW REACT
 #
@@ -27,30 +25,55 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""Launch the driver station."""
+"""GUI-related utilities."""
 
-import sys
-import rospy
-from python_qt_binding.QtWidgets import QApplication
-from driver_station.window import MainWindow  # pylint: disable=no-name-in-module
+# Standard imports
+from enum import IntEnum
 
-
-def main():
-    """Main function."""
-
-    # Create the node
-    rospy.init_node('frc_driver_station_node')
-
-    # Create the window
-    app = QApplication([])
-    window = MainWindow()
-    window.show()
-
-    # Setup shutdown handlers
-    rospy.on_shutdown(QApplication.quit)
-    app.aboutToQuit.connect(lambda: rospy.signal_shutdown('Window closed'))
-    sys.exit(app.exec_())
+# ROS imports
+from python_qt_binding import QtGui
 
 
-if __name__ == '__main__':
-    main()
+class Color(IntEnum):
+    """Standard colors used in the UI."""
+    GRAY = 0x282828
+    RED = 0xFF1400
+    BAR_GREEN = 0x007310
+    BTN_GREEN = 0x2edc00
+    ORANGE = 0xDCAE00
+
+
+def bool_style(element, enabled, use_red=False):
+    """Format the specified element as a boolean indicator light.
+
+    Args:
+        element (QWidget):  The element to format. Typically a QLineEdit.
+        enabled (bool):     Whether to format as enabled or disabled.
+        use_red (bool):     Whether to use red or grey as the disabled color.
+    """
+    if use_red:
+        color_enabled = Color.BTN_GREEN
+        color_disabled = Color.RED
+    else:
+        color_enabled = Color.BTN_GREEN
+        color_disabled = Color.GRAY
+
+    if enabled:
+        element.setStyleSheet('background-color: #{:06x}'.format(color_enabled))
+    else:
+        element.setStyleSheet('background-color: #{:06x}'.format(color_disabled))
+
+
+def setup_int_validator(element, fixup, lower=0, upper=2**31 - 1):
+    """Setup an int validator for the specified element.
+
+    Args:
+        element (QLineEdit):    The element on which to apply the validator.
+        fixup   (function):     Callback to perform when fixing invalid inputs.
+        lower   (int):          The lower limit of allowable values (Default=0).
+        upper   (int):          The uppoer limit of allowable values (Default=2^31 - 1).
+    """
+    validator = QtGui.QIntValidator()
+    validator.setRange(lower, upper)
+    validator.fixup = fixup
+    element.setValidator(validator)

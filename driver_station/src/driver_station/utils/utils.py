@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 ##############################################################################
 # Copyright (C) 2019, UW REACT
 #
@@ -27,30 +25,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""Launch the driver station."""
+"""General helper functions."""
 
-import sys
-import rospy
-from python_qt_binding.QtWidgets import QApplication
-from driver_station.window import MainWindow  # pylint: disable=no-name-in-module
+# Standard imports
+import os
 
-
-def main():
-    """Main function."""
-
-    # Create the node
-    rospy.init_node('frc_driver_station_node')
-
-    # Create the window
-    app = QApplication([])
-    window = MainWindow()
-    window.show()
-
-    # Setup shutdown handlers
-    rospy.on_shutdown(QApplication.quit)
-    app.aboutToQuit.connect(lambda: rospy.signal_shutdown('Window closed'))
-    sys.exit(app.exec_())
+# ROS imports
+import rospkg
 
 
-if __name__ == '__main__':
-    main()
+def load_resource(filename):
+    """Load the specified resource from the driver_station package's resource dir."""
+    return os.path.join(rospkg.RosPack().get_path('driver_station'), 'resources', filename)
