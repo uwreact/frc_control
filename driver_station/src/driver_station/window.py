@@ -43,6 +43,7 @@ from driver_station.utils import gui_utils
 from driver_station.utils import utils
 from driver_station.widgets import major_status
 from driver_station.widgets import pc_stats
+from driver_station.widgets import status_string
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -69,6 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Setup all the inner widgets
         self.major_status = major_status.MajorStatusWidget(self)
         self.pc_stats = pc_stats.PcStatsWidget(self)
+        self.status_string = status_string.StatusStringWidget(self)
 
         # Display initial values
         self._setup_team_number()

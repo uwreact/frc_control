@@ -109,7 +109,9 @@ class MajorStatusWidget(object):
 
         self.window.update_versions()
         self.window.batteryVoltageDisplay.setText('--.--')
+        self.window.status_string.set_robot_comms(connected)
 
     def _has_robot_code(self, has_code):
         """Update the robot code indicator with the new state."""
         gui_utils.bool_style(self.window.robotCodeStatusDisplay, has_code, True)
+        self.window.status_string.set_robot_code(has_code)

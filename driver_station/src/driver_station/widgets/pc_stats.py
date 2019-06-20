@@ -39,7 +39,7 @@ from driver_station.utils import gui_utils
 
 
 class PcStatsWidget(object):
-    """Widget for displaying the PC's battery and CPU usage."""
+    """A widget for displaying the PC's battery and CPU usage."""
 
     def __init__(self, window):
         self.window = window
