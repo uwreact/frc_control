@@ -27,6 +27,8 @@
 
 """Audio player for Driver Station sound effects."""
 
+from __future__ import print_function
+
 # ROS imports
 try:
     from python_qt_binding import QtMultimedia
