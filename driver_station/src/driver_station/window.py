@@ -44,6 +44,8 @@ from driver_station.utils import utils
 from driver_station.widgets import major_status
 from driver_station.widgets import pc_stats
 from driver_station.widgets import status_string
+from driver_station.widgets import time_display
+from frc_msgs.msg import MatchTime
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -56,6 +58,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO(): Make these values persistent
         self.sound_enabled = False
         self.team_number = 0
+
+        self.match_time = MatchTime()
 
         # Load version info
         self.versions = {}
@@ -71,6 +75,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.major_status = major_status.MajorStatusWidget(self)
         self.pc_stats = pc_stats.PcStatsWidget(self)
         self.status_string = status_string.StatusStringWidget(self)
+        self.time_display = time_display.TimeDisplayWidget(self, self.match_time)
 
         # Display initial values
         self._setup_team_number()
