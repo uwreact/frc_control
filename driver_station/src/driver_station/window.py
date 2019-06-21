@@ -25,7 +25,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""TODO: Module docstring."""
+"""The MainWindow class."""
 
 # Standard imports
 from locale import atoi
