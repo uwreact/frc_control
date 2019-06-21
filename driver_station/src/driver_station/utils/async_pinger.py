@@ -50,6 +50,7 @@ class AsyncPinger(QtCore.QObject):
         self.running = True
         self.set_period(period)
         self.set_hostnames(hostnames)
+        self.last_successful_hostname = ''
 
     def set_period(self, period):
         """Set the period between pings."""
@@ -60,6 +61,15 @@ class AsyncPinger(QtCore.QObject):
         if not isinstance(hostnames, list):
             hostnames = [hostnames]
         self.hostnames = hostnames
+        self.last_successful_hostname = ''
+
+    def get_hostnames(self):
+        """Return the list of hostnames to ping, in order."""
+        return self.hostnames
+
+    def get_last_success(self):
+        """Return the hostname of the last successful ping."""
+        return self.last_successful_hostname
 
     def start(self):
         """Start the pinger."""
@@ -73,13 +83,18 @@ class AsyncPinger(QtCore.QObject):
         while self.running:
 
             # Ping each hostname for up to 0.2sec or 1 successful packet
-            did_ping = False
+            successful_hostname = None
             for hostname in self.hostnames:
                 ret = subprocess.call(['timeout', '0.2', 'ping', '-c', '1', hostname],
                                       stdout=open('/dev/null'),
                                       stderr=open('/dev/null'))
                 if ret == 0:
-                    did_ping = True
+                    successful_hostname = hostname
                     break
-            self.signalConnectionStatus.emit(did_ping)
+
+            if successful_hostname is not None:
+                self.last_successful_hostname = successful_hostname
+                self.signalConnectionStatus.emit(True)
+            else:
+                self.signalConnectionStatus.emit(False)
             time.sleep(self.period)
