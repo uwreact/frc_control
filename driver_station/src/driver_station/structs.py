@@ -48,7 +48,7 @@ class RobotModeState(IntEnum):
 class PracticeTiming(object):
     """Data structure containing the durations of each stage of practice mode."""
 
-    # pylint: disable=too-few-public-methods
+    # TODO: Change to a dict to be more pythonic? Or wait for py3.7 @dataclass?
 
     def __init__(self):
         self.countdown = 3
