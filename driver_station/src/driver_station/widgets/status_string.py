@@ -98,7 +98,7 @@ class StatusStringWidget(object):
             self.window.statusStringDisplay.setText(StatusStrings.NO_COMMS.value)
         elif not self.has_robot_code:
             self.window.statusStringDisplay.setText(StatusStrings.NO_CODE.value)
-        if self.enable_disable == structs.EnableDisableState.ESTOP:
+        elif self.enable_disable == structs.EnableDisableState.ESTOP:
             self.window.statusStringDisplay.setText(StatusStrings.ESTOP.value)
         elif self.brownout:
             self.window.statusStringDisplay.setText(StatusStrings.BROWNOUT.value)
