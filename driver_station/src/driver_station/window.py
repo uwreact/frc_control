@@ -44,8 +44,11 @@ from driver_station.utils import utils
 from driver_station.widgets import major_status
 from driver_station.widgets import pc_stats
 from driver_station.widgets import practice_timing
+from driver_station.widgets import robot_mode
 from driver_station.widgets import status_string
 from driver_station.widgets import time_display
+
+from frc_msgs.msg import DriverStationMode
 from frc_msgs.msg import MatchTime
 
 
@@ -61,6 +64,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.team_number = 0
 
         self.match_time = MatchTime()
+        self.ds_mode = DriverStationMode()
 
         # Load version info
         self.versions = {}
@@ -76,6 +80,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.major_status = major_status.MajorStatusWidget(self)
         self.pc_stats = pc_stats.PcStatsWidget(self)
         self.practice_timing = practice_timing.PracticeTimingWidget(self)
+        self.robot_mode = robot_mode.RobotModeWidget(self, self.ds_mode)
         self.status_string = status_string.StatusStringWidget(self)
         self.time_display = time_display.TimeDisplayWidget(self, self.match_time)
 
