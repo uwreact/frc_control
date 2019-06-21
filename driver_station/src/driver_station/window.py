@@ -44,6 +44,7 @@ from driver_station.utils import utils
 from driver_station.widgets import communications
 from driver_station.widgets import joystick_indicator
 from driver_station.widgets import major_status
+from driver_station.widgets import match_data
 from driver_station.widgets import pc_stats
 from driver_station.widgets import practice_timing
 from driver_station.widgets import rio_utils
@@ -85,6 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.communications = communications.CommunicationsWidget(self, self.match_data)
         self.joystick_indicator = joystick_indicator.JoystickIndicatorWidget(self)
         self.major_status = major_status.MajorStatusWidget(self)
+        self.match_data = match_data.MatchDataWidget(self, self.match_data)
         self.pc_stats = pc_stats.PcStatsWidget(self)
         self.practice_timing = practice_timing.PracticeTimingWidget(self)
         self.rio_utils = rio_utils.RioUtilsWidget(self)
