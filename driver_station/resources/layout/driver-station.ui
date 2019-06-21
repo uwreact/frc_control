@@ -784,16 +784,16 @@ p, li { white-space: pre-wrap; }
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="restartCodeButton">
+           <widget class="QPushButton" name="rebootRioButton">
             <property name="text">
-             <string>Restart Robot Code</string>
+             <string>Reboot RoboRIO</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="rebootRioButton">
+           <widget class="QPushButton" name="restartCodeButton">
             <property name="text">
-             <string>Reboot RoboRIO</string>
+             <string>Restart Robot Code</string>
             </property>
            </widget>
           </item>
@@ -2257,8 +2257,8 @@ Communication</string>
   <tabstop>estopRobotButton</tabstop>
   <tabstop>teamStationInput</tabstop>
   <tabstop>versionsTextDisplay</tabstop>
-  <tabstop>restartCodeButton</tabstop>
   <tabstop>rebootRioButton</tabstop>
+  <tabstop>restartCodeButton</tabstop>
   <tabstop>teamNumberInput</tabstop>
   <tabstop>gameDataInput</tabstop>
   <tabstop>usbSetupList</tabstop>

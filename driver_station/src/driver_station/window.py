@@ -44,6 +44,7 @@ from driver_station.utils import utils
 from driver_station.widgets import major_status
 from driver_station.widgets import pc_stats
 from driver_station.widgets import practice_timing
+from driver_station.widgets import rio_utils
 from driver_station.widgets import robot_mode
 from driver_station.widgets import status_string
 from driver_station.widgets import time_display
@@ -80,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.major_status = major_status.MajorStatusWidget(self)
         self.pc_stats = pc_stats.PcStatsWidget(self)
         self.practice_timing = practice_timing.PracticeTimingWidget(self)
+        self.rio_utils = rio_utils.RioUtilsWidget(self)
         self.robot_mode = robot_mode.RobotModeWidget(self, self.ds_mode)
         self.status_string = status_string.StatusStringWidget(self)
         self.time_display = time_display.TimeDisplayWidget(self, self.match_time)
