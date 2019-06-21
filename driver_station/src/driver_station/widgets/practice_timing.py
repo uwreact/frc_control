@@ -31,20 +31,8 @@
 from locale import atoi
 
 # ROS imports
+from driver_station import structs
 from driver_station.utils import gui_utils
-
-
-class Timing(object):
-    """Data structure containing the durations of each stage of practice mode."""
-
-    # pylint: disable=too-few-public-methods
-
-    def __init__(self):
-        self.countdown = 3
-        self.autonomous = 15
-        self.delay = 1
-        self.teleop = 100
-        self.endgame = 20
 
 
 class PracticeTimingWidget(object):
@@ -54,7 +42,7 @@ class PracticeTimingWidget(object):
         self.window = window
         self.init_ui()
 
-        self.timing = Timing()
+        self.timing = structs.PracticeTiming()
         self._update_timing()
 
     def init_ui(self):

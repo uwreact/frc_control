@@ -31,7 +31,7 @@
 from enum import Enum
 
 # frc_control imports
-from frc_msgs.msg import DriverStationMode
+from driver_station import structs
 
 
 class StatusStrings(Enum):
@@ -57,8 +57,8 @@ class StatusStringWidget(object):
         self.has_robot_comms = False
         self.has_robot_code = False
         self.brownout = False
-        self.robot_mode = DriverStationMode.MODE_OPERATOR
-        self.enable_disable = DriverStationMode.MODE_DISABLED
+        self.robot_mode = structs.RobotModeState.TELEOP
+        self.enable_disable = structs.EnableDisableState.DISABLE
 
         self._update_string()
 
@@ -80,19 +80,14 @@ class StatusStringWidget(object):
     def set_robot_mode(self, mode):
         """Set the robot mode.
 
-        Should be one of MODE_OPERATOR, MODE_AUTONOMOUS, or MODE_TEST,
-        corresponding with the DriverStationMode msg. Even if the robot is
-        disabled or estopped, this value should represent the selected mode.
-        """
+        `mode` should be a structs.RobotModeState enum value."""
         self.robot_mode = mode
         self._update_string()
 
     def set_enable_disable(self, mode):
         """Set whether the robot is enabled, disabled, or estopped.
 
-        Should be one of MODE_ESTOP, MODE_DISABLED, or anything else for enbled,
-        corresponding with the DriverStationMode msg.
-        """
+        `mode` should be a structs.EnableDisableState enum value."""
         self.enable_disable = mode
         self._update_string()
 
@@ -103,23 +98,23 @@ class StatusStringWidget(object):
             self.window.statusStringDisplay.setText(StatusStrings.NO_COMMS.value)
         elif not self.has_robot_code:
             self.window.statusStringDisplay.setText(StatusStrings.NO_CODE.value)
-        elif self.enable_disable == DriverStationMode.MODE_ESTOP:
+        if self.enable_disable == structs.EnableDisableState.ESTOP:
             self.window.statusStringDisplay.setText(StatusStrings.ESTOP.value)
         elif self.brownout:
             self.window.statusStringDisplay.setText(StatusStrings.BROWNOUT.value)
         else:
 
             key = ''
-            if self.robot_mode == DriverStationMode.MODE_OPERATOR:
+            if self.robot_mode == structs.RobotModeState.TELEOP:
                 key += 'TELEOP'
-            elif self.robot_mode == DriverStationMode.MODE_AUTONOMOUS:
+            elif self.robot_mode == structs.RobotModeState.AUTO:
                 key += 'AUTO'
-            elif self.robot_mode == DriverStationMode.MODE_TEST:
+            elif self.robot_mode == structs.RobotModeState.TEST:
                 key += 'TEST'
 
             key += '_'
 
-            if self.enable_disable > DriverStationMode.MODE_DISABLED:
+            if self.enable_disable == structs.EnableDisableState.ENABLE:
                 key += 'EN'
             else:
                 key += 'DIS'
