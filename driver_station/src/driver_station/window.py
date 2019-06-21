@@ -41,6 +41,7 @@ from python_qt_binding import QtWidgets
 # frc_control imports
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
+from driver_station.widgets import communications
 from driver_station.widgets import major_status
 from driver_station.widgets import pc_stats
 from driver_station.widgets import practice_timing
@@ -50,6 +51,7 @@ from driver_station.widgets import status_string
 from driver_station.widgets import time_display
 
 from frc_msgs.msg import DriverStationMode
+from frc_msgs.msg import MatchData
 from frc_msgs.msg import MatchTime
 
 
@@ -60,10 +62,11 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
-        # TODO(): Make these values persistent
+        # TODO: Make these values persistent
         self.sound_enabled = False
         self.team_number = 0
 
+        self.match_data = MatchData()
         self.match_time = MatchTime()
         self.ds_mode = DriverStationMode()
 
@@ -78,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.init_ui()
 
         # Setup all the inner widgets
+        self.communications = communications.CommunicationsWidget(self, self.match_data)
         self.major_status = major_status.MajorStatusWidget(self)
         self.pc_stats = pc_stats.PcStatsWidget(self)
         self.practice_timing = practice_timing.PracticeTimingWidget(self)
@@ -150,6 +154,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.team_number = atoi(self.teamNumberInput.text())
         self.teamNumberDisplay.setText(str(self.team_number))
         self.major_status.set_team_number(self.team_number)
+        self.communications.set_team_number(self.team_number)
 
     def update_versions(self):
         """Update the Version Information panel."""
