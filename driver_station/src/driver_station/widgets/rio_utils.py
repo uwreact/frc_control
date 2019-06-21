@@ -27,10 +27,6 @@
 
 """The RioUtilsWidget class."""
 
-# ROS imports
-from python_qt_binding import QtCore
-from python_qt_binding import QtWidgets
-
 # frc_control imports
 from driver_station.utils import utils
 
@@ -48,8 +44,10 @@ class RioUtilsWidget(object):
         # TODO: Flash status string when buttons are pressed and there are no comms or no robot code to indicate failure
 
     def _reboot_rio(self):
-        utils.async_popen([['ssh', 'admin@roborio-{}-frc.local'.format(self.window.team_number), 'reboot', 'now']])
+        utils.async_popen([['ssh', 'admin@roborio-{}-frc.local'.format(self.window.team_number), 'reboot']])
 
     def _restart_robot_code(self):
-        utils.async_popen(
-            [['ssh', 'lvuser@roborio-{}-frc.local'.format(self.window.team_number), 'frcKillRobot.sh', '-t', '-r']])
+        utils.async_popen([[
+            'ssh', 'admin@roborio-{}-frc.local'.format(self.window.team_number),
+            '. /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r'
+        ]])
