@@ -50,11 +50,10 @@ class MajorStatusWidget(object):
     Temporary: Also handles clearing the battery voltage once comms are lost.
     """
 
-    def __init__(self, window):
+    def __init__(self, window, data):
         self.window = window
+        self.data = data
         self.init_ui()
-
-        self.team_number = 0
 
         # Setup an async pinger to ping the roboRIO using mDNS (with a fallback of a static 10.TE.AM.2 address)
         self.robot_pinger = async_pinger.AsyncPinger()
@@ -69,16 +68,17 @@ class MajorStatusWidget(object):
         self.watchdog.watchdogFed.connect(partial(self._has_robot_code, True))
         self.watchdog.start()
 
+        # Register callbacks
+        self.data.team_number.add_observer(self.set_team_number)
+
     def init_ui(self):
         """Setup the UI elements."""
-
         gui_utils.bool_style(self.window.communicationsStatusDisplay, False, True)
         gui_utils.bool_style(self.window.robotCodeStatusDisplay, False, True)
         gui_utils.bool_style(self.window.joystickStatusDisplay, False, True)  # TODO: Check if num joysticks > 0
 
-    def set_team_number(self, team_number):
+    def set_team_number(self, _, team_number):
         """Set the team number."""
-        self.team_number = team_number
         upper = team_number / 100
         lower = team_number % 100
         self.robot_pinger.set_hostnames(['roborio-{}-frc.local'.format(team_number), '10.{}.{}.2'.format(upper, lower)])
@@ -93,25 +93,24 @@ class MajorStatusWidget(object):
         if connected:
 
             def _on_success(output):
-                self.window.versions['RIO'] = output.split('IMAGEVERSION = ')[1].replace('"', '')
+                self.data.versions.set('RIO', output.split('IMAGEVERSION = ')[1].replace('"', ''))
 
             def _on_failure(_error):
-                self.window.versions['RIO'] = 'Unknown'
+                self.data.versions.set('RIO', 'Unknown')
 
             utils.async_check_output([[
-                'ssh', '-q', 'admin@roborio-{}-frc.local'.format(self.team_number), 'cat',
+                'ssh', '-q', 'admin@roborio-{}-frc.local'.format(self.data.team_number.get()), 'cat',
                 '/etc/natinst/share/scs_imagemetadata.ini'
             ]], _on_success, _on_failure)
 
         else:
-            if 'RIO' in self.window.versions:
-                del self.window.versions['RIO']
+            if 'RIO' in self.data.versions.get_all():
+                self.data.versions.delete('RIO')
 
-        self.window.update_versions()
+        self.data.has_robot_comms.set(connected)
         self.window.batteryVoltageDisplay.setText('--.--')
-        self.window.status_string.set_robot_comms(connected)
 
     def _has_robot_code(self, has_code):
         """Update the robot code indicator with the new state."""
         gui_utils.bool_style(self.window.robotCodeStatusDisplay, has_code, True)
-        self.window.status_string.set_robot_code(has_code)
+        self.data.has_robot_code.set(has_code)

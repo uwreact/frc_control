@@ -42,16 +42,16 @@ from frc_msgs.msg import DriverStationMode
 class RobotModeWidget(object):
     """A widget to control the robot mode."""
 
-    def __init__(self, window, ds_mode):
+    def __init__(self, window, data):
         self.window = window
+        self.data = data
         self.init_ui()
 
         self.start_time = 0
-        self.ds_mode = ds_mode
         self.robot_mode = structs.RobotModeState.TELEOP
         self.enable_disable = structs.EnableDisableState.DISABLE
 
-        self.practice_sequencer = practice_mode_sequencer.PracticeModeSequencer(self.window, self.ds_mode)
+        self.practice_sequencer = practice_mode_sequencer.PracticeModeSequencer(self.window, self.data)
         self.elapsed_timer = QtCore.QTimer(self.window)
         self.elapsed_timer.timeout.connect(self._update_elapsed_time)
 
@@ -82,9 +82,9 @@ class RobotModeWidget(object):
         self.robot_mode = new_mode
         self.window.disableRobotButton.click()
         if self.robot_mode == structs.RobotModeState.PRACTICE:
-            self.window.status_string.set_robot_mode(structs.RobotModeState.AUTO)
+            self.data.robot_mode.set(structs.RobotModeState.AUTO)
         else:
-            self.window.status_string.set_robot_mode(self.robot_mode)
+            self.data.robot_mode.set(self.robot_mode)
 
     def _update_ds_mode(self):
         enable_disable = self.window.enableDisableGroup.checkedId()
@@ -95,44 +95,44 @@ class RobotModeWidget(object):
 
         # Set the mode
         self.enable_disable = enable_disable
-        self.window.status_string.set_enable_disable(self.enable_disable)
+        self.data.enable_disable.set(self.enable_disable)
 
         # Estop
         if enable_disable == structs.EnableDisableState.ESTOP:
-            self.ds_mode.mode = DriverStationMode.MODE_ESTOP
+            self.data.ds_mode.set_attr('mode', DriverStationMode.MODE_ESTOP)
             self.elapsed_timer.stop()
             self.practice_sequencer.stop()
-            self.window.time_display.set_time(0)
+            self.data.match_time.set_attr('remaining_time', 0)
 
         # Disabled
         elif enable_disable == structs.EnableDisableState.DISABLE:
-            self.ds_mode.mode = DriverStationMode.MODE_DISABLED
+            self.data.ds_mode.set_attr('mode', DriverStationMode.MODE_DISABLED)
             self.elapsed_timer.stop()
             self.practice_sequencer.stop()
-            self.window.time_display.set_time(0)
+            self.data.match_time.set_attr('remaining_time', 0)
 
         # Teleop
         elif self.robot_mode == structs.RobotModeState.TELEOP:
-            self.ds_mode.mode = DriverStationMode.MODE_OPERATOR
+            self.data.ds_mode.set_attr('mode', DriverStationMode.MODE_OPERATOR)
             self.start_time = time.time()
             self.elapsed_timer.start()
 
         # Autonomous
         elif self.robot_mode == structs.RobotModeState.AUTO:
-            self.ds_mode.mode = DriverStationMode.MODE_AUTONOMOUS
+            self.data.ds_mode.set_attr('mode', DriverStationMode.MODE_AUTONOMOUS)
             self.start_time = time.time()
             self.elapsed_timer.start()
 
         # Test
         elif self.robot_mode == structs.RobotModeState.TEST:
-            self.ds_mode.mode = DriverStationMode.MODE_TEST
+            self.data.ds_mode.set_attr('mode', DriverStationMode.MODE_TEST)
             self.start_time = time.time()
             self.elapsed_timer.start()
 
         # Practice
         elif self.robot_mode == structs.RobotModeState.PRACTICE:
-            self.practice_sequencer.set_timings(self.window.practice_timing.get_timing())
+            self.practice_sequencer.set_timings(self.data.practice_timing.get())
             self.practice_sequencer.start()
 
     def _update_elapsed_time(self):
-        self.window.time_display.set_time(time.time() - self.start_time)
+        self.data.match_time.set_attr('remaining_time', time.time() - self.start_time)

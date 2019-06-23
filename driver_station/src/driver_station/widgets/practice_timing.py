@@ -31,29 +31,29 @@
 from locale import atoi
 
 # ROS imports
-from driver_station import structs
 from driver_station.utils import gui_utils
 
 
 class PracticeTimingWidget(object):
     """A widget to control the duration of each stage of practice mode."""
 
-    def __init__(self, window):
+    def __init__(self, window, data):
         self.window = window
+        self.data = data
         self.init_ui()
 
-        self.timing = structs.PracticeTiming()
         self._update_timing()
 
     def init_ui(self):
         """Setup the UI elements."""
 
         # Setup the timing input validators
-        gui_utils.setup_int_validator(self.window.countdownTimingInput, lambda text: str(self.timing.countdown))
-        gui_utils.setup_int_validator(self.window.autonomousTimingInput, lambda text: str(self.timing.autonomous))
-        gui_utils.setup_int_validator(self.window.delayTimingInput, lambda text: str(self.timing.delay))
-        gui_utils.setup_int_validator(self.window.teleoperatedTimingInput, lambda text: str(self.timing.teleop))
-        gui_utils.setup_int_validator(self.window.endgameTimingInput, lambda text: str(self.timing.endgame))
+        timing = self.data.practice_timing.get()
+        gui_utils.setup_int_validator(self.window.countdownTimingInput, lambda text: str(timing.countdown))
+        gui_utils.setup_int_validator(self.window.autonomousTimingInput, lambda text: str(timing.autonomous))
+        gui_utils.setup_int_validator(self.window.delayTimingInput, lambda text: str(timing.delay))
+        gui_utils.setup_int_validator(self.window.teleoperatedTimingInput, lambda text: str(timing.teleop))
+        gui_utils.setup_int_validator(self.window.endgameTimingInput, lambda text: str(timing.endgame))
 
         # Setup the callbacks
         self.window.countdownTimingInput.editingFinished.connect(self._update_timing)
@@ -62,19 +62,14 @@ class PracticeTimingWidget(object):
         self.window.teleoperatedTimingInput.editingFinished.connect(self._update_timing)
         self.window.endgameTimingInput.editingFinished.connect(self._update_timing)
 
-        self.window.enableSoundButton.clicked.connect(self._enable_sound)
+        #TODO: Move elsewhere?
+        self.window.enableSoundButton.clicked.connect(self.data.sound_enabled.set)
 
     def _update_timing(self):
-        self.timing.countdown = atoi(self.window.countdownTimingInput.text())
-        self.timing.autonomous = atoi(self.window.autonomousTimingInput.text())
-        self.timing.delay = atoi(self.window.delayTimingInput.text())
-        self.timing.teleop = atoi(self.window.teleoperatedTimingInput.text())
-        self.timing.endgame = atoi(self.window.endgameTimingInput.text())
-
-    def _enable_sound(self, enabled):
-        #TODO: Move elsewhere?
-        self.window.sound_enabled = enabled
-
-    def get_timing(self):
-        """Get the practice mode timing struct."""
-        return self.timing
+        timing = self.data.practice_timing.get()
+        timing.countdown = atoi(self.window.countdownTimingInput.text())
+        timing.autonomous = atoi(self.window.autonomousTimingInput.text())
+        timing.delay = atoi(self.window.delayTimingInput.text())
+        timing.teleop = atoi(self.window.teleoperatedTimingInput.text())
+        timing.endgame = atoi(self.window.endgameTimingInput.text())
+        self.data.practice_timing.set(timing)

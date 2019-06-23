@@ -30,9 +30,6 @@
 # Standard imports
 from locale import atoi
 
-# ROS imports
-from python_qt_binding import QtGui
-
 # frc_control imports
 from driver_station.utils import gui_utils
 from frc_msgs.msg import MatchData
@@ -45,14 +42,12 @@ class MatchDataWidget(object):
     alliance, and player station/driver position.
     """
 
-    def __init__(self, window, match_data):
+    def __init__(self, window, data):
         self.window = window
+        self.data = data
         self.init_ui()
 
-        self.match_data = match_data
-
         # Load default values
-        self._update_game_data_string()
         self._update_team_station()
         self._update_match_type_box()
 
@@ -60,8 +55,9 @@ class MatchDataWidget(object):
         """Setup the UI elements."""
 
         # Setup the replay and match number input
-        gui_utils.setup_int_validator(self.window.replayNumberInput, lambda text: str(self.match_data.replay_number))
-        gui_utils.setup_int_validator(self.window.matchNumberInput, lambda text: str(self.match_data.match_number))
+        match_data = self.data.match_data.get()
+        gui_utils.setup_int_validator(self.window.replayNumberInput, lambda text: str(match_data.replay_number))
+        gui_utils.setup_int_validator(self.window.matchNumberInput, lambda text: str(match_data.match_number))
 
         self.window.gameDataInput.editingFinished.connect(self._update_game_data_string)
         self.window.eventNameInput.editingFinished.connect(self._update_event_name)
@@ -71,20 +67,20 @@ class MatchDataWidget(object):
         self.window.matchTypeInput.activated.connect(self._update_match_type_box)
 
     def _update_game_data_string(self):
-        self.match_data.game_specific_message = self.window.gameDataInput.text()
+        self.data.match_data.set_attr('game_specific_message', self.window.gameDataInput.text())
 
     def _update_event_name(self):
-        self.match_data.event_name = self.window.eventNameInput.text()
+        self.data.match_data.set_attr('event_name', self.window.eventNameInput.text())
 
     def _update_match_number(self):
-        self.match_data.match_number = atoi(self.window.matchNumberInput.text())
+        self.data.match_data.set_attr('match_number', atoi(self.window.matchNumberInput.text()))
 
     def _update_replay_number(self):
-        self.match_data.replay_number = atoi(self.window.replayNumberInput.text())
+        self.data.match_data.set_attr('replay_number', atoi(self.window.replayNumberInput.text()))
 
     def _update_match_type_box(self):
         index = self.window.matchTypeInput.currentIndex()
-        self.match_data.match_type = index
+        self.data.match_data.set_attr('match_type', index)
 
     def _update_team_station(self):
         # Combo Box Indices:
@@ -97,11 +93,14 @@ class MatchDataWidget(object):
 
         index = self.window.teamStationInput.currentIndex()
         if index < 3:
-            self.match_data.location = (index % 3) + 1
-            self.match_data.alliance = MatchData.ALLIANCE_RED
+            location = (index % 3) + 1
+            alliance = MatchData.ALLIANCE_RED
         elif index < 6:
-            self.match_data.location = (index % 3) + 1
-            self.match_data.alliance = MatchData.ALLIANCE_BLUE
+            location = (index % 3) + 1
+            alliance = MatchData.ALLIANCE_BLUE
         else:
-            self.match_data.location = MatchData.LOCATION_INVALID
-            self.match_data.alliance = MatchData.ALLIANCE_INVALID
+            location = MatchData.LOCATION_INVALID
+            alliance = MatchData.ALLIANCE_INVALID
+
+        self.data.match_data.set_attr('location', location)
+        self.data.match_data.set_attr('alliance', alliance)

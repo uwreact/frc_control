@@ -42,9 +42,9 @@ from frc_msgs.msg import DriverStationMode
 class PracticeModeSequencer(object):
     """Sequence DS Mode during Practice mode."""
 
-    def __init__(self, window, ds_mode):
+    def __init__(self, window, data):
         self.window = window
-        self.ds_mode = ds_mode
+        self.data = data
 
         self.timer = QtCore.QTimer(window)
         self.timer.timeout.connect(self._update)
@@ -59,12 +59,12 @@ class PracticeModeSequencer(object):
 
         self.timer.start(period * 1000)
         self._update()
-        if self.window.sound_enabled:
+        if self.data.sound_enabled.get():
             sound_player.play_countdown_blip()
 
     def stop(self):
         """Stop the sequencer."""
-        if self.timer.isActive() and self.window.sound_enabled:
+        if self.timer.isActive() and self.data.sound_enabled.get():
             sound_player.play_match_pause()
         self.timer.stop()
 
@@ -77,7 +77,7 @@ class PracticeModeSequencer(object):
         self.mode = new_mode
 
         # Play sound effect
-        if self.window.sound_enabled:
+        if self.data.sound_enabled.get():
 
             if self.mode == -1:  # End of match
                 sound_player.play_match_end()
@@ -89,27 +89,29 @@ class PracticeModeSequencer(object):
                 sound_player.play_start_endgame()
 
     def _update(self):
-        prev_time = self.window.time_display.get_time()
+        # pylint: disable=too-many-branches
+
+        prev_time = self.data.match_time.get().remaining_time
         remaining_time = None
         ds_mode = None
 
         # Countdown
         if self.mode == 0:
-            self.window.status_string.set_robot_mode(structs.RobotModeState.AUTO)
-            self.window.status_string.set_enable_disable(structs.EnableDisableState.DISABLE)
+            self.data.robot_mode.set(structs.RobotModeState.AUTO)
+            self.data.enable_disable.set(structs.EnableDisableState.DISABLE)
             ds_mode = DriverStationMode.MODE_DISABLED
             remaining_time = self.timings.countdown - (time.time() - self.start_time)
             if remaining_time < 0:
                 self._set_mode(1)
 
             # Play countdown sounds
-            if int(prev_time) > int(remaining_time) and self.window.sound_enabled:
+            if int(prev_time) > int(remaining_time) and self.data.sound_enabled.get():
                 sound_player.play_countdown_blip()
 
         # Autonomous
         if self.mode == 1:
-            self.window.status_string.set_robot_mode(structs.RobotModeState.AUTO)
-            self.window.status_string.set_enable_disable(structs.EnableDisableState.ENABLE)
+            self.data.robot_mode.set(structs.RobotModeState.AUTO)
+            self.data.enable_disable.set(structs.EnableDisableState.ENABLE)
             ds_mode = DriverStationMode.MODE_AUTONOMOUS
             remaining_time = self.timings.autonomous - (time.time() - self.start_time)
             if remaining_time < 0:
@@ -117,8 +119,8 @@ class PracticeModeSequencer(object):
 
         # Delay
         if self.mode == 2:
-            self.window.status_string.set_robot_mode(structs.RobotModeState.TELEOP)
-            self.window.status_string.set_enable_disable(structs.EnableDisableState.DISABLE)
+            self.data.robot_mode.set(structs.RobotModeState.TELEOP)
+            self.data.enable_disable.set(structs.EnableDisableState.DISABLE)
             ds_mode = DriverStationMode.MODE_DISABLED
             remaining_time = self.timings.delay - (time.time() - self.start_time)
             if remaining_time < 0:
@@ -126,8 +128,8 @@ class PracticeModeSequencer(object):
 
         # Teleop
         if self.mode == 3:
-            self.window.status_string.set_robot_mode(structs.RobotModeState.TELEOP)
-            self.window.status_string.set_enable_disable(structs.EnableDisableState.ENABLE)
+            self.data.robot_mode.set(structs.RobotModeState.TELEOP)
+            self.data.enable_disable.set(structs.EnableDisableState.ENABLE)
             ds_mode = DriverStationMode.MODE_OPERATOR
             remaining_time = self.timings.teleop - (time.time() - self.start_time)
             if remaining_time < 0:
@@ -135,20 +137,20 @@ class PracticeModeSequencer(object):
 
         # Endgame
         if self.mode == 4:
-            self.window.status_string.set_robot_mode(structs.RobotModeState.TELEOP)
-            self.window.status_string.set_enable_disable(structs.EnableDisableState.ENABLE)
+            self.data.robot_mode.set(structs.RobotModeState.TELEOP)
+            self.data.enable_disable.set(structs.EnableDisableState.ENABLE)
             ds_mode = DriverStationMode.MODE_OPERATOR
             remaining_time = self.timings.endgame - (time.time() - self.start_time)
             if remaining_time < 0:
                 self._set_mode(-1)
                 self.timer.stop()
 
-                self.window.status_string.set_robot_mode(structs.RobotModeState.TELEOP)
-                self.window.status_string.set_enable_disable(structs.EnableDisableState.DISABLE)
+                self.data.robot_mode.set(structs.RobotModeState.TELEOP)
+                self.data.enable_disable.set(structs.EnableDisableState.DISABLE)
                 ds_mode = DriverStationMode.MODE_DISABLED
 
-        self.ds_mode.mode = ds_mode
+        self.data.ds_mode.set_attr('mode', ds_mode)
         if self.mode == 3:
-            self.window.time_display.set_time(remaining_time + self.timings.endgame)
+            self.data.match_time.set_attr('remaining_time', remaining_time + self.timings.endgame)
         else:
-            self.window.time_display.set_time(remaining_time)
+            self.data.match_time.set_attr('remaining_time', remaining_time)

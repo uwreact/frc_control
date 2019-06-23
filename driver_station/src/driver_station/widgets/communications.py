@@ -48,9 +48,9 @@ SYSFS_NETWORK_DEVICE_PATH = '/sys/class/net'
 class CommunicationsWidget(object):
     """A widget to display the various communications statuses."""
 
-    def __init__(self, window, match_data):
+    def __init__(self, window, data):
         self.window = window
-        self.match_data = match_data
+        self.data = data
         self.init_ui()
 
         # Setup timer to periodically update the network indicators
@@ -77,6 +77,10 @@ class CommunicationsWidget(object):
         self.robot_pinger.signalConnectionStatus.connect(self._update_robot_comms)
         self.robot_pinger.start()
 
+        # Register callbacks
+        self.data.team_number.add_observer(self.set_team_number)
+        self.data.match_data.add_observer(self.set_fms_connected)
+
     def init_ui(self):
         """Setup the UI elements."""
 
@@ -97,13 +101,17 @@ class CommunicationsWidget(object):
         self.window.usbCommsDisplay.setStyleSheet('background-color: rgb(100, 100, 100);')
         self.window.usbCommsTitle.setStyleSheet('color: rgb(100, 100, 100);')
 
-    def set_team_number(self, team_number):
+    def set_team_number(self, _, team_number):
         """Set the team number."""
         upper = team_number / 100
         lower = team_number % 100
 
         self.robot_radio_pinger.set_hostnames('10.{}.{}.1'.format(upper, lower))
         self.robot_pinger.set_hostnames(['roborio-{}-frc.local'.format(team_number), '10.{}.{}.2'.format(upper, lower)])
+
+    def set_fms_connected(self, _, match_data):
+        """Set the FMS Connected indicator based on whether the event name is set."""
+        gui_utils.bool_style(self.window.fmsCommsDisplay, match_data.event_name != '')
 
     def start_periodic(self, period=100):
         """Start timer to update comms status."""
@@ -115,7 +123,6 @@ class CommunicationsWidget(object):
         self._update_enet()
         self._update_wifi()
         self._update_firewall()
-        gui_utils.bool_style(self.window.fmsCommsDisplay, self.match_data.event_name != '')
 
     def _update_enet(self):
         """Update the ethernet-related comms status.

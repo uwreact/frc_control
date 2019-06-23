@@ -25,25 +25,39 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""The TimeDisplayWidget class."""
+"""The MainData class."""
+
+# frc_control imports
+from driver_station import structs
+from driver_station.utils.observable import ObservableData, ObservableDict, ObservableObj
+from frc_msgs.msg import DriverStationMode
+from frc_msgs.msg import MatchData
+from frc_msgs.msg import MatchTime
 
 
-class TimeDisplayWidget(object):
-    """A widget to control the elapsed/remaining time display."""
+class MainData(object):
+    """The main application data."""
 
-    def __init__(self, window, data):
-        self.window = window
-        self.data = data
+    # pylint: disable=too-many-instance-attributes
 
-        # Register callback
-        self.data.match_time.add_observer(self._update)
+    def __init__(self):
 
-        # Apply default value
-        self.data.match_time.set_attr('remaining_time', 0)
+        # User-inputted data
+        self.sound_enabled = ObservableData(False)
+        self.team_number = ObservableData(0)
+        self.practice_timing = ObservableObj(structs.PracticeTiming())
 
-    def _update(self, _, new_time):
-        """Update the time display with the specified time."""
-        time = new_time.remaining_time
-        mins = int(time / 60)
-        secs = time - mins * 60
-        self.window.elapsedTimeDisplay.setText('{}:{:04.1f}'.format(mins, secs))
+        # Diagnostic information
+        self.versions = ObservableDict()
+
+        # ROS messages
+        self.match_data = ObservableObj(MatchData())
+        self.match_time = ObservableObj(MatchTime())
+        self.ds_mode = ObservableObj(DriverStationMode())
+
+        # Internal state variables
+        self.has_robot_comms = ObservableData(False)
+        self.has_robot_code = ObservableData(False)
+        self.brownout = ObservableData(False)
+        self.robot_mode = ObservableData(structs.RobotModeState.TELEOP)
+        self.enable_disable = ObservableData(structs.EnableDisableState.DISABLE)

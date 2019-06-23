@@ -51,70 +51,42 @@ class StatusStrings(Enum):
 class StatusStringWidget(object):
     """A widget to control the main status string."""
 
-    def __init__(self, window):
+    def __init__(self, window, data):
         self.window = window
+        self.data = data
 
-        self.has_robot_comms = False
-        self.has_robot_code = False
-        self.brownout = False
-        self.robot_mode = structs.RobotModeState.TELEOP
-        self.enable_disable = structs.EnableDisableState.DISABLE
+        self.data.has_robot_comms.add_observer(self._update_string)
+        self.data.has_robot_code.add_observer(self._update_string)
+        self.data.brownout.add_observer(self._update_string)
+        self.data.robot_mode.add_observer(self._update_string)
+        self.data.enable_disable.add_observer(self._update_string)
 
         self._update_string()
 
-    def set_robot_comms(self, has_robot_comms):
-        """Set the robot communications state."""
-        self.has_robot_comms = has_robot_comms
-        self._update_string()
-
-    def set_robot_code(self, has_robot_code):
-        """Set the robot code state."""
-        self.has_robot_code = has_robot_code
-        self._update_string()
-
-    def set_brownout(self, brownout):
-        """Set the voltage brownout state."""
-        self.brownout = brownout
-        self._update_string()
-
-    def set_robot_mode(self, mode):
-        """Set the robot mode.
-
-        `mode` should be a structs.RobotModeState enum value."""
-        self.robot_mode = mode
-        self._update_string()
-
-    def set_enable_disable(self, mode):
-        """Set whether the robot is enabled, disabled, or estopped.
-
-        `mode` should be a structs.EnableDisableState enum value."""
-        self.enable_disable = mode
-        self._update_string()
-
-    def _update_string(self):
+    def _update_string(self, _1=None, _2=None):
         """Update the displayed string."""
 
-        if not self.has_robot_comms:
+        if not self.data.has_robot_comms.get():
             self.window.statusStringDisplay.setText(StatusStrings.NO_COMMS.value)
-        elif not self.has_robot_code:
+        elif not self.data.has_robot_code.get():
             self.window.statusStringDisplay.setText(StatusStrings.NO_CODE.value)
-        elif self.enable_disable == structs.EnableDisableState.ESTOP:
+        elif self.data.enable_disable.get() == structs.EnableDisableState.ESTOP:
             self.window.statusStringDisplay.setText(StatusStrings.ESTOP.value)
-        elif self.brownout:
+        elif self.data.brownout.get():
             self.window.statusStringDisplay.setText(StatusStrings.BROWNOUT.value)
         else:
 
             key = ''
-            if self.robot_mode == structs.RobotModeState.TELEOP:
+            if self.data.robot_mode.get() == structs.RobotModeState.TELEOP:
                 key += 'TELEOP'
-            elif self.robot_mode == structs.RobotModeState.AUTO:
+            elif self.data.robot_mode.get() == structs.RobotModeState.AUTO:
                 key += 'AUTO'
-            elif self.robot_mode == structs.RobotModeState.TEST:
+            elif self.data.robot_mode.get() == structs.RobotModeState.TEST:
                 key += 'TEST'
 
             key += '_'
 
-            if self.enable_disable == structs.EnableDisableState.ENABLE:
+            if self.data.enable_disable.get() == structs.EnableDisableState.ENABLE:
                 key += 'EN'
             else:
                 key += 'DIS'

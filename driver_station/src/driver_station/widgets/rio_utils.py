@@ -34,8 +34,9 @@ from driver_station.utils import utils
 class RioUtilsWidget(object):
     """A widget for controlling the RIO."""
 
-    def __init__(self, window):
+    def __init__(self, window, data):
         self.window = window
+        self.data = data
 
         # Connect reboot roboRIO and restart robot code buttons
         self.window.rebootRioButton.clicked.connect(self._reboot_rio)
@@ -44,10 +45,10 @@ class RioUtilsWidget(object):
         # TODO: Flash status string when buttons are pressed and there are no comms or no robot code to indicate failure
 
     def _reboot_rio(self):
-        utils.async_popen([['ssh', 'admin@roborio-{}-frc.local'.format(self.window.team_number), 'reboot']])
+        utils.async_popen([['ssh', 'admin@roborio-{}-frc.local'.format(self.data.team_number.get()), 'reboot']])
 
     def _restart_robot_code(self):
         utils.async_popen([[
-            'ssh', 'admin@roborio-{}-frc.local'.format(self.window.team_number),
+            'ssh', 'admin@roborio-{}-frc.local'.format(self.data.team_number.get()),
             '. /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r'
         ]])

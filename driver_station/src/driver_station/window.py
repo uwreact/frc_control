@@ -39,6 +39,7 @@ from python_qt_binding import QtCore
 from python_qt_binding import QtWidgets
 
 # frc_control imports
+from driver_station import data
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
 from driver_station.widgets import communications
@@ -52,51 +53,49 @@ from driver_station.widgets import robot_mode
 from driver_station.widgets import status_string
 from driver_station.widgets import time_display
 
-from frc_msgs.msg import DriverStationMode
-from frc_msgs.msg import MatchData
-from frc_msgs.msg import MatchTime
-
 
 class MainWindow(QtWidgets.QMainWindow):
     """Main window for the visualizer."""
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
-        # TODO: Make these values persistent
-        self.sound_enabled = False
-        self.team_number = 0
-
-        self.match_data = MatchData()
-        self.match_time = MatchTime()
-        self.ds_mode = DriverStationMode()
-
-        # Load version info
-        self.versions = {}
-        self.versions['DS'] = rospkg.RosPack().get_manifest('driver_station').version
-        self.versions['ROS'] = '{} {}'.format(
-            rospy.get_param('rosdistro').strip().capitalize(),
-            rospy.get_param('rosversion').strip())
+        self.data = data.MainData()
 
         # Setup the UI
         self.init_ui()
 
         # Setup all the inner widgets
-        self.communications = communications.CommunicationsWidget(self, self.match_data)
+        self.communications = communications.CommunicationsWidget(self, self.data)
         self.joystick_indicator = joystick_indicator.JoystickIndicatorWidget(self)
-        self.major_status = major_status.MajorStatusWidget(self)
-        self.match_data = match_data.MatchDataWidget(self, self.match_data)
+        self.major_status = major_status.MajorStatusWidget(self, self.data)
+        self.match_data = match_data.MatchDataWidget(self, self.data)
         self.pc_stats = pc_stats.PcStatsWidget(self)
-        self.practice_timing = practice_timing.PracticeTimingWidget(self)
-        self.rio_utils = rio_utils.RioUtilsWidget(self)
-        self.robot_mode = robot_mode.RobotModeWidget(self, self.ds_mode)
-        self.status_string = status_string.StatusStringWidget(self)
-        self.time_display = time_display.TimeDisplayWidget(self, self.match_time)
+        self.practice_timing = practice_timing.PracticeTimingWidget(self, self.data)
+        self.rio_utils = rio_utils.RioUtilsWidget(self, self.data)
+        self.robot_mode = robot_mode.RobotModeWidget(self, self.data)
+        self.status_string = status_string.StatusStringWidget(self, self.data)
+        self.time_display = time_display.TimeDisplayWidget(self, self.data)
+
+        # Register callbacks
+        self.data.versions.add_observer(self.update_versions)
+        self.data.versions.force_notify(self.data.versions.get_all())
+
+        # Set initial values
+        # TODO: Load previous values from save file
+        self.data.sound_enabled.set(False)
+        self.data.team_number.set(0)
+        self.data.versions.set('DS', rospkg.RosPack().get_manifest('driver_station').version)
+        self.data.versions.set(
+            'ROS', '{} {}'.format(
+                rospy.get_param('rosdistro').strip().capitalize(),
+                rospy.get_param('rosversion').strip()))
 
         # Display initial values
         self._setup_team_number()
-        self.update_versions()
 
     def init_ui(self):
         """Setup the UI elements."""
@@ -140,27 +139,26 @@ class MainWindow(QtWidgets.QMainWindow):
         """Setup the team number input."""
 
         # Setup the team number input box
-        gui_utils.setup_int_validator(self.teamNumberInput, lambda text: str(self.team_number))
+        gui_utils.setup_int_validator(self.teamNumberInput, lambda text: str(self.data.team_number.get()))
         self.teamNumberInput.setMaxLength(4)
         self.teamNumberInput.editingFinished.connect(self._update_team_number)
 
         # If a default team number is set, apply it
-        if self.team_number > 0:
-            self.teamNumberInput.setText(str(self.team_number))
+        if self.data.team_number.get() > 0:
+            self.teamNumberInput.setText(str(self.data.team_number.get()))
             self._update_team_number(True)
 
     def _update_team_number(self, force_update=False):
         """Parse the value of the team numer input."""
 
-        if not force_update and atoi(self.teamNumberInput.text()) == self.team_number:
+        if not force_update and atoi(self.teamNumberInput.text()) == self.data.team_number.get():
             return
 
-        self.team_number = atoi(self.teamNumberInput.text())
-        self.teamNumberDisplay.setText(str(self.team_number))
-        self.major_status.set_team_number(self.team_number)
-        self.communications.set_team_number(self.team_number)
+        new_val = self.teamNumberInput.text()
+        self.teamNumberDisplay.setText(new_val)
+        self.data.team_number.set(atoi(new_val))
 
-    def update_versions(self):
+    def update_versions(self, _, versions):
         """Update the Version Information panel."""
-        text = '\n'.join(['{}: {}'.format(k, self.versions[k]) for k in sorted(self.versions)])
+        text = '\n'.join(['{}: {}'.format(k, versions[k]) for k in sorted(versions)])
         self.versionsTextDisplay.setText(text)
