@@ -90,9 +90,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data.team_number.set(0)
         self.data.versions.set('DS', rospkg.RosPack().get_manifest('driver_station').version)
         self.data.versions.set(
-            'ROS', '{} {}'.format(
-                rospy.get_param('rosdistro').strip().capitalize(),
-                rospy.get_param('rosversion').strip()))
+            'ROS',
+            '{} {}'.format(rospy.get_param('rosdistro').strip().capitalize(),
+                           rospy.get_param('rosversion').strip()))
 
         # Display initial values
         self._setup_team_number()

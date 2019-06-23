@@ -211,6 +211,8 @@ class CommunicationsWidget(object):
         gui_utils.bool_style(self.window.robotCommsDisplay, has_comms)
         self.window.robotCommsTitle.setText(text)
 
+        self.data.has_robot_comms.set(has_comms)
+
 
 def get_ip_address(ifname):
     """Get the IP address associated with the specified interface."""

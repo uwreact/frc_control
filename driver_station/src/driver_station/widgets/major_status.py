@@ -31,7 +31,6 @@
 from functools import partial
 
 # frc_control imports
-from driver_station.utils import async_pinger
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
 from driver_station.utils import watchdog
@@ -55,12 +54,6 @@ class MajorStatusWidget(object):
         self.data = data
         self.init_ui()
 
-        # Setup an async pinger to ping the roboRIO using mDNS (with a fallback of a static 10.TE.AM.2 address)
-        self.robot_pinger = async_pinger.AsyncPinger()
-        self.robot_pinger.set_hostnames(['roborio-0-frc.local', '10.0.0.2'])
-        self.robot_pinger.signalConnectionStatus.connect(self._update_robot_comms)
-        self.robot_pinger.start()
-
         # Setup a watchdog to indicate robot code status by listening to updates from the robot
         self.watchdog = watchdog.Watchdog()
         self.watchdog.set_timeout(HEARTBEAT_TIMEOUT)
@@ -69,7 +62,8 @@ class MajorStatusWidget(object):
         self.watchdog.start()
 
         # Register callbacks
-        self.data.team_number.add_observer(self.set_team_number)
+        self.data.has_robot_comms.add_observer(self._update_robot_comms)
+        # TODO: Joystick callback
 
     def init_ui(self):
         """Setup the UI elements."""
@@ -77,13 +71,7 @@ class MajorStatusWidget(object):
         gui_utils.bool_style(self.window.robotCodeStatusDisplay, False, True)
         gui_utils.bool_style(self.window.joystickStatusDisplay, False, True)  # TODO: Check if num joysticks > 0
 
-    def set_team_number(self, _, team_number):
-        """Set the team number."""
-        upper = team_number / 100
-        lower = team_number % 100
-        self.robot_pinger.set_hostnames(['roborio-{}-frc.local'.format(team_number), '10.{}.{}.2'.format(upper, lower)])
-
-    def _update_robot_comms(self, connected):
+    def _update_robot_comms(self, _, connected):
         """Update the connection indicator with the new state."""
 
         # Update the indicator
@@ -107,7 +95,6 @@ class MajorStatusWidget(object):
             if 'RIO' in self.data.versions.get_all():
                 self.data.versions.delete('RIO')
 
-        self.data.has_robot_comms.set(connected)
         self.window.batteryVoltageDisplay.setText('--.--')
 
     def _has_robot_code(self, has_code):
