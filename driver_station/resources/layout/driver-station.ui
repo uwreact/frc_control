@@ -2261,6 +2261,12 @@ Communication</string>
   <tabstop>restartCodeButton</tabstop>
   <tabstop>teamNumberInput</tabstop>
   <tabstop>gameDataInput</tabstop>
+  <tabstop>countdownTimingInput</tabstop>
+  <tabstop>autonomousTimingInput</tabstop>
+  <tabstop>delayTimingInput</tabstop>
+  <tabstop>teleoperatedTimingInput</tabstop>
+  <tabstop>endgameTimingInput</tabstop>
+  <tabstop>enableSoundButton</tabstop>
   <tabstop>usbSetupList</tabstop>
   <tabstop>rescanUsbButton</tabstop>
   <tabstop>horizontalSlider</tabstop>
