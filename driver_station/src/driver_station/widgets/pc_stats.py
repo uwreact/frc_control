@@ -79,11 +79,10 @@ class PcStatsWidget(object):
         self.window.pcBatteryDisplay.setValue(power_percent)
 
         # Set color based on power_level
-        # TODO: Check thresholds against real driver station
-        if power_percent < 20:
+        if power_percent <= 25:
             self.window.pcBatteryDisplay.setStyleSheet('QProgressBar::chunk {{background-color: #{:06x}}}'.format(
                 gui_utils.Color.RED))
-        elif power_percent < 80:
+        elif power_percent <= 60:
             self.window.pcBatteryDisplay.setStyleSheet('QProgressBar::chunk {{background-color: #{:06x}}}'.format(
                 gui_utils.Color.ORANGE))
         else:
