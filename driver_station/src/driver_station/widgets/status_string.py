@@ -30,6 +30,9 @@
 # Standard imports
 from enum import Enum
 
+# ROS imports
+from python_qt_binding import QtCore
+
 # frc_control imports
 from driver_station import structs
 
@@ -62,6 +65,25 @@ class StatusStringWidget(object):
         self.data.enable_disable.add_observer(self._update_string)
 
         self._update_string()
+
+    def blink(self):
+        """Trigger the status string to flash three times."""
+
+        # Dict hack since nonlocal doesn't exist in py2.7
+        blinks = {'': 3}
+        period = 150
+
+        def _red_callback():
+            self.window.statusStringDisplay.setStyleSheet('color: red')
+            QtCore.QTimer.singleShot(period, _white_callback)
+
+        def _white_callback():
+            self.window.statusStringDisplay.setStyleSheet('color: white')
+            blinks[''] -= 1
+            if blinks[''] > 0:
+                QtCore.QTimer.singleShot(period, _red_callback)
+
+        _red_callback()
 
     def _update_string(self, _1=None, _2=None):
         """Update the displayed string."""

@@ -93,6 +93,13 @@ class RobotModeWidget(object):
         if enable_disable == self.enable_disable:
             return
 
+        # If the user presssed enable but there are no comms nor robot code,
+        if enable_disable == structs.EnableDisableState.ENABLE and (not self.data.has_robot_comms.get()
+                                                                    or not self.data.has_robot_code.get()):
+            self.window.status_string.blink()
+            self.window.enableDisableGroup.button(self.enable_disable).animateClick()
+            return
+
         # Set the mode
         self.enable_disable = enable_disable
         self.data.enable_disable.set(self.enable_disable)

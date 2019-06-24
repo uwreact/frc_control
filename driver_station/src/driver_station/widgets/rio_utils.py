@@ -42,12 +42,18 @@ class RioUtilsWidget(object):
         self.window.rebootRioButton.clicked.connect(self._reboot_rio)
         self.window.restartCodeButton.clicked.connect(self._restart_robot_code)
 
-        # TODO: Flash status string when buttons are pressed and there are no comms or no robot code to indicate failure
-
     def _reboot_rio(self):
+        if not self.data.has_robot_comms.get():
+            self.window.status_string.blink()
+            return
+
         utils.async_popen([['ssh', 'admin@roborio-{}-frc.local'.format(self.data.team_number.get()), 'reboot']])
 
     def _restart_robot_code(self):
+        if not self.data.has_robot_comms.get():
+            self.window.status_string.blink()
+            return
+
         utils.async_popen([[
             'ssh', 'admin@roborio-{}-frc.local'.format(self.data.team_number.get()),
             '. /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r'
