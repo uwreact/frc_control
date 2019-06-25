@@ -44,6 +44,7 @@ from driver_station import publisher
 from driver_station import subscriber
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
+from driver_station.widgets import battery_display
 from driver_station.widgets import communications
 from driver_station.widgets import joystick_indicator
 from driver_station.widgets import major_status
@@ -76,6 +77,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.init_ui()
 
         # Setup all the inner widgets
+        self.battery_display = battery_display.BatteryDisplayWidget(self, self.data)
         self.communications = communications.CommunicationsWidget(self, self.data)
         self.joystick_indicator = joystick_indicator.JoystickIndicatorWidget(self)
         self.major_status = major_status.MajorStatusWidget(self, self.data)

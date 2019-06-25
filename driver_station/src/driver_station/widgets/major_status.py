@@ -45,8 +45,6 @@ class MajorStatusWidget(object):
      - Communications: Whether the DS is currently communicating with the roboRIO
      - Robot Code: Whether the team Robot Code is currently running on the roboRIO
      - Joysticks: Whether at least one joystick is plugged in and detected by the DS
-
-    Temporary: Also handles clearing the battery voltage once comms are lost.
     """
 
     def __init__(self, window, data):
@@ -94,8 +92,6 @@ class MajorStatusWidget(object):
         else:
             if 'RIO' in self.data.versions.get_all():
                 self.data.versions.delete('RIO')
-
-        self.window.batteryVoltageDisplay.setText('--.--')
 
     def _has_robot_code(self, has_code):
         """Update the robot code indicator with the new state."""
