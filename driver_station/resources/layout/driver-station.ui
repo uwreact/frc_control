@@ -784,16 +784,16 @@ p, li { white-space: pre-wrap; }
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="restartCodeButton">
+           <widget class="QPushButton" name="rebootRioButton">
             <property name="text">
-             <string>Restart Robot Code</string>
+             <string>Reboot RoboRIO</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="rebootRioButton">
+           <widget class="QPushButton" name="restartCodeButton">
             <property name="text">
-             <string>Reboot RoboRIO</string>
+             <string>Restart Robot Code</string>
             </property>
            </widget>
           </item>
@@ -1015,8 +1015,17 @@ p, li { white-space: pre-wrap; }
           </item>
           <item row="12" column="1" colspan="2">
            <widget class="QPushButton" name="enableSoundButton">
-            <property name="text">
-             <string>Sound?</string>
+            <property name="icon">
+             <iconset>
+              <normalon>../icons/baseline-volume_up-24px.svg</normalon>
+              <normaloff>../icons/baseline-volume_off-24px.svg</normaloff>
+             </iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -2077,6 +2086,12 @@ p, li { white-space: pre-wrap; }
       </item>
       <item>
        <widget class="QLabel" name="statusStringDisplay">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="font">
          <font>
           <pointsize>18</pointsize>
@@ -2251,10 +2266,16 @@ Communication</string>
   <tabstop>estopRobotButton</tabstop>
   <tabstop>teamStationInput</tabstop>
   <tabstop>versionsTextDisplay</tabstop>
-  <tabstop>restartCodeButton</tabstop>
   <tabstop>rebootRioButton</tabstop>
+  <tabstop>restartCodeButton</tabstop>
   <tabstop>teamNumberInput</tabstop>
   <tabstop>gameDataInput</tabstop>
+  <tabstop>countdownTimingInput</tabstop>
+  <tabstop>autonomousTimingInput</tabstop>
+  <tabstop>delayTimingInput</tabstop>
+  <tabstop>teleoperatedTimingInput</tabstop>
+  <tabstop>endgameTimingInput</tabstop>
+  <tabstop>enableSoundButton</tabstop>
   <tabstop>usbSetupList</tabstop>
   <tabstop>rescanUsbButton</tabstop>
   <tabstop>horizontalSlider</tabstop>
@@ -2269,7 +2290,7 @@ Communication</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="robotModeGroup"/>
   <buttongroup name="enableDisableGroup"/>
+  <buttongroup name="robotModeGroup"/>
  </buttongroups>
 </ui>

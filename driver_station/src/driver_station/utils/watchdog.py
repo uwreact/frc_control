@@ -25,49 +25,50 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""General helper functions."""
-
-# Standard imports
-import os
-import subprocess
-import threading
+"""The Watchdog class."""
 
 # ROS imports
-import rospkg
+from python_qt_binding import QtCore
+from rospy import Duration
+from rospy import Timer
 
 
-def async_popen(popen_args, callback=None):
-    """Asynchronously run subprocess.Popen, with the callback on completion."""
+class Watchdog(QtCore.QObject):
+    """A QObject that implements a watchdog, with `fed` and `expired` signals."""
 
-    def _run(popen_args, callback):
-        proc = subprocess.Popen(*popen_args, stdout=open('/dev/null'), stderr=open('/dev/null'))
-        proc.wait()
-        if callback is not None:
-            callback()
-        return
+    timeoutExpired = QtCore.pyqtSignal()
+    watchdogFed = QtCore.pyqtSignal()
 
-    thread = threading.Thread(target=_run, args=(popen_args, callback))
-    thread.start()
-    return thread
+    def __init__(self, parent=None, timeout=1):
+        super(Watchdog, self).__init__(parent)
 
+        self.timeout = timeout
+        self.timer = None
 
-def async_check_output(subprocess_args, success_callback=None, failure_callback=None):
-    """Asynchronously run subprocess.check_output, with the callback on completion."""
+    def set_timeout(self, timeout):
+        """Set the watchdog timeout."""
+        self.timeout = timeout
 
-    def _run(subprocess_args, success_callback, failure_callback):
-        try:
-            output = subprocess.check_output(*subprocess_args, stderr=open('/dev/null')).strip()
-            if success_callback is not None:
-                success_callback(output)
-        except subprocess.CalledProcessError as error:
-            if failure_callback is not None:
-                failure_callback(error)
+    def start(self):
+        """Start the watchdog."""
+        self.timer = Timer(Duration(self.timeout), self._timeout, oneshot=True)
 
-    thread = threading.Thread(target=_run, args=(subprocess_args, success_callback, failure_callback))
-    thread.start()
-    return thread
+    def stop(self):
+        """Stop the watchdog."""
+        if self.timer is None:
+            return
 
+        self.timer.shutdown()
+        self.timer = None
 
-def load_resource(filename):
-    """Load the specified resource from the driver_station package's resource dir."""
-    return os.path.join(rospkg.RosPack().get_path('driver_station'), 'resources', filename)
+    def feed(self):
+        """Feed the watchdog."""
+        if self.timer is None:
+            return
+
+        self.watchdogFed.emit()
+        self.timer.shutdown()
+        self.start()
+
+    def _timeout(self, _timer):
+        self.timeoutExpired.emit()

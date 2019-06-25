@@ -25,49 +25,39 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""General helper functions."""
+"""The MainData class."""
 
-# Standard imports
-import os
-import subprocess
-import threading
-
-# ROS imports
-import rospkg
-
-
-def async_popen(popen_args, callback=None):
-    """Asynchronously run subprocess.Popen, with the callback on completion."""
-
-    def _run(popen_args, callback):
-        proc = subprocess.Popen(*popen_args, stdout=open('/dev/null'), stderr=open('/dev/null'))
-        proc.wait()
-        if callback is not None:
-            callback()
-        return
-
-    thread = threading.Thread(target=_run, args=(popen_args, callback))
-    thread.start()
-    return thread
+# frc_control imports
+from driver_station import structs
+from driver_station.utils.observable import ObservableData, ObservableDict, ObservableObj
+from frc_msgs.msg import DriverStationMode
+from frc_msgs.msg import MatchData
+from frc_msgs.msg import MatchTime
 
 
-def async_check_output(subprocess_args, success_callback=None, failure_callback=None):
-    """Asynchronously run subprocess.check_output, with the callback on completion."""
+class MainData(object):
+    """The main application data."""
 
-    def _run(subprocess_args, success_callback, failure_callback):
-        try:
-            output = subprocess.check_output(*subprocess_args, stderr=open('/dev/null')).strip()
-            if success_callback is not None:
-                success_callback(output)
-        except subprocess.CalledProcessError as error:
-            if failure_callback is not None:
-                failure_callback(error)
+    # pylint: disable=too-many-instance-attributes
 
-    thread = threading.Thread(target=_run, args=(subprocess_args, success_callback, failure_callback))
-    thread.start()
-    return thread
+    def __init__(self):
 
+        # User-inputted data
+        self.sound_enabled = ObservableData(False)
+        self.team_number = ObservableData(0)
+        self.practice_timing = ObservableObj(structs.PracticeTiming())
 
-def load_resource(filename):
-    """Load the specified resource from the driver_station package's resource dir."""
-    return os.path.join(rospkg.RosPack().get_path('driver_station'), 'resources', filename)
+        # Diagnostic information
+        self.versions = ObservableDict()
+
+        # ROS messages
+        self.match_data = ObservableObj(MatchData())
+        self.match_time = ObservableObj(MatchTime())
+        self.ds_mode = ObservableObj(DriverStationMode())
+
+        # Internal state variables
+        self.has_robot_comms = ObservableData(False)
+        self.has_robot_code = ObservableData(False)
+        self.brownout = ObservableData(False)
+        self.robot_mode = ObservableData(structs.RobotModeState.TELEOP)
+        self.enable_disable = ObservableData(structs.EnableDisableState.DISABLE)

@@ -25,49 +25,65 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""General helper functions."""
-
-# Standard imports
-import os
-import subprocess
-import threading
+"""The JoystickIndicatorWidget class."""
 
 # ROS imports
-import rospkg
+from sensor_msgs.msg import Joy
+
+# frc_control imports
+from driver_station.utils import gui_utils
+from frc_msgs.msg import JoyArray
 
 
-def async_popen(popen_args, callback=None):
-    """Asynchronously run subprocess.Popen, with the callback on completion."""
+class JoystickIndicatorWidget(object):
+    """A widget to display the joystick state"""
 
-    def _run(popen_args, callback):
-        proc = subprocess.Popen(*popen_args, stdout=open('/dev/null'), stderr=open('/dev/null'))
-        proc.wait()
-        if callback is not None:
-            callback()
-        return
+    def __init__(self, window):
+        self.window = window
 
-    thread = threading.Thread(target=_run, args=(popen_args, callback))
-    thread.start()
-    return thread
+        empty_joy = Joy()
+        self._update_state(empty_joy)
 
+        # TODO: Delete me
+        test = Joy()
+        test.axes.append(0.1)
+        test.axes.append(-0.5)
+        test.axes.append(-0.9)
+        test.axes.append(0.8)
+        test.buttons.append(1)
+        test.buttons.append(1)
+        test.buttons.append(0)
+        test.buttons.append(0)
+        test.buttons.append(1)
+        test.buttons.append(0)
+        test.buttons.append(0)
+        test.buttons.append(1)
+        test.buttons.append(1)
+        test.buttons.append(0)
+        self._update_state(test)
 
-def async_check_output(subprocess_args, success_callback=None, failure_callback=None):
-    """Asynchronously run subprocess.check_output, with the callback on completion."""
+    def _update_state(self, joystick):
 
-    def _run(subprocess_args, success_callback, failure_callback):
-        try:
-            output = subprocess.check_output(*subprocess_args, stderr=open('/dev/null')).strip()
-            if success_callback is not None:
-                success_callback(output)
-        except subprocess.CalledProcessError as error:
-            if failure_callback is not None:
-                failure_callback(error)
+        # TODO: Show/hide buttons and axis based on length
 
-    thread = threading.Thread(target=_run, args=(subprocess_args, success_callback, failure_callback))
-    thread.start()
-    return thread
+        for i, axis in enumerate(joystick.axes):
+            if i > JoyArray.MAX_JOYSTICK_AXES:
+                break
 
+            try:
+                axis_display = getattr(self.window, 'axis{}Display'.format(i))
+            except AttributeError:
+                break
 
-def load_resource(filename):
-    """Load the specified resource from the driver_station package's resource dir."""
-    return os.path.join(rospkg.RosPack().get_path('driver_station'), 'resources', filename)
+            axis_display.setValue(axis * 100)
+
+        for i, btn in enumerate(joystick.buttons):
+            if i > JoyArray.MAX_JOYSTICK_BUTTONS:
+                break
+
+            try:
+                btn_display = getattr(self.window, 'button{}Display'.format(i))
+            except AttributeError:
+                break
+
+            gui_utils.bool_style(btn_display, btn > 0)

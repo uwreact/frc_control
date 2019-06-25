@@ -25,49 +25,67 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""General helper functions."""
+"""Audio player for Driver Station sound effects."""
 
-# Standard imports
-import os
-import subprocess
-import threading
+from __future__ import print_function
 
 # ROS imports
-import rospkg
+try:
+    from python_qt_binding import QtMultimedia
+    SOUND_SUPPORTED = True
+except ImportError:
+    SOUND_SUPPORTED = False
+
+# frc_control imports
+from driver_station.utils import utils
 
 
-def async_popen(popen_args, callback=None):
-    """Asynchronously run subprocess.Popen, with the callback on completion."""
-
-    def _run(popen_args, callback):
-        proc = subprocess.Popen(*popen_args, stdout=open('/dev/null'), stderr=open('/dev/null'))
-        proc.wait()
-        if callback is not None:
-            callback()
+def play_countdown_blip():
+    """Play a brief blip sound effect."""
+    if not SOUND_SUPPORTED:
         return
-
-    thread = threading.Thread(target=_run, args=(popen_args, callback))
-    thread.start()
-    return thread
+    # TODO: Find/create sound
+    print('Blip')
 
 
-def async_check_output(subprocess_args, success_callback=None, failure_callback=None):
-    """Asynchronously run subprocess.check_output, with the callback on completion."""
-
-    def _run(subprocess_args, success_callback, failure_callback):
-        try:
-            output = subprocess.check_output(*subprocess_args, stderr=open('/dev/null')).strip()
-            if success_callback is not None:
-                success_callback(output)
-        except subprocess.CalledProcessError as error:
-            if failure_callback is not None:
-                failure_callback(error)
-
-    thread = threading.Thread(target=_run, args=(subprocess_args, success_callback, failure_callback))
-    thread.start()
-    return thread
+def play_disable():
+    """Play the Robot Disabled sound effect."""
+    if not SOUND_SUPPORTED:
+        return
+    # TODO: Find/create sound
+    print('Beep boop')
 
 
-def load_resource(filename):
-    """Load the specified resource from the driver_station package's resource dir."""
-    return os.path.join(rospkg.RosPack().get_path('driver_station'), 'resources', filename)
+def play_match_end():
+    """Play the Match End sound effect."""
+    if not SOUND_SUPPORTED:
+        return
+    QtMultimedia.QSound.play(utils.load_resource('sounds/Match End_normalized.wav'))
+
+
+def play_match_pause():
+    """Play the Match Pause (aka Field Fault) sound effect."""
+    if not SOUND_SUPPORTED:
+        return
+    QtMultimedia.QSound.play(utils.load_resource('sounds/Match Pause_normalized.wav'))
+
+
+def play_start_auto():
+    """Play the Start Auto sound effect."""
+    if not SOUND_SUPPORTED:
+        return
+    QtMultimedia.QSound.play(utils.load_resource('sounds/Start Auto_normalized.wav'))
+
+
+def play_start_endgame():
+    """Play the Start Endgame sound effect."""
+    if not SOUND_SUPPORTED:
+        return
+    QtMultimedia.QSound.play(utils.load_resource('sounds/Start of End Game_normalized.wav'))
+
+
+def play_start_teleop():
+    """Play the Start Teleop sound effect."""
+    if not SOUND_SUPPORTED:
+        return
+    QtMultimedia.QSound.play(utils.load_resource('sounds/Start Teleop_normalized.wav'))

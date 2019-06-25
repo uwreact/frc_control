@@ -25,49 +25,25 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""General helper functions."""
-
-# Standard imports
-import os
-import subprocess
-import threading
-
-# ROS imports
-import rospkg
+"""The TimeDisplayWidget class."""
 
 
-def async_popen(popen_args, callback=None):
-    """Asynchronously run subprocess.Popen, with the callback on completion."""
+class TimeDisplayWidget(object):
+    """A widget to control the elapsed/remaining time display."""
 
-    def _run(popen_args, callback):
-        proc = subprocess.Popen(*popen_args, stdout=open('/dev/null'), stderr=open('/dev/null'))
-        proc.wait()
-        if callback is not None:
-            callback()
-        return
+    def __init__(self, window, data):
+        self.window = window
+        self.data = data
 
-    thread = threading.Thread(target=_run, args=(popen_args, callback))
-    thread.start()
-    return thread
+        # Register callback
+        self.data.match_time.add_observer(self._update)
 
+        # Apply default value
+        self.data.match_time.set_attr('remaining_time', 0)
 
-def async_check_output(subprocess_args, success_callback=None, failure_callback=None):
-    """Asynchronously run subprocess.check_output, with the callback on completion."""
-
-    def _run(subprocess_args, success_callback, failure_callback):
-        try:
-            output = subprocess.check_output(*subprocess_args, stderr=open('/dev/null')).strip()
-            if success_callback is not None:
-                success_callback(output)
-        except subprocess.CalledProcessError as error:
-            if failure_callback is not None:
-                failure_callback(error)
-
-    thread = threading.Thread(target=_run, args=(subprocess_args, success_callback, failure_callback))
-    thread.start()
-    return thread
-
-
-def load_resource(filename):
-    """Load the specified resource from the driver_station package's resource dir."""
-    return os.path.join(rospkg.RosPack().get_path('driver_station'), 'resources', filename)
+    def _update(self, _, new_time):
+        """Update the time display with the specified time."""
+        time = new_time.remaining_time
+        mins = int(time / 60)
+        secs = time - mins * 60
+        self.window.elapsedTimeDisplay.setText('{}:{:04.1f}'.format(mins, secs))

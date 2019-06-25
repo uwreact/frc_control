@@ -25,49 +25,36 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""General helper functions."""
+"""The RioUtilsWidget class."""
 
-# Standard imports
-import os
-import subprocess
-import threading
-
-# ROS imports
-import rospkg
+# frc_control imports
+from driver_station.utils import utils
 
 
-def async_popen(popen_args, callback=None):
-    """Asynchronously run subprocess.Popen, with the callback on completion."""
+class RioUtilsWidget(object):
+    """A widget for controlling the RIO."""
 
-    def _run(popen_args, callback):
-        proc = subprocess.Popen(*popen_args, stdout=open('/dev/null'), stderr=open('/dev/null'))
-        proc.wait()
-        if callback is not None:
-            callback()
-        return
+    def __init__(self, window, data):
+        self.window = window
+        self.data = data
 
-    thread = threading.Thread(target=_run, args=(popen_args, callback))
-    thread.start()
-    return thread
+        # Connect reboot roboRIO and restart robot code buttons
+        self.window.rebootRioButton.clicked.connect(self._reboot_rio)
+        self.window.restartCodeButton.clicked.connect(self._restart_robot_code)
 
+    def _reboot_rio(self):
+        if not self.data.has_robot_comms.get():
+            self.window.status_string.blink()
+            return
 
-def async_check_output(subprocess_args, success_callback=None, failure_callback=None):
-    """Asynchronously run subprocess.check_output, with the callback on completion."""
+        utils.async_popen([['ssh', 'admin@roborio-{}-frc.local'.format(self.data.team_number.get()), 'reboot']])
 
-    def _run(subprocess_args, success_callback, failure_callback):
-        try:
-            output = subprocess.check_output(*subprocess_args, stderr=open('/dev/null')).strip()
-            if success_callback is not None:
-                success_callback(output)
-        except subprocess.CalledProcessError as error:
-            if failure_callback is not None:
-                failure_callback(error)
+    def _restart_robot_code(self):
+        if not self.data.has_robot_comms.get():
+            self.window.status_string.blink()
+            return
 
-    thread = threading.Thread(target=_run, args=(subprocess_args, success_callback, failure_callback))
-    thread.start()
-    return thread
-
-
-def load_resource(filename):
-    """Load the specified resource from the driver_station package's resource dir."""
-    return os.path.join(rospkg.RosPack().get_path('driver_station'), 'resources', filename)
+        utils.async_popen([[
+            'ssh', 'admin@roborio-{}-frc.local'.format(self.data.team_number.get()),
+            '. /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r'
+        ]])

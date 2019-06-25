@@ -25,49 +25,34 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""General helper functions."""
+"""Various POD data structures."""
 
-# Standard imports
-import os
-import subprocess
-import threading
-
-# ROS imports
-import rospkg
+from enum import IntEnum
 
 
-def async_popen(popen_args, callback=None):
-    """Asynchronously run subprocess.Popen, with the callback on completion."""
-
-    def _run(popen_args, callback):
-        proc = subprocess.Popen(*popen_args, stdout=open('/dev/null'), stderr=open('/dev/null'))
-        proc.wait()
-        if callback is not None:
-            callback()
-        return
-
-    thread = threading.Thread(target=_run, args=(popen_args, callback))
-    thread.start()
-    return thread
+class EnableDisableState(IntEnum):
+    """The enabled/disabled state of the robot."""
+    ESTOP = 0
+    ENABLE = 1
+    DISABLE = 2
 
 
-def async_check_output(subprocess_args, success_callback=None, failure_callback=None):
-    """Asynchronously run subprocess.check_output, with the callback on completion."""
-
-    def _run(subprocess_args, success_callback, failure_callback):
-        try:
-            output = subprocess.check_output(*subprocess_args, stderr=open('/dev/null')).strip()
-            if success_callback is not None:
-                success_callback(output)
-        except subprocess.CalledProcessError as error:
-            if failure_callback is not None:
-                failure_callback(error)
-
-    thread = threading.Thread(target=_run, args=(subprocess_args, success_callback, failure_callback))
-    thread.start()
-    return thread
+class RobotModeState(IntEnum):
+    """The mode of the robot."""
+    TELEOP = 0
+    AUTO = 1
+    PRACTICE = 2
+    TEST = 3
 
 
-def load_resource(filename):
-    """Load the specified resource from the driver_station package's resource dir."""
-    return os.path.join(rospkg.RosPack().get_path('driver_station'), 'resources', filename)
+class PracticeTiming(object):
+    """Data structure containing the durations of each stage of practice mode."""
+
+    # TODO: Change to a dict to be more pythonic? Or wait for py3.7 @dataclass?
+
+    def __init__(self):
+        self.countdown = 3
+        self.autonomous = 15
+        self.delay = 1
+        self.teleop = 100
+        self.endgame = 20
