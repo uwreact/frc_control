@@ -25,44 +25,30 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""The MainData class."""
-
-# frc_control imports
-from driver_station import structs
-from driver_station.utils.observable import ObservableData, ObservableDict, ObservableObj
-from frc_msgs.msg import DriverStationMode
-from frc_msgs.msg import JoyArray
-from frc_msgs.msg import JoyFeedback
-from frc_msgs.msg import MatchData
-from frc_msgs.msg import MatchTime
-from frc_msgs.msg import RobotState
+"""The BatteryDisplayWidget class."""
 
 
-class MainData(object):
-    """The main application data."""
+class BatteryDisplayWidget(object):
+    """A widget to control the robot battery voltage."""
 
-    # pylint: disable=too-many-instance-attributes
+    def __init__(self, window, data):
+        self.window = window
+        self.data = data
 
-    def __init__(self):
+        # Register callbacks
+        self.data.robot_state.add_observer(self._update_voltage)
+        self.data.has_robot_comms.add_observer(self._update_robot_comms)
 
-        # User-inputted data
-        self.sound_enabled = ObservableData(False)
-        self.team_number = ObservableData(0)
-        self.practice_timing = ObservableObj(structs.PracticeTiming())
+        # Apply default value
+        self.window.batteryVoltageDisplay.setText('--.--')
 
-        # Diagnostic information
-        self.versions = ObservableDict()
+    def _update_voltage(self, _, robot_state):
+        """Update the battery voltage."""
+        self.window.batteryVoltageDisplay.setText('{:0.2f}'.format(robot_state.battery_voltage))
 
-        # ROS messages
-        self.ds_mode = ObservableObj(DriverStationMode())
-        self.joys = ObservableObj(JoyArray())
-        self.joy_feedback = ObservableObj(JoyFeedback())
-        self.match_data = ObservableObj(MatchData())
-        self.match_time = ObservableObj(MatchTime())
-        self.robot_state = ObservableObj(RobotState())
-
-        # Internal state variables
-        self.has_robot_comms = ObservableData(False)
-        self.has_robot_code = ObservableData(False)
-        self.robot_mode = ObservableData(structs.RobotModeState.TELEOP)
-        self.enable_disable = ObservableData(structs.EnableDisableState.DISABLE)
+    def _update_robot_comms(self, _, has_comms):
+        """Clear the battery voltage when comms are lost."""
+        if not has_comms:
+            self.window.batteryVoltageDisplay.setText('--.--')
+        else:
+            self.window.batteryVoltageDisplay.setText('{:0.2f}'.format(self.data.robot_state.get().battery_voltage))

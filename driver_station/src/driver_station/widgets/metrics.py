@@ -25,44 +25,33 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""The MainData class."""
-
-# frc_control imports
-from driver_station import structs
-from driver_station.utils.observable import ObservableData, ObservableDict, ObservableObj
-from frc_msgs.msg import DriverStationMode
-from frc_msgs.msg import JoyArray
-from frc_msgs.msg import JoyFeedback
-from frc_msgs.msg import MatchData
-from frc_msgs.msg import MatchTime
-from frc_msgs.msg import RobotState
+"""The MetricsWidget class."""
 
 
-class MainData(object):
-    """The main application data."""
+class MetricsWidget(object):
+    """A widget to control the power, faults, and CAN metrics."""
 
-    # pylint: disable=too-many-instance-attributes
+    def __init__(self, window, data):
+        self.window = window
+        self.data = data
 
-    def __init__(self):
+        # Register callback
+        self.data.robot_state.add_observer(self._update)
 
-        # User-inputted data
-        self.sound_enabled = ObservableData(False)
-        self.team_number = ObservableData(0)
-        self.practice_timing = ObservableObj(structs.PracticeTiming())
+    def _update(self, _, robot_state):
+        """Update the metrics."""
 
-        # Diagnostic information
-        self.versions = ObservableDict()
+        # Faults
+        # self.window.faultsCommsDisplay.setText('?')
+        # self.window.faults12vDisplay.setText('?')
+        self.window.faults6vDisplay.setText(str(robot_state.fault_count_6v))
+        self.window.faults5vDisplay.setText(str(robot_state.fault_count_5v))
+        self.window.faults3v3Display.setText(str(robot_state.fault_count_3v3))
 
-        # ROS messages
-        self.ds_mode = ObservableObj(DriverStationMode())
-        self.joys = ObservableObj(JoyArray())
-        self.joy_feedback = ObservableObj(JoyFeedback())
-        self.match_data = ObservableObj(MatchData())
-        self.match_time = ObservableObj(MatchTime())
-        self.robot_state = ObservableObj(RobotState())
-
-        # Internal state variables
-        self.has_robot_comms = ObservableData(False)
-        self.has_robot_code = ObservableData(False)
-        self.robot_mode = ObservableData(structs.RobotModeState.TELEOP)
-        self.enable_disable = ObservableData(structs.EnableDisableState.DISABLE)
+        # CAN Metrics
+        percent_bus_utilization = int(round(robot_state.can_status.percent_bus_utilization * 100))
+        self.window.metricsUtilizationDisplay.setText(str(percent_bus_utilization))
+        self.window.metricsBusOffDisplay.setText(str(robot_state.can_status.bus_off_count))
+        self.window.metricsTxFullDisplay.setText(str(robot_state.can_status.tx_full_count))
+        self.window.metricsReceiveDisplay.setText(str(robot_state.can_status.receive_error_count))
+        self.window.metricsTransmitDisplay.setText(str(robot_state.can_status.transmit_error_count))

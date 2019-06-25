@@ -25,44 +25,44 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 
-"""The MainData class."""
+"""The Subscriber class."""
+
+# ROS imports
+import rospy
 
 # frc_control imports
-from driver_station import structs
-from driver_station.utils.observable import ObservableData, ObservableDict, ObservableObj
-from frc_msgs.msg import DriverStationMode
-from frc_msgs.msg import JoyArray
 from frc_msgs.msg import JoyFeedback
-from frc_msgs.msg import MatchData
-from frc_msgs.msg import MatchTime
 from frc_msgs.msg import RobotState
 
 
-class MainData(object):
-    """The main application data."""
+class Subscriber(object):
+    """ROS Topic Subscribers."""
 
-    # pylint: disable=too-many-instance-attributes
+    def __init__(self, data):
+        self.data = data
 
-    def __init__(self):
+        rospy.Subscriber('/frc/joy_feedback', JoyFeedback, self._joy_feedback_callback)
+        rospy.Subscriber('/frc/robot_state', RobotState, self._robot_state_callback)
 
-        # User-inputted data
-        self.sound_enabled = ObservableData(False)
-        self.team_number = ObservableData(0)
-        self.practice_timing = ObservableObj(structs.PracticeTiming())
+        self.robot_state_callbacks = []
 
-        # Diagnostic information
-        self.versions = ObservableDict()
+    def add_robot_state_callback(self, callback):
+        """Add a callback to notify when any RobotState msg is received."""
+        self.robot_state_callbacks.append(callback)
 
-        # ROS messages
-        self.ds_mode = ObservableObj(DriverStationMode())
-        self.joys = ObservableObj(JoyArray())
-        self.joy_feedback = ObservableObj(JoyFeedback())
-        self.match_data = ObservableObj(MatchData())
-        self.match_time = ObservableObj(MatchTime())
-        self.robot_state = ObservableObj(RobotState())
+    def _joy_feedback_callback(self, feedback_data):
 
-        # Internal state variables
-        self.has_robot_comms = ObservableData(False)
-        self.has_robot_code = ObservableData(False)
-        self.robot_mode = ObservableData(structs.RobotModeState.TELEOP)
-        self.enable_disable = ObservableData(structs.EnableDisableState.DISABLE)
+        # Remove the header so that observers are only notified when the actual contents of the msg change
+        feedback_data.header = None
+        self.data.joy_feedback.set(feedback_data)
+
+    def _robot_state_callback(self, robot_state):
+
+        # Remove the header so that observers are only notified when the actual contents of the msg change
+        robot_state.header = None
+        self.data.robot_state.set(robot_state)
+
+        # Use explicit callbacks here rather than relying on the robot_state observer since we want to notify
+        # some observers whenever ANY msg is received, regardless of whether the data is changed or not.
+        for callback in self.robot_state_callbacks:
+            callback()
