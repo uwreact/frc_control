@@ -40,6 +40,7 @@ from python_qt_binding import QtWidgets
 
 # frc_control imports
 from driver_station import data
+from driver_station import publisher
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
 from driver_station.widgets import communications
@@ -64,6 +65,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
         self.data = data.MainData()
+        self.pub = publisher.Publisher(self.data)
+        self.pub.start()
 
         # Setup the UI
         self.init_ui()
