@@ -41,8 +41,8 @@ class Subscriber(object):
     def __init__(self, data):
         self.data = data
 
-        rospy.Subscriber('frc/joy_feedback', JoyFeedback, self._joy_feedback_callback)
-        rospy.Subscriber('frc/robot_state', RobotState, self._robot_state_callback)
+        rospy.Subscriber('/frc/joy_feedback', JoyFeedback, self._joy_feedback_callback)
+        rospy.Subscriber('/frc/robot_state', RobotState, self._robot_state_callback)
 
         self.callbacks = []
 

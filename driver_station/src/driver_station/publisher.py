@@ -48,10 +48,10 @@ class Publisher(threading.Thread):
 
         self.data = data
 
-        self.ds_mode_pub = rospy.Publisher('ds_mode', DriverStationMode, queue_size=10)
-        self.match_time_pub = rospy.Publisher('match_time', MatchTime, queue_size=10)
-        self.match_data_pub = rospy.Publisher('match_data', MatchData, queue_size=10)
-        self.joys_pub = rospy.Publisher('joys', JoyArray, queue_size=10)
+        self.ds_mode_pub = rospy.Publisher('/frc/ds_mode', DriverStationMode, queue_size=10)
+        self.match_time_pub = rospy.Publisher('/frc/match_time', MatchTime, queue_size=10)
+        self.match_data_pub = rospy.Publisher('/frc/match_data', MatchData, queue_size=10)
+        self.joys_pub = rospy.Publisher('/frc/joys', JoyArray, queue_size=10)
 
         # Since this app IS the driver station, is_ds_attached is always True
         self.data.ds_mode.set_attr('is_ds_attached', True)
