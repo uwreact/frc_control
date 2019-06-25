@@ -23,45 +23,46 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-##############################################################################
+##############################################################################c
 
-"""The MainData class."""
+"""The Publisher class."""
+
+# Standard imports
+import threading
+
+# ROS imports
+import rospy
 
 # frc_control imports
-from driver_station import structs
-from driver_station.utils.observable import ObservableData, ObservableDict, ObservableObj
 from frc_msgs.msg import DriverStationMode
 from frc_msgs.msg import JoyArray
-from frc_msgs.msg import JoyFeedback
 from frc_msgs.msg import MatchData
 from frc_msgs.msg import MatchTime
 
 
-class MainData(object):
-    """The main application data."""
+class Publisher(threading.Thread):
+    """ROS Topic publishers."""
 
-    # pylint: disable=too-many-instance-attributes
+    def __init__(self, data):
+        threading.Thread.__init__(self)
 
-    def __init__(self):
+        self.data = data
 
-        # User-inputted data
-        self.sound_enabled = ObservableData(False)
-        self.team_number = ObservableData(0)
-        self.practice_timing = ObservableObj(structs.PracticeTiming())
+        self.ds_mode_pub = rospy.Publisher('ds_mode', DriverStationMode, queue_size=10)
+        self.match_time_pub = rospy.Publisher('match_time', MatchTime, queue_size=10)
+        self.match_data_pub = rospy.Publisher('match_data', MatchData, queue_size=10)
+        self.joys_pub = rospy.Publisher('joys', JoyArray, queue_size=10)
 
-        # Diagnostic information
-        self.versions = ObservableDict()
+        # Since this app IS the driver station, is_ds_attached is always True
+        self.data.ds_mode.set_attr('is_ds_attached', True)
 
-        # ROS messages
-        self.ds_mode = ObservableObj(DriverStationMode())
-        self.joys = ObservableObj(JoyArray())
-        self.joy_feedback = ObservableObj(JoyFeedback())
-        self.match_data = ObservableObj(MatchData())
-        self.match_time = ObservableObj(MatchTime())
+    def run(self):
+        frequency = 10
+        rate = rospy.Rate(frequency)
+        while not rospy.is_shutdown():
 
-        # Internal state variables
-        self.has_robot_comms = ObservableData(False)
-        self.has_robot_code = ObservableData(False)
-        self.brownout = ObservableData(False)
-        self.robot_mode = ObservableData(structs.RobotModeState.TELEOP)
-        self.enable_disable = ObservableData(structs.EnableDisableState.DISABLE)
+            self.ds_mode_pub.publish(self.data.ds_mode.get())
+            self.match_time_pub.publish(self.data.match_time.get())
+            self.match_data_pub.publish(self.data.match_data.get())
+            self.joys_pub.publish(self.data.joys.get())
+            rate.sleep()

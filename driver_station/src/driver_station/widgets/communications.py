@@ -111,6 +111,7 @@ class CommunicationsWidget(object):
 
     def set_fms_connected(self, _, match_data):
         """Set the FMS Connected indicator based on whether the event name is set."""
+        self.data.ds_mode.set_attr('is_fms_attached', match_data.event_name != '')
         gui_utils.bool_style(self.window.fmsCommsDisplay, match_data.event_name != '')
 
     def start_periodic(self, period=100):
