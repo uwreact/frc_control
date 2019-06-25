@@ -61,6 +61,7 @@ class StatusStringWidget(object):
         # Since the robot_state is updated far more freqently than the browned_out state,
         # only update the UI when the value changes.
         self.brownout = self.data.robot_state.get().browned_out
+
         def _brownout_cb(_, robot_state):
             if robot_state.browned_out == self.brownout:
                 return
@@ -68,7 +69,6 @@ class StatusStringWidget(object):
             self._update_string()
 
         self.data.robot_state.add_observer(_brownout_cb)
-
         self.data.has_robot_comms.add_observer(self._update_string)
         self.data.has_robot_code.add_observer(self._update_string)
         self.data.robot_mode.add_observer(self._update_string)
