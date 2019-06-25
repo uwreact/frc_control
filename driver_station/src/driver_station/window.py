@@ -40,6 +40,7 @@ from python_qt_binding import QtWidgets
 
 # frc_control imports
 from driver_station import data
+from driver_station import subscriber
 from driver_station.utils import gui_utils
 from driver_station.utils import utils
 from driver_station.widgets import communications
@@ -64,6 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
         self.data = data.MainData()
+        self.sub = subscriber.Subscriber(self, self.data)
 
         # Setup the UI
         self.init_ui()
@@ -79,6 +81,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.robot_mode = robot_mode.RobotModeWidget(self, self.data)
         self.status_string = status_string.StatusStringWidget(self, self.data)
         self.time_display = time_display.TimeDisplayWidget(self, self.data)
+
+        # Feed the Robot Code indicator's watchdog whenever the subscriber receives data from the robot
+        self.sub.add_robot_state_callback(self.major_status.watchdog.feed)
 
         # Register callbacks
         self.data.versions.add_observer(self.update_versions)
