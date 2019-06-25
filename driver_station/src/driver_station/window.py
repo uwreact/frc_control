@@ -40,6 +40,7 @@ from python_qt_binding import QtWidgets
 
 # frc_control imports
 from driver_station import data
+from driver_station import joysticks
 from driver_station import publisher
 from driver_station import subscriber
 from driver_station.utils import gui_utils
@@ -70,9 +71,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data = data.MainData()
         self.pub = publisher.Publisher(self.data)
         self.sub = subscriber.Subscriber(self.data)
+        self.joys = joysticks.JoystickUpdater(self.data)
 
-        # Start the publisher
+        # Start the publisher and joystick threads
         self.pub.start()
+        self.joys.start()
 
         # Setup the UI
         self.init_ui()
