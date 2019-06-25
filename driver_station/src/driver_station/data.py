@@ -35,6 +35,7 @@ from frc_msgs.msg import JoyArray
 from frc_msgs.msg import JoyFeedback
 from frc_msgs.msg import MatchData
 from frc_msgs.msg import MatchTime
+from frc_msgs.msg import RobotState
 
 
 class MainData(object):
@@ -58,10 +59,10 @@ class MainData(object):
         self.joy_feedback = ObservableObj(JoyFeedback())
         self.match_data = ObservableObj(MatchData())
         self.match_time = ObservableObj(MatchTime())
+        self.robot_state = ObservableObj(RobotState())
 
         # Internal state variables
         self.has_robot_comms = ObservableData(False)
         self.has_robot_code = ObservableData(False)
-        self.brownout = ObservableData(False)
         self.robot_mode = ObservableData(structs.RobotModeState.TELEOP)
         self.enable_disable = ObservableData(structs.EnableDisableState.DISABLE)

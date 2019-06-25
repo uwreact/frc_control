@@ -51,14 +51,18 @@ class Subscriber(object):
         """Add a callback to notify when a RobotState msg is received."""
         self.callbacks.append(callback)
 
-    def _joy_feedback_callback(self, joystick_data):
-        # TODO: Rumble joysticks
-        pass
+    def _joy_feedback_callback(self, feedback_data):
+
+        # Remove the header so that observers are only notified when the actual contents of the msg change
+        feedback_data.header = None
+        self.data.joy_feedback.set(feedback_data)
 
     def _robot_state_callback(self, robot_state):
 
-        # Brownout
-        self.data.brownout = robot_state.browned_out
+        # Remove the header so that observers are only notified when the actual contents of the msg change
+        robot_state.header = None
+        self.data.robot_state.set(robot_state)
+
 
         # TODO: Write msg data to self.data observer rather than directly to the UI
 
@@ -80,5 +84,7 @@ class Subscriber(object):
         # Battery Voltage
         self.window.batteryVoltageDisplay.setText('{:0.2f}'.format(robot_state.battery_voltage))
 
+        # We use explicit callbacks here rather than relying on the robot_state observer since we want to notify
+        # whenever ANY msg is received, regardless of whether the data is changed or not.
         for callback in self.callbacks:
             callback()
