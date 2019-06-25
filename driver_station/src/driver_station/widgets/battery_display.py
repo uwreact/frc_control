@@ -50,3 +50,5 @@ class BatteryDisplayWidget(object):
         """Clear the battery voltage when comms are lost."""
         if not has_comms:
             self.window.batteryVoltageDisplay.setText('--.--')
+        else:
+            self.window.batteryVoltageDisplay.setText('{:0.2f}'.format(self.data.robot_state.get().battery_voltage))
