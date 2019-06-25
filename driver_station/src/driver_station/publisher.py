@@ -44,7 +44,7 @@ class Publisher(threading.Thread):
     """ROS Topic publishers."""
 
     def __init__(self, data):
-        threading.Thread.__init__(self)
+        super(Publisher, self).__init__()
 
         self.data = data
 
