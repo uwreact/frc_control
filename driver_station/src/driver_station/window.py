@@ -69,7 +69,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.data = data.MainData()
         self.pub = publisher.Publisher(self.data)
-        self.sub = subscriber.Subscriber(self, self.data)
+        self.sub = subscriber.Subscriber(self.data)
 
         # Start the publisher
         self.pub.start()

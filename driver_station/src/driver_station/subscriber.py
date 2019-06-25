@@ -38,8 +38,7 @@ from frc_msgs.msg import RobotState
 class Subscriber(object):
     """ROS Topic Subscribers."""
 
-    def __init__(self, window, data):
-        self.window = window
+    def __init__(self, data):
         self.data = data
 
         rospy.Subscriber('frc/joy_feedback', JoyFeedback, self._joy_feedback_callback)
@@ -62,27 +61,6 @@ class Subscriber(object):
         # Remove the header so that observers are only notified when the actual contents of the msg change
         robot_state.header = None
         self.data.robot_state.set(robot_state)
-
-
-        # TODO: Write msg data to self.data observer rather than directly to the UI
-
-        # Faults
-        # self.window.faultsCommsDisplay.setText('?')
-        # self.window.faults12vDisplay.setText('?')
-        self.window.faults6vDisplay.setText(str(robot_state.fault_count_6v))
-        self.window.faults5vDisplay.setText(str(robot_state.fault_count_5v))
-        self.window.faults3v3Display.setText(str(robot_state.fault_count_3v3))
-
-        # CAN Metrics
-        percent_bus_utilization = int(round(robot_state.can_status.percent_bus_utilization * 100))
-        self.window.metricsUtilizationDisplay.setText(str(percent_bus_utilization))
-        self.window.metricsBusOffDisplay.setText(str(robot_state.can_status.bus_off_count))
-        self.window.metricsTxFullDisplay.setText(str(robot_state.can_status.tx_full_count))
-        self.window.metricsReceiveDisplay.setText(str(robot_state.can_status.receive_error_count))
-        self.window.metricsTransmitDisplay.setText(str(robot_state.can_status.transmit_error_count))
-
-        # Battery Voltage
-        self.window.batteryVoltageDisplay.setText('{:0.2f}'.format(robot_state.battery_voltage))
 
         # We use explicit callbacks here rather than relying on the robot_state observer since we want to notify
         # whenever ANY msg is received, regardless of whether the data is changed or not.
