@@ -44,11 +44,11 @@ class Subscriber(object):
         rospy.Subscriber('/frc/joy_feedback', JoyFeedback, self._joy_feedback_callback)
         rospy.Subscriber('/frc/robot_state', RobotState, self._robot_state_callback)
 
-        self.callbacks = []
+        self.robot_state_callbacks = []
 
     def add_robot_state_callback(self, callback):
-        """Add a callback to notify when a RobotState msg is received."""
-        self.callbacks.append(callback)
+        """Add a callback to notify when any RobotState msg is received."""
+        self.robot_state_callbacks.append(callback)
 
     def _joy_feedback_callback(self, feedback_data):
 
@@ -62,7 +62,7 @@ class Subscriber(object):
         robot_state.header = None
         self.data.robot_state.set(robot_state)
 
-        # We use explicit callbacks here rather than relying on the robot_state observer since we want to notify
-        # whenever ANY msg is received, regardless of whether the data is changed or not.
-        for callback in self.callbacks:
+        # Use explicit callbacks here rather than relying on the robot_state observer since we want to notify
+        # some observers whenever ANY msg is received, regardless of whether the data is changed or not.
+        for callback in self.robot_state_callbacks:
             callback()
