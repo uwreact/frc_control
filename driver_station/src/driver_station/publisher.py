@@ -57,10 +57,13 @@ class Publisher(threading.Thread):
         self.data.ds_mode.set_attr('is_ds_attached', True)
 
     def run(self):
-        frequency = 10
-        rate = rospy.Rate(frequency)
-        while not rospy.is_shutdown():
 
+        # Publish data at 50Hz to match the rate of the real driver station.
+        frequency = 50
+        rate = rospy.Rate(frequency)
+
+        # Loop until shutdown
+        while not rospy.is_shutdown():
             self.ds_mode_pub.publish(self.data.ds_mode.get())
             self.match_time_pub.publish(self.data.match_time.get())
             self.match_data_pub.publish(self.data.match_data.get())
