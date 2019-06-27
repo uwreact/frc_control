@@ -30,6 +30,7 @@
 # Standard imports
 import array
 import os
+import select
 import struct
 import threading
 from fcntl import ioctl
@@ -45,31 +46,43 @@ from frc_msgs.msg import JoyArray
 LINUX_INPUT_MACROS = {
     'JSIOCGAXES': 0x80016A11,
     'JSIOCGBUTTONS': 0x80016A12,
-    'JSIOCGNAME': lambda len: 0x80016A13 + (0x10000 * len)
+    'JSIOCGNAME': lambda length: 0x80016A13 + (0x10000 * length),
 }
 
 
 class Joystick(object):
     """A Linux joystick wrapper."""
 
-    def __init__(self, dev):
-        self.devfile = dev
+    def __init__(self, devfile):
+        self.devfile = devfile
+        self.devname = self.devfile.split('/dev/')[1]
         self.eventfile = None
 
-        devnum = int(self.devfile.split('js')[1])
-        for dev_dirs in os.listdir('/sys/class/input/js{}/device'.format(devnum)):
+        # Load the feedback file, if it exists
+        for dev_dirs in os.listdir('/sys/class/{}/device'.format(self.devname)):
             if dev_dirs.startswith('event'):
                 self.eventfile = '/dev/input/' + dev_dirs
 
+        # Open the devfiles
         self.jsdev = open(self.devfile, 'rb')
         if self.eventfile is not None:
             self.eventdev = open(self.eventfile, 'rb')
 
+        # Load initial state
+        self.uuid = self.get_uuid()
+        self.state = self.get_state()
+
     @staticmethod
     def detect_sticks():
         """Detect up to 6 available joysticks."""
-        joystick_devs = [fn for fn in os.listdir('/dev/input') if fn.startswith('js')]
+        joystick_devs = [fn for fn in sorted(os.listdir('/dev/input')) if fn.startswith('js')]
         return ['/dev/input/' + fn for fn in joystick_devs[:6]]
+
+    def close(self):
+        """Close the device files."""
+        self.jsdev.close()
+        if self.eventfile is not None:
+            self.eventdev.close()
 
     def get_num_axes(self):
         """Get the number of axes."""
@@ -89,19 +102,51 @@ class Joystick(object):
         ioctl(self.jsdev, LINUX_INPUT_MACROS['JSIOCGNAME'](len(buf)), buf)
         return buf.tostring()
 
+    def get_long_product(self):
+        """Get the concatenated bustype, vendor, product, and version descriptors."""
+        long_product = ''
+        with open('/sys/class/{}/device/id/bustype'.format(self.devname), 'r') as f:
+            long_product += '{}/'.format(f.read().strip())
+        with open('/sys/class/{}/device/id/vendor'.format(self.devname), 'r') as f:
+            long_product += '{}/'.format(f.read().strip())
+        with open('/sys/class/{}/device/id/product'.format(self.devname), 'r') as f:
+            long_product += '{}/'.format(f.read().strip())
+        with open('/sys/class/{}/device/id/version'.format(self.devname), 'r') as f:
+            long_product += '{}'.format(f.read().strip())
+        return long_product
+
+    def get_phys(self):
+        """Get the phys descriptor."""
+        with open('/sys/class/{}/device/phys'.format(self.devname), 'r') as f:
+            return f.read().strip()
+
+    def get_uuid(self):
+        """Get a unique ID for this joystick.
+
+        Since uniq is not reliable with JSIO devices, create an ID by appending the
+        bustype, vendor, product, version, and phys descriptors."""
+        return '{}/{}'.format(self.get_long_product(), self.get_phys())
+
     def get_state(self):
         """Get the current state of the joystick, as a sensor_msgs/Joy."""
         joy = Joy()
         joy.axes = [0] * self.get_num_axes()
         joy.buttons = [0] * self.get_num_buttons()
 
+        if self.jsdev.closed:
+            return joy
+
         # Close and re-open the file to load the initial values.
-        # TODO: This is slow. Instead, keep the file open and listen for events
         self.jsdev.close()
         self.jsdev = open(self.devfile, 'rb')
 
-        for _ in range(0, self.get_num_axes() + self.get_num_buttons()):
-            buf = self.jsdev.read(8)
+        while len(select.select([self.jsdev], [], [], 0)[0]) > 0:
+            try:
+                buf = self.jsdev.read(8)
+            except IOError:
+                self.close()
+                break
+
             _time, value, val_type, number = struct.unpack('IhBB', buf)
 
             if val_type & 0x01:
@@ -112,22 +157,91 @@ class Joystick(object):
 
         return joy
 
+    def update(self):
+        """Update the internal state."""
+        if self.jsdev.closed:
+            return self.state
 
-class JoystickUpdater(threading.Thread):
+        while len(select.select([self.jsdev], [], [], 0)[0]) > 0:
+
+            try:
+                buf = self.jsdev.read(8)
+            except IOError:
+                self.close()
+                break
+
+            if buf:
+                _time, value, val_type, number = struct.unpack('IhBB', buf)
+                if val_type & 0x01:
+                    self.state.buttons[number] = value
+                elif val_type & 0x02:
+                    self.state.axes[number] = value / 32767.0
+        return self.state
+
+
+class JoystickManager(threading.Thread):
     """Thread to update joystick states."""
 
     def __init__(self, data, joys=None):
-        super(JoystickUpdater, self).__init__()
+        super(JoystickManager, self).__init__()
         self.data = data
-        self.joys = joys or [Joystick(f) for f in Joystick.detect_sticks()]
+        self.rescan()
+
+    def rescan(self):
+        """Reload the available joysticks."""
+
+        self.joys = [Joystick(f) for f in Joystick.detect_sticks()]
+
+        mappings = self.data.joystick_mappings.get_all()
+        uuids = mappings.keys()
+        for uuid in uuids:
+
+            # Remove all unlocked sticks
+            if not mappings[uuid][2]:
+                self.data.joystick_mappings.delete(uuid)
+                del mappings[uuid]
+
+            # Update all locked sticks
+            else:
+                for joy in self.joys:
+                    if uuid == joy.uuid:
+                        data = list(self.data.joystick_mappings.get(uuid))
+                        data[1] = joy.get_name()
+                        self.data.joystick_mappings.set(uuid, data)
+
+        occupied_indexes = []
+        for uuid in mappings.keys():
+            occupied_indexes.append(self.data.joystick_mappings.get(uuid)[0])
+
+        # Add in new sticks
+        next_free_idx = 0
+        for joy in self.joys:
+            if joy.uuid in mappings:
+                continue
+
+            while next_free_idx in occupied_indexes:
+                next_free_idx += 1
+
+            self.data.joystick_mappings.set(joy.uuid, (next_free_idx, joy.get_name(), False))
+            next_free_idx += 1
+
+        self.data.joystick_mappings.force_notify()
 
     def run(self):
+
+        # Update data at 75Hz. Must be >= publish frequency, which is 50Hz
+        frequency = 75
+        rate = rospy.Rate(frequency)
+
         # Loop until shutdown
-        # TODO: Limit rate?
         while not rospy.is_shutdown():
             msg = JoyArray()
-            for stick in self.joys:
-                msg.sticks.append(stick.get_state())
-                msg.names.append(stick.get_name())
+            msg.sticks = [Joy()] * JoyArray.MAX_JOYSTICKS
+            msg.names = [Joy()] * JoyArray.MAX_JOYSTICKS
 
+            for stick in self.joys:
+                idx = self.data.joystick_mappings.get(stick.uuid)[0]
+                msg.sticks[idx] = stick.update()
+                msg.names[idx] = stick.get_name()
             self.data.joys.set(msg)
+            rate.sleep()
