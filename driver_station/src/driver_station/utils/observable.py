@@ -101,14 +101,20 @@ class ObservableData(Observable):
         if self._val == new_val:
             return
 
-        self._val = new_val
+        self._val = copy.deepcopy(new_val)
         self.set_changed()
-        self.notify_observers(self._val)
+        self.notify_observers()
         self.clear_changed()
 
     def get(self):
         """Get the stored value."""
         return copy.deepcopy(self._val)
+
+    def force_notify(self, arg=None):
+        super(ObservableData, self).force_notify(arg or self._val)
+
+    def notify_observers(self, arg=None):
+        super(ObservableData, self).notify_observers(arg or self._val)
 
 
 class ObservableObj(ObservableData):
@@ -121,7 +127,7 @@ class ObservableObj(ObservableData):
 
         setattr(self._val, attr, new_val)
         self.set_changed()
-        self.notify_observers(self._val)
+        self.notify_observers()
         self.clear_changed()
 
 
@@ -159,3 +165,9 @@ class ObservableDict(Observable):
     def get_all(self):
         """Get the stored value."""
         return copy.deepcopy(self._dict)
+
+    def force_notify(self, arg=None):
+        super(ObservableDict, self).force_notify(arg or self._dict)
+
+    def notify_observers(self, arg=None):
+        super(ObservableDict, self).notify_observers(arg or self._dict)
