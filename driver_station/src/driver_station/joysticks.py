@@ -25,7 +25,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################c
 
-"""The Joystick and JoystickUpdater classes."""
+"""The Joystick and JoystickManager classes."""
 
 # Standard imports
 import array
@@ -71,12 +71,6 @@ class Joystick(object):
         # Load initial state
         self.uuid = self.get_uuid()
         self.state = self.get_state()
-
-    @staticmethod
-    def detect_sticks():
-        """Detect up to 6 available joysticks."""
-        joystick_devs = [fn for fn in sorted(os.listdir('/dev/input')) if fn.startswith('js')]
-        return ['/dev/input/' + fn for fn in joystick_devs[:6]]
 
     def close(self):
         """Close the device files."""
@@ -190,7 +184,10 @@ class JoystickManager(threading.Thread):
     def rescan(self):
         """Reload the available joysticks."""
 
-        self.joys = [Joystick(f) for f in Joystick.detect_sticks()]
+        # Detect and load up to 6 available joysticks
+        # TODO: Ensure that all locked joysticks are loaded, even if more than 6 joysticks are detected
+        devfiles = [fn for fn in sorted(os.listdir('/dev/input')) if fn.startswith('js')]
+        self.joys = [Joystick('/dev/input/' + fn) for fn in devfiles[:6]]
 
         mappings = self.data.joystick_mappings.get_all()
         uuids = mappings.keys()
