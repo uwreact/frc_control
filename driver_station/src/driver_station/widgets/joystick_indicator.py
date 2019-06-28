@@ -33,7 +33,7 @@ from sensor_msgs.msg import Joy
 
 # frc_control imports
 from driver_station.utils import gui_utils
-from frc_msgs.msg import JoyArray
+# from frc_msgs.msg import JoyArray
 
 
 class JoystickIndicatorWidget(object):
@@ -47,7 +47,7 @@ class JoystickIndicatorWidget(object):
 
         self.timer = QtCore.QTimer(window)
         self.timer.timeout.connect(self._update)
-        self.timer.start(10) # 100Hz
+        self.timer.start(10)  # 100Hz
         self._clear()
 
     def _clear(self):
@@ -73,11 +73,11 @@ class JoystickIndicatorWidget(object):
         self.joy_state = joy_state
 
         # TODO: Support up to JoyArray.MAX_JOYSTICK_XXX indicators?
-        MAX_AXES = 6  #JoyArray.MAX_JOYSTICK_AXES
-        MAX_BTNS = 16  #JoyArray.MAX_JOYSTICK_BUTTONS
+        max_axes = 6  #JoyArray.MAX_JOYSTICK_AXES
+        max_btns = 16  #JoyArray.MAX_JOYSTICK_BUTTONS
 
-        joy_state.axes = joy_state.axes[:MAX_AXES]
-        joy_state.buttons = joy_state.buttons[:MAX_BTNS]
+        joy_state.axes = joy_state.axes[:max_axes]
+        joy_state.buttons = joy_state.buttons[:max_btns]
 
         stick_mappings = self.data.joystick_mappings.get_all()
         info = None
@@ -92,7 +92,7 @@ class JoystickIndicatorWidget(object):
             axis_display.setVisible(True)
             axis_display.setValue(axis * 100)
 
-        for i in range(len(joy_state.axes), MAX_AXES):
+        for i in range(len(joy_state.axes), max_axes):
             axis_display = getattr(self.window, 'axis{}Display'.format(i))
             axis_display.setVisible(False)
 
@@ -103,6 +103,6 @@ class JoystickIndicatorWidget(object):
             btn_display.setVisible(True)
             gui_utils.bool_style(btn_display, btn > 0)
 
-        for i in range(len(joy_state.buttons), MAX_BTNS):
+        for i in range(len(joy_state.buttons), max_btns):
             btn_display = getattr(self.window, 'button{}Display'.format(i))
             btn_display.setVisible(False)

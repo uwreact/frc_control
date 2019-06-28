@@ -29,7 +29,6 @@
 
 # ROS imports
 from python_qt_binding import QtCore
-from python_qt_binding import QtGui
 from python_qt_binding import QtWidgets
 
 # frc_control imports

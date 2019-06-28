@@ -277,7 +277,7 @@ class Joystick(object):
 class JoystickManager(threading.Thread):
     """Thread to update joystick states."""
 
-    def __init__(self, data, joys=None):
+    def __init__(self, data):
         super(JoystickManager, self).__init__()
         self.data = data
         self.rescan()
