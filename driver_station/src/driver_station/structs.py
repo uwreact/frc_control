@@ -56,3 +56,16 @@ class PracticeTiming(object):
         self.delay = 1
         self.teleop = 100
         self.endgame = 20
+
+
+class JoystickInfo(object):
+    """Data structure containing the durations of each stage of practice mode."""
+
+    # TODO: Change to a dict to be more pythonic? Or wait for py3.7 @dataclass?
+
+    def __init__(self):
+        self.index = 0
+        self.name = 1
+        self.locked = False
+        self.axis_names = []
+        self.btn_names = []

@@ -68,14 +68,14 @@ class JoystickSelectorWidget(object):
                 if uuid is None:
                     self.window.usbSetupList.item(i).setText('{} ----'.format(i))
                 else:
-                    data = list(self.data.joystick_mappings.get(uuid))
-                    data[0] = i
+                    info = self.data.joystick_mappings.get(uuid)
+                    info.index = i
                     if i == dest:
-                        data[2] = True
+                        info.locked = True
 
-                    self.data.joystick_mappings.set(uuid, data)
-                    gui_utils.set_underlined(self.window.usbSetupList.item(i), data[2])
-                    self.window.usbSetupList.item(i).setText('{} {}'.format(i, data[1]))
+                    self.data.joystick_mappings.set(uuid, info)
+                    gui_utils.set_underlined(self.window.usbSetupList.item(i), info.locked)
+                    self.window.usbSetupList.item(i).setText('{} {}'.format(i, info.name))
 
         if dest > source:
             for i in range(source, dest):
@@ -84,14 +84,14 @@ class JoystickSelectorWidget(object):
                 if uuid is None:
                     self.window.usbSetupList.item(i).setText('{} ----'.format(i))
                 else:
-                    data = list(self.data.joystick_mappings.get(uuid))
-                    data[0] = i
+                    info = self.data.joystick_mappings.get(uuid)
+                    info.index = i
                     if i == dest - 1:
-                        data[2] = True
+                        info.locked = True
 
-                    self.data.joystick_mappings.set(uuid, data)
-                    gui_utils.set_underlined(self.window.usbSetupList.item(i), data[2])
-                    self.window.usbSetupList.item(i).setText('{} {}'.format(i, data[1]))
+                    self.data.joystick_mappings.set(uuid, info)
+                    gui_utils.set_underlined(self.window.usbSetupList.item(i), info.locked)
+                    self.window.usbSetupList.item(i).setText('{} {}'.format(i, info.name))
 
         self.data.selected_joystick.set(self.window.usbSetupList.currentRow())
 
@@ -100,23 +100,20 @@ class JoystickSelectorWidget(object):
         if uuid is None:
             return
 
-        data = list(self.data.joystick_mappings.get(uuid))
-        data[2] = not data[2]
-        self.data.joystick_mappings.set(uuid, data)
-        gui_utils.set_underlined(item, data[2])
+        info = self.data.joystick_mappings.get(uuid)
+        info.locked = not info.locked
+        self.data.joystick_mappings.set(uuid, info)
+        gui_utils.set_underlined(item, info.locked)
 
     def _update_sticks(self, _, sticks):
         empty_sticks = range(0, 6)
 
         # Display the active and locked sticks
-        for uuid, data in sticks.items():
-            idx = data[0]
-            empty_sticks.remove(idx)
-            name = data[1]
-            locked = data[2]
-            gui_utils.set_underlined(self.window.usbSetupList.item(idx), locked)
-            self.window.usbSetupList.item(idx).setText('{} {}'.format(idx, name))
-            self.window.usbSetupList.item(idx).setData(QtCore.Qt.UserRole, uuid)
+        for uuid, info in sticks.items():
+            empty_sticks.remove(info.index)
+            gui_utils.set_underlined(self.window.usbSetupList.item(info.index), info.locked)
+            self.window.usbSetupList.item(info.index).setText('{} {}'.format(info.index, info.name))
+            self.window.usbSetupList.item(info.index).setData(QtCore.Qt.UserRole, uuid)
 
         # Clear out the empty sticks
         for i in empty_sticks:

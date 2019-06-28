@@ -63,7 +63,7 @@ class MainData(object):
 
         # Internal state variables
         self.joystick_mappings = ObservableDict()
-        self.selected_joystick = ObservableData(0)
+        self.selected_joystick = ObservableData(-1)
         self.has_robot_comms = ObservableData(False)
         self.has_robot_code = ObservableData(False)
         self.robot_mode = ObservableData(structs.RobotModeState.TELEOP)

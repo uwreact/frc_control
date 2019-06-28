@@ -55,11 +55,10 @@ class JoystickIndicatorWidget(object):
         self._update_state(empty_joy)
 
     def _update(self):
-
         joy_array = self.data.joys.get()
         idx = self.data.selected_joystick.get()
 
-        if len(joy_array.sticks) <= idx:
+        if idx < 0 or len(joy_array.sticks) <= idx:
             self._clear()
             return
 
@@ -80,8 +79,16 @@ class JoystickIndicatorWidget(object):
         joy_state.axes = joy_state.axes[:MAX_AXES]
         joy_state.buttons = joy_state.buttons[:MAX_BTNS]
 
+        stick_mappings = self.data.joystick_mappings.get_all()
+        info = None
+        for mapping in stick_mappings.values():
+            if mapping.index == self.data.selected_joystick.get():
+                info = mapping
+
         for i, axis in enumerate(joy_state.axes):
             axis_display = getattr(self.window, 'axis{}Display'.format(i))
+            if info is not None:
+                axis_display.setFormat('{}: {}'.format(i, info.axis_names[i]))
             axis_display.setVisible(True)
             axis_display.setValue(axis * 100)
 
@@ -91,6 +98,8 @@ class JoystickIndicatorWidget(object):
 
         for i, btn in enumerate(joy_state.buttons):
             btn_display = getattr(self.window, 'button{}Display'.format(i))
+            if info is not None:
+                btn_display.setToolTip('{}: {}'.format(i, info.btn_names[i]))
             btn_display.setVisible(True)
             gui_utils.bool_style(btn_display, btn > 0)
 

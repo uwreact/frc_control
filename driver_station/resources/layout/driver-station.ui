@@ -1018,7 +1018,8 @@ p, li { white-space: pre-wrap; }
             <property name="icon">
              <iconset>
               <normaloff>../icons/baseline-volume_off-24px.svg</normaloff>
-              <normalon>../icons/baseline-volume_up-24px.svg</normalon>../icons/baseline-volume_off-24px.svg</iconset>
+              <normalon>../icons/baseline-volume_up-24px.svg</normalon>
+             </iconset>
             </property>
             <property name="iconSize">
              <size>

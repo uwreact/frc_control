@@ -40,6 +40,7 @@ import rospy
 from sensor_msgs.msg import Joy
 
 # frc_control imports
+from driver_station.structs import JoystickInfo
 from frc_msgs.msg import JoyArray
 
 # Extracted from <linux/joystick.h>
@@ -47,6 +48,86 @@ LINUX_INPUT_MACROS = {
     'JSIOCGAXES': 0x80016A11,
     'JSIOCGBUTTONS': 0x80016A12,
     'JSIOCGNAME': lambda length: 0x80016A13 + (0x10000 * length),
+    'JSIOCGAXMAP': 0x80406A32,
+    'JSIOCGBTNMAP': 0x80406A34,
+}
+
+# Extracted from <linux/input-event-codes.h>
+LINUX_ABS_AXIS_NAMES = {
+    0x00: 'X Axis',
+    0x01: 'Y Axis',
+    0x02: 'Z Axis',
+    0x03: 'RX Axis',
+    0x04: 'RY Axis',
+    0x05: 'RZ Axis',
+    0x06: 'Throttle',
+    0x07: 'Rudder',
+    0x08: 'Wheel',
+    0x09: 'Gas',
+    0x0a: 'Brake',
+    0x10: 'HAT0X',
+    0x11: 'HAT0Y',
+    0x12: 'HAT1X',
+    0x13: 'HAT1Y',
+    0x14: 'HAT2X',
+    0x15: 'HAT2Y',
+    0x16: 'HAT3X',
+    0x17: 'HAT3Y',
+    0x18: 'Pressure',
+    0x19: 'Distance',
+    0x1a: 'Tilt X',
+    0x1b: 'Tilt Y',
+    0x1c: 'Tool Width',
+    0x20: 'Volume',
+    0x28: 'Misc',
+}
+
+# Extracted from <linux/input-event-codes.h>
+LINUX_BTN_NAMES = {
+    0x120: 'Trigger',
+    0x121: 'Thumb',
+    0x122: 'Thumb 2',
+    0x123: 'Top',
+    0x124: 'Top 2',
+    0x125: 'Pinkie',
+    0x126: 'Base',
+    0x127: 'Base 2',
+    0x128: 'Base 3',
+    0x129: 'Base 4',
+    0x12a: 'Base 5',
+    0x12b: 'Base 6',
+    # 0x12f: 'Dead', # NOTE: Overriden by Mayflash GameCube controller
+    0x130: 'A',
+    0x131: 'B',
+    0x132: 'C',
+    0x133: 'X',
+    0x134: 'Y',
+    0x135: 'Z',
+    0x136: 'Left Trigger',
+    0x137: 'Right Trigger',
+    0x138: 'Left Trigger 2',
+    0x139: 'Right Trigger 2',
+    0x13a: 'Select',
+    0x13b: 'Start',
+    0x13c: 'Mode',
+    0x13d: 'Thumb L',
+    0x13e: 'Thumb R',
+    0x220: 'DPad Up',
+    0x221: 'DPad Down',
+    0x222: 'DPad Left',
+    0x223: 'DPad Right',
+
+    # XBox 360 Controller:
+    0x2c0: 'DPad Left',
+    0x2c1: 'DPad Right',
+    0x2c2: 'DPad Up',
+    0x2c3: 'DPad Down',
+
+    # Mayflash GameCube Controller:
+    0x12c: 'DPad Up',
+    0x12d: 'DPad Right',
+    0x12e: 'DPad Down',
+    0x12f: 'DPad Left',
 }
 
 
@@ -78,6 +159,20 @@ class Joystick(object):
         if self.eventfile is not None:
             self.eventdev.close()
 
+    def get_info(self):
+        """Get the info for the joystick."""
+        info = JoystickInfo()
+        info.name = self.get_name()
+        info.axis_names = self.get_axis_names()
+        info.btn_names = self.get_button_names()
+        return info
+
+    def get_name(self, maxlen=64):
+        """Get the identifier string."""
+        buf = array.array('c', ['\0'] * maxlen)
+        ioctl(self.jsdev, LINUX_INPUT_MACROS['JSIOCGNAME'](len(buf)), buf)
+        return buf.tostring()
+
     def get_num_axes(self):
         """Get the number of axes."""
         buf = array.array('B', [0])
@@ -90,11 +185,17 @@ class Joystick(object):
         ioctl(self.jsdev, LINUX_INPUT_MACROS['JSIOCGBUTTONS'], buf)
         return buf[0]
 
-    def get_name(self, maxlen=64):
-        """Get the identifier string."""
-        buf = array.array('c', ['\0'] * maxlen)
-        ioctl(self.jsdev, LINUX_INPUT_MACROS['JSIOCGNAME'](len(buf)), buf)
-        return buf.tostring()
+    def get_axis_names(self):
+        """Get the name of each axis."""
+        buf = array.array('B', [0] * 0x40)
+        ioctl(self.jsdev, LINUX_INPUT_MACROS['JSIOCGAXMAP'], buf)
+        return [LINUX_ABS_AXIS_NAMES.get(axis, 'Unknown ({})'.format(axis)) for axis in buf[:self.get_num_axes()]]
+
+    def get_button_names(self):
+        """Get the name of each button."""
+        buf = array.array('H', [0] * 0x200)
+        ioctl(self.jsdev, LINUX_INPUT_MACROS['JSIOCGBTNMAP'], buf)
+        return [LINUX_BTN_NAMES.get(btn, 'Unknown ({})'.format(btn)) for btn in buf[:self.get_num_buttons()]]
 
     def get_long_product(self):
         """Get the concatenated bustype, vendor, product, and version descriptors."""
@@ -194,7 +295,7 @@ class JoystickManager(threading.Thread):
         for uuid in uuids:
 
             # Remove all unlocked sticks
-            if not mappings[uuid][2]:
+            if not mappings[uuid].locked:
                 self.data.joystick_mappings.delete(uuid)
                 del mappings[uuid]
 
@@ -202,13 +303,15 @@ class JoystickManager(threading.Thread):
             else:
                 for joy in self.joys:
                     if uuid == joy.uuid:
-                        data = list(self.data.joystick_mappings.get(uuid))
-                        data[1] = joy.get_name()
-                        self.data.joystick_mappings.set(uuid, data)
+                        info = self.data.joystick_mappings.get(uuid)
+                        info.name = joy.get_name()
+                        info.axis_names = joy.get_axis_names()
+                        info.btn_names = joy.get_button_names()
+                        self.data.joystick_mappings.set(uuid, info)
 
         occupied_indexes = []
         for uuid in mappings.keys():
-            occupied_indexes.append(self.data.joystick_mappings.get(uuid)[0])
+            occupied_indexes.append(self.data.joystick_mappings.get(uuid).index)
 
         # Add in new sticks
         next_free_idx = 0
@@ -219,7 +322,10 @@ class JoystickManager(threading.Thread):
             while next_free_idx in occupied_indexes:
                 next_free_idx += 1
 
-            self.data.joystick_mappings.set(joy.uuid, (next_free_idx, joy.get_name(), False))
+            info = joy.get_info()
+            info.index = next_free_idx
+            info.locked = False
+            self.data.joystick_mappings.set(joy.uuid, info)
             next_free_idx += 1
 
         self.data.joystick_mappings.force_notify()
@@ -237,7 +343,7 @@ class JoystickManager(threading.Thread):
             msg.names = [Joy()] * JoyArray.MAX_JOYSTICKS
 
             for stick in self.joys:
-                idx = self.data.joystick_mappings.get(stick.uuid)[0]
+                idx = self.data.joystick_mappings.get(stick.uuid).index
                 msg.sticks[idx] = stick.update()
                 msg.names[idx] = stick.get_name()
             self.data.joys.set(msg)
