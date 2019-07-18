@@ -64,6 +64,13 @@ def bool_style(element, enabled, use_red=False):
         element.setStyleSheet('background-color: #{:06x}'.format(color_disabled))
 
 
+def set_underlined(element, underlined):
+    """Set whether the specified element should use an underlined font or not."""
+    f = element.font()
+    f.setUnderline(underlined)
+    element.setFont(f)
+
+
 def setup_int_validator(element, fixup, lower=0, upper=2**31 - 1):
     """Setup an int validator for the specified element.
 

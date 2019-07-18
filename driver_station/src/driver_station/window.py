@@ -40,6 +40,7 @@ from python_qt_binding import QtWidgets
 
 # frc_control imports
 from driver_station import data
+from driver_station import joysticks
 from driver_station import publisher
 from driver_station import subscriber
 from driver_station.utils import gui_utils
@@ -47,6 +48,7 @@ from driver_station.utils import utils
 from driver_station.widgets import battery_display
 from driver_station.widgets import communications
 from driver_station.widgets import joystick_indicator
+from driver_station.widgets import joystick_selector
 from driver_station.widgets import major_status
 from driver_station.widgets import match_data
 from driver_station.widgets import metrics
@@ -70,9 +72,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data = data.MainData()
         self.pub = publisher.Publisher(self.data)
         self.sub = subscriber.Subscriber(self.data)
+        self.joys = joysticks.JoystickManager(self.data)
 
-        # Start the publisher
+        # Start the publisher and joystick threads
         self.pub.start()
+        self.joys.start()
 
         # Setup the UI
         self.init_ui()
@@ -80,7 +84,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Setup all the inner widgets
         self.battery_display = battery_display.BatteryDisplayWidget(self, self.data)
         self.communications = communications.CommunicationsWidget(self, self.data)
-        self.joystick_indicator = joystick_indicator.JoystickIndicatorWidget(self)
+        self.joystick_indicator = joystick_indicator.JoystickIndicatorWidget(self, self.data)
+        self.joystick_selector = joystick_selector.JoystickSelectorWidget(self, self.data)
         self.major_status = major_status.MajorStatusWidget(self, self.data)
         self.match_data = match_data.MatchDataWidget(self, self.data)
         self.metrics = metrics.MetricsWidget(self, self.data)
@@ -96,7 +101,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Register callbacks
         self.data.versions.add_observer(self.update_versions)
-        self.data.versions.force_notify(self.data.versions.get_all())
+        self.data.versions.force_notify()
 
         # Set initial values
         # TODO: Load previous values from save file

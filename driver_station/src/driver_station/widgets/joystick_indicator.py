@@ -28,62 +28,81 @@
 """The JoystickIndicatorWidget class."""
 
 # ROS imports
+from python_qt_binding import QtCore
 from sensor_msgs.msg import Joy
 
 # frc_control imports
 from driver_station.utils import gui_utils
-from frc_msgs.msg import JoyArray
+# from frc_msgs.msg import JoyArray
 
 
 class JoystickIndicatorWidget(object):
-    """A widget to display the joystick state"""
+    """A widget to display the joystick state."""
 
-    def __init__(self, window):
+    def __init__(self, window, data):
         self.window = window
+        self.data = data
 
+        self.joy_state = None
+
+        self.timer = QtCore.QTimer(window)
+        self.timer.timeout.connect(self._update)
+        self.timer.start(10)  # 100Hz
+        self._clear()
+
+    def _clear(self):
         empty_joy = Joy()
         self._update_state(empty_joy)
 
-        # TODO: Delete me
-        test = Joy()
-        test.axes.append(0.1)
-        test.axes.append(-0.5)
-        test.axes.append(-0.9)
-        test.axes.append(0.8)
-        test.buttons.append(1)
-        test.buttons.append(1)
-        test.buttons.append(0)
-        test.buttons.append(0)
-        test.buttons.append(1)
-        test.buttons.append(0)
-        test.buttons.append(0)
-        test.buttons.append(1)
-        test.buttons.append(1)
-        test.buttons.append(0)
-        self._update_state(test)
+    def _update(self):
+        joy_array = self.data.joys.get()
+        idx = self.data.selected_joystick.get()
 
-    def _update_state(self, joystick):
+        if idx < 0 or len(joy_array.sticks) <= idx:
+            self._clear()
+            return
 
-        # TODO: Show/hide buttons and axis based on length
+        joy_state = joy_array.sticks[idx]
 
-        for i, axis in enumerate(joystick.axes):
-            if i > JoyArray.MAX_JOYSTICK_AXES:
-                break
+        if self.joy_state == joy_state:
+            return
 
-            try:
-                axis_display = getattr(self.window, 'axis{}Display'.format(i))
-            except AttributeError:
-                break
+        self._update_state(joy_state)
 
+    def _update_state(self, joy_state):
+        self.joy_state = joy_state
+
+        # TODO: Support up to JoyArray.MAX_JOYSTICK_XXX indicators?
+        max_axes = 6  #JoyArray.MAX_JOYSTICK_AXES
+        max_btns = 16  #JoyArray.MAX_JOYSTICK_BUTTONS
+
+        joy_state.axes = joy_state.axes[:max_axes]
+        joy_state.buttons = joy_state.buttons[:max_btns]
+
+        stick_mappings = self.data.joystick_mappings.get_all()
+        info = None
+        for mapping in stick_mappings.values():
+            if mapping.index == self.data.selected_joystick.get():
+                info = mapping
+
+        for i, axis in enumerate(joy_state.axes):
+            axis_display = getattr(self.window, 'axis{}Display'.format(i))
+            if info is not None:
+                axis_display.setFormat('{}: {}'.format(i, info.axis_names[i]))
+            axis_display.setVisible(True)
             axis_display.setValue(axis * 100)
 
-        for i, btn in enumerate(joystick.buttons):
-            if i > JoyArray.MAX_JOYSTICK_BUTTONS:
-                break
+        for i in range(len(joy_state.axes), max_axes):
+            axis_display = getattr(self.window, 'axis{}Display'.format(i))
+            axis_display.setVisible(False)
 
-            try:
-                btn_display = getattr(self.window, 'button{}Display'.format(i))
-            except AttributeError:
-                break
-
+        for i, btn in enumerate(joy_state.buttons):
+            btn_display = getattr(self.window, 'button{}Display'.format(i))
+            if info is not None:
+                btn_display.setToolTip('{}: {}'.format(i, info.btn_names[i]))
+            btn_display.setVisible(True)
             gui_utils.bool_style(btn_display, btn > 0)
+
+        for i in range(len(joy_state.buttons), max_btns):
+            btn_display = getattr(self.window, 'button{}Display'.format(i))
+            btn_display.setVisible(False)
