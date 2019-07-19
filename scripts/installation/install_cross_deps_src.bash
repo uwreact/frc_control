@@ -79,7 +79,7 @@ fi
 
 # Ensure the user-specified toolchain file. If they didn't provide one, use the default (relative to this script)
 if [ -z "$toolchain" ]; then
-    toolchain="${script_dir}/../rostoolchain.cmake"
+    toolchain="${script_dir}/../../rostoolchain.cmake"
 fi
 if [ ! -f "$toolchain" ]; then
     echo "Toolchain file "$toolchain" not found!"
