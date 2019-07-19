@@ -63,9 +63,7 @@ void FRCRobotHW::loadURDF(const ros::NodeHandle& nh, const std::string& param_na
 }
 
 void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_name) {
-  using XmlValue                  = XmlRpc::XmlRpcValue;
-  using SmartSpeedControllerType  = SmartSpeedController::Type;
-  using SimpleSpeedControllerType = SimpleSpeedController::Type;
+  using XmlValue = XmlRpc::XmlRpcValue;
   using namespace hardware_template;
 
   ROS_INFO_NAMED(name_, "Loading joints");
@@ -144,11 +142,11 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
 
-      SimpleSpeedControllerType type = SimpleSpeedController::stringToType(joint_type);
+      SimpleSpeedController::Type type = SimpleSpeedController::stringToType(joint_type);
 
       // Nidec additionally requires a dio channel
       int dio_ch = -1;
-      if (type == SimpleSpeedControllerType::Nidec) {
+      if (type == SimpleSpeedController::Type::Nidec) {
         if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
           continue;
         dio_ch = (int) cur_joint["dio_channel"];
