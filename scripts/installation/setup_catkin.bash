@@ -16,7 +16,7 @@ if [[ "$WSPATH" == "" ]]; then
   exit 1
 fi
 
-cp "${SCRIPTPATH}/rostoolchain.cmake" "${WSPATH}"
+cp "${SCRIPTPATH}/../../rostoolchain.cmake" "${WSPATH}"
 
 # Setup the cross-compile profile
 catkin profile add cross

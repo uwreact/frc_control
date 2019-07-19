@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "This script is currently broken!"
+echo "Please manually unsource ROS before cross-compiling."
+exit
+
 if [ -z "$PS1" ] ; then
     echo "This script must be sourced rather than executed."
     echo "Use \"source unsource_ros.bash\" instead."

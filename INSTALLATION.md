@@ -75,8 +75,8 @@ When possible, we install ipks that NI has distributed for the RoboRIO. If these
 Note: The order of installation is important, as some of these packages are dependent on eachother
 
     cd ~/robot_workspace/src/frc_control
-    ./installation/install_cross_deps_ipks.bash
-    ./installation/install_cross_deps_src.bash
+    ./scripts/installation/install_cross_deps_ipks.bash
+    ./scripts/installation/install_cross_deps_src.bash
 
 ## 5. Un-Source ROS
 
@@ -85,7 +85,7 @@ You can do this manually by commenting out `source /opt/ros/melodic/setup.bash` 
 performing the installation steps required, and restoring that line once you are complete. Or, you can use the following script:
 
     cd ~/robot_workspace/src/frc_control
-    source installation/unsource_ros.bash
+    source scripts/installation/unsource_ros.bash
 
 ## 6. Build ROS with the FRC toolchain
 
@@ -98,7 +98,7 @@ performing the installation steps required, and restoring that line once you are
 ## 1. Run the installer script to set up catkin profiles for native and cross compilation
 
     cd ~/robot_workspace
-    ./src/frc_control/setup_catkin.bash .
+    ./src/frc_control/scripts/installation/setup_catkin.bash .
 
 ## 2. To perform a native compilation:
 
@@ -112,7 +112,7 @@ performing the installation steps required, and restoring that line once you are
 
 frc_control has built-in support for the most common 3rd party libraries; [CTRE Toolsuite](http://www.ctr-electronics.com/control-system/hro.html#product_tabs_technical_resources), [Kauai Labs](https://pdocs.kauailabs.com/navx-mxp/software/), and [Mindsensors](http://www.mindsensors.com/blog/how-to/how-to-use-sd540c-and-canlight-with-roborio). However, since we know not all teams will be using all of these libraries, they are all **disabled** by default. To download and enable these libraries, use the `install_3rd_party_libs.py` script.
 
-    cd ~/robot_workspace/src/frc_control/installation
+    cd ~/robot_workspace/src/frc_control/scripts/installation
     ./install_3rd_party_libs.py --all
 
 # Setting up the roboRIO
@@ -127,7 +127,7 @@ Note that this requires a Windows PC and access to the NI FRC Update Suite.
 Use the `upload_ros.sh` script to upload and install ROS on the RIO.
 You must specify the team number.
 
-    cd ~/robot_workspace/src/frc_control/installation
+    cd ~/robot_workspace/src/frc_control/scripts
     ./upload_ros.sh 1234
 
 ## 3. Deploy user code
@@ -136,5 +136,5 @@ Use the `upload_frc_control.sh` script to upload and install your user code to t
 You must specify the team number.
 You should also specify the launch file to be run on bootup - By default, this is `frc_robot_hw bringup.launch`, but you may customize it to whatever launch file is appropriate for your system.
 
-    cd ~/robot_workspace/src/frc_control/installation
+    cd ~/robot_workspace/src/frc_control/scripts
     ./upload_frc_control.sh 1234 frc_robot_hw bringup.launch
