@@ -127,7 +127,7 @@ Note that this requires a Windows PC and access to the NI FRC Update Suite.
 Use the `upload_ros.sh` script to upload and install ROS on the RIO.
 You must specify the team number.
 
-    cd ~/robot_workspace/src/frc_control/installation
+    cd ~/robot_workspace/src/frc_control/scripts
     ./upload_ros.sh 1234
 
 ## 3. Deploy user code
@@ -136,5 +136,5 @@ Use the `upload_frc_control.sh` script to upload and install your user code to t
 You must specify the team number.
 You should also specify the launch file to be run on bootup - By default, this is `frc_robot_hw bringup.launch`, but you may customize it to whatever launch file is appropriate for your system.
 
-    cd ~/robot_workspace/src/frc_control/installation
+    cd ~/robot_workspace/src/frc_control/scripts
     ./upload_frc_control.sh 1234 frc_robot_hw bringup.launch
