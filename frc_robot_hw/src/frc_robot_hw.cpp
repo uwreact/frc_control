@@ -426,6 +426,13 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
                                           const bool                       warn_exist,
                                           const bool                       warn_type) {
 
+  // If the value is an int, allow implicit casting to double
+  using Type = XmlRpc::XmlRpcValue::Type;
+  if (type == Type::TypeDouble) {
+    if (validateJointParamMember(value, member, Type::TypeInt, false, false))
+      return true;
+  }
+
   // Check that the member exists
   if (!value.hasMember(member)) {
     // clang-format off
@@ -446,6 +453,15 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
   }
 
   return true;
+}
+
+double FRCRobotHW::getXmlRpcDouble(XmlRpc::XmlRpcValue& value) {
+  if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeDouble)
+    return value;
+  if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeInt)
+    return (int) value;
+
+   throw std::runtime_error("XmlRpcValue is not of type Double or Int!");
 }
 
 void FRCRobotHW::registerTransmissions() {

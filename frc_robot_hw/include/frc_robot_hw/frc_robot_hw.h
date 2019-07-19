@@ -240,6 +240,8 @@ private:
                                 const XmlRpc::XmlRpcValue::Type& type,
                                 const bool                       warn_exist = true,
                                 const bool                       warn_type  = true);
+
+  double getXmlRpcDouble(XmlRpc::XmlRpcValue& value);
 };
 
 }  // namespace frc_robot_hw
