@@ -152,7 +152,7 @@ def test_clang_tidy():
 
 def test_yapf():
     """
-    Run pylint
+    Check if yapf wants to make changes
     """
 
     print('\n----------\n')
@@ -173,7 +173,7 @@ def test_yapf():
 
 def test_pylint():
     """
-    Run pylint
+    Check code quality with pylint
     """
 
     print('\n----------\n')
@@ -183,7 +183,8 @@ def test_pylint():
     if install_program('pylint', pip=True) != 0:
         return 1
 
-    files = subprocess.check_output(['find', '-L', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/.*'])
+    # Find all files with extension .py or files in script dirs with no extension
+    files = subprocess.check_output(['find', '.', '-name', '*.py', '-o', '-iregex', '.*/scripts/\\w+', '-type', 'f'])
     files = files.decode('utf-8').strip().split('\n')
     files = [f for f in files if '.ci_config' not in f and f != '']
     if len(files) != 0:
