@@ -11,7 +11,7 @@ Read the project's design goals in [DESIGN.md](DESIGN.md) for details on the dir
 
 ## Compiling
 
-Full instructions for cross-compiling ROS for the roboRIO and linking the WPI libraries can be found in [installation/INSTALLATION.md](installation/INSTALLATION.md).
+Full instructions for cross-compiling ROS for the roboRIO and linking the WPI libraries can be found in [INSTALLATION.md](INSTALLATION.md).
 
 Once the workspace has been setup for cross-compilation, you can native or cross compile the code using:
 
