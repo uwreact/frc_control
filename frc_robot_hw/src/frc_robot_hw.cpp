@@ -428,9 +428,8 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
 
   // If the value is an int, allow implicit casting to double
   using Type = XmlRpc::XmlRpcValue::Type;
-  if (type == Type::TypeDouble) {
-    if (validateJointParamMember(value, member, Type::TypeInt, false, false))
-      return true;
+  if (type == Type::TypeDouble && validateJointParamMember(value, member, Type::TypeInt, false, false)) {
+    return true;
   }
 
   // Check that the member exists
@@ -448,7 +447,7 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
     // clang-format off
     ROS_WARN_STREAM_COND_NAMED(warn_type, name_, "Skipping malformed joint, '"
                                                   << member << "' must be a '" << type << "': '" << value << "'");
-    //  clang-format on
+    // clang-format on
     return false;
   }
 
@@ -456,12 +455,15 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
 }
 
 double FRCRobotHW::getXmlRpcDouble(XmlRpc::XmlRpcValue& value) {
-  if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeDouble)
+  if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeDouble) {
     return value;
-  if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeInt)
-    return (int) value;
+  }
 
-   throw std::runtime_error("XmlRpcValue is not of type Double or Int!");
+  if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeInt) {
+    return (int) value;
+  }
+
+  throw std::runtime_error("XmlRpcValue is not of type Double or Int!");
 }
 
 void FRCRobotHW::registerTransmissions() {
