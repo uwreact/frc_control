@@ -36,6 +36,7 @@ bool MultiPIDController::setMode(Mode mode) {
   switch (mode_) {
     case Mode::disabled:
       cur_gains_ = nullptr;
+      break;
     case Mode::position:
       cur_gains_ = &position_gains_;
       break;
