@@ -38,7 +38,7 @@ public:
   enum class Mode { disabled, position, velocity, effort };
 
   MultiPIDController(const PIDGains& pos, const PIDGains& vel, const PIDGains& eff)
-      : position_gains_(pos), velocity_gains_(vel), effort_gains_(eff), cur_gains_(nullptr) {
+      : cur_gains_(nullptr), position_gains_(pos), velocity_gains_(vel), effort_gains_(eff) {
     reset();
   }
 
