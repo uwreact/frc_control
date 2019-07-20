@@ -87,23 +87,19 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
   }
 
   // Parse each joint and store it in its respective map
-  // NOLINTNEXTLINE(modernize-loop-convert)
-  for (uint i = 0; i < joint_param_list.size(); i++) {
-    XmlValue cur_joint = joint_param_list[i];
-    ROS_INFO_STREAM(cur_joint);
+  for (const auto& pair : joint_param_list) {
+    const std::string joint_name = pair.first;
+    XmlValue          cur_joint  = pair.second;
+    ROS_INFO_STREAM(joint_name << cur_joint);
 
-    // Ensure the current joint parameter is valid. That is, it has a string parameter for name and type
+    // Ensure the current joint parameter specifies a type
     // TODO: Consider failing instead of skipping (throw std::runtime_error) in some cases
-    if (!validateJointParamMember(cur_joint, "name", XmlValue::TypeString)
-        || !validateJointParamMember(cur_joint, "type", XmlValue::TypeString))
+    if (!validateJointParamMember(cur_joint, "type", XmlValue::TypeString)) {
       continue;
+    }
 
-    // Get the name and type
-    const std::string joint_name = cur_joint["name"];
+    // Get the type of the joint
     const std::string joint_type = cur_joint["type"];
-
-    using SmartSpeedControllerType  = SmartSpeedController::Type;
-    using SimpleSpeedControllerType = SimpleSpeedController::Type;
 
     bool is_smart_speed_controller;
     try {
@@ -121,6 +117,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       is_simple_speed_controller = false;
     }
 
+    // Depending on the type of joint, parse the data further and store the config in a template
     if (is_smart_speed_controller) {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
@@ -138,21 +135,21 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       smart_speed_controller_templates_[joint_name] = {
           .type     = SmartSpeedController::stringToType(joint_type),
-          .id       = (int) cur_joint["id"],
+          .id       = cur_joint["id"],
           .inverted = inverted,
       };
     } else if (is_simple_speed_controller) {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
 
-      SimpleSpeedControllerType type = SimpleSpeedController::stringToType(joint_type);
+      SimpleSpeedController::Type type = SimpleSpeedController::stringToType(joint_type);
 
       // Nidec additionally requires a dio channel
       int dio_ch = -1;
-      if (type == SimpleSpeedControllerType::Nidec) {
+      if (type == SimpleSpeedController::Type::Nidec) {
         if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
           continue;
-        dio_ch = (int) cur_joint["dio_channel"];
+        dio_ch = cur_joint["dio_channel"];
       }
 
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
@@ -167,7 +164,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       int pdp_ch;
       if (validateJointParamMember(cur_joint, "pdp_ch", XmlValue::TypeInt, false, true))
-        pdp_ch = (int) cur_joint["pdp_ch"];
+        pdp_ch = cur_joint["pdp_ch"];
       else
         pdp_ch = -1;
 
@@ -181,7 +178,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       double k_eff;
       if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true))
-        k_eff = (double) cur_joint["k_eff"];
+        k_eff = getXmlRpcDouble(cur_joint["k_eff"]);
       else
         k_eff = 1.0;
 
@@ -238,7 +235,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       int pcm_id;
       if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
-        pcm_id = (int) cur_joint["pcm_id"];
+        pcm_id = cur_joint["pcm_id"];
       else
         pcm_id = 0;
 
@@ -253,7 +250,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       int pcm_id;
       if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
-        pcm_id = (int) cur_joint["pcm_id"];
+        pcm_id = cur_joint["pcm_id"];
       else
         pcm_id = 0;
 
@@ -265,7 +262,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     } else if (joint_type == "compressor") {
       int pcm_id;
       if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
-        pcm_id = (int) cur_joint["pcm_id"];
+        pcm_id = cur_joint["pcm_id"];
       else
         pcm_id = 0;
 
@@ -303,8 +300,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       analog_input_templates_[joint_name] = {
           .joint  = "",  // TODO: Lookup in URDF
           .id     = cur_joint["ain_channel"],
-          .scale  = cur_joint["scale"],
-          .offset = cur_joint["offset"],
+          .scale  = getXmlRpcDouble(cur_joint["scale"]),
+          .offset = getXmlRpcDouble(cur_joint["offset"]),
       };
     } else if (joint_type == "analog_output") {
       if (!validateJointParamMember(cur_joint, "aout_channel", XmlValue::TypeInt)
@@ -321,8 +318,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       analog_output_templates_[joint_name] = {
           .joint  = joint,
           .id     = cur_joint["analog_channel"],
-          .scale  = cur_joint["scale"],
-          .offset = cur_joint["offset"],
+          .scale  = getXmlRpcDouble(cur_joint["scale"]),
+          .offset = getXmlRpcDouble(cur_joint["offset"]),
       };
     } else if (joint_type == "encoder") {
       if (!validateJointParamMember(cur_joint, "ch_a", XmlValue::TypeInt)
@@ -334,7 +331,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
                             && cur_joint["inverted"];
       int encoding;
       if (validateJointParamMember(cur_joint, "encoding", XmlValue::TypeInt, false, true))
-        encoding = (int) cur_joint["encoding"];
+        encoding = cur_joint["encoding"];
       else
         encoding = 4;
 
@@ -354,7 +351,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .joint              = joint,
           .ch_a               = cur_joint["ch_a"],
           .ch_b               = cur_joint["ch_b"],
-          .distance_per_pulse = cur_joint["dist_per_pulse"],
+          .distance_per_pulse = getXmlRpcDouble(cur_joint["dist_per_pulse"]),
           .inverted           = inverted,
           .encoding           = encoding,
       };
@@ -419,6 +416,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       continue;
     }
   }
+
+  ROS_INFO_NAMED(name_, "Done loading joints");
 }
 
 bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value,
@@ -426,6 +425,12 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
                                           const XmlRpc::XmlRpcValue::Type& type,
                                           const bool                       warn_exist,
                                           const bool                       warn_type) {
+
+  // If the value is an int, allow implicit casting to double
+  using Type = XmlRpc::XmlRpcValue::Type;
+  if (type == Type::TypeDouble && validateJointParamMember(value, member, Type::TypeInt, false, false)) {
+    return true;
+  }
 
   // Check that the member exists
   if (!value.hasMember(member)) {
@@ -442,11 +447,23 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
     // clang-format off
     ROS_WARN_STREAM_COND_NAMED(warn_type, name_, "Skipping malformed joint, '"
                                                   << member << "' must be a '" << type << "': '" << value << "'");
-    //  clang-format on
+    // clang-format on
     return false;
   }
 
   return true;
+}
+
+double FRCRobotHW::getXmlRpcDouble(XmlRpc::XmlRpcValue& value) {
+  if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeDouble) {
+    return value;
+  }
+
+  if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeInt) {
+    return (int) value;
+  }
+
+  throw std::runtime_error("XmlRpcValue is not of type Double or Int!");
 }
 
 void FRCRobotHW::registerTransmissions() {
