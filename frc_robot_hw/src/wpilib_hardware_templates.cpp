@@ -35,22 +35,22 @@ namespace hardware_template {
 SimpleSpeedController::Type SimpleSpeedController::stringToType(const std::string& string) {
 
   // clang-format off
-  if (string == "dmc60")                return Type::DMC60;
-  else if (string == "jaguar")          return Type::Jaguar;
-  else if (string == "pwm_talon_srx")   return Type::PWMTalonSRX;
-  else if (string == "pwm_victor_spx")  return Type::PWMVictorSPX;
-  else if (string == "sd540")           return Type::SD540;
-  else if (string == "spark")           return Type::Spark;
-  else if (string == "talon")           return Type::Talon;
-  else if (string == "victor")          return Type::Victor;
-  else if (string == "victor_sp")       return Type::VictorSP;
-  else if (string == "nidec")           return Type::Nidec;
+  if (string == "dmc60")          return Type::DMC60;
+  if (string == "jaguar")         return Type::Jaguar;
+  if (string == "pwm_talon_srx")  return Type::PWMTalonSRX;
+  if (string == "pwm_victor_spx") return Type::PWMVictorSPX;
+  if (string == "sd540")          return Type::SD540;
+  if (string == "spark")          return Type::Spark;
+  if (string == "talon")          return Type::Talon;
+  if (string == "victor")         return Type::Victor;
+  if (string == "victor_sp")      return Type::VictorSP;
+  if (string == "nidec")          return Type::Nidec;
 #if USE_CTRE
-  else if (string == "can_victor_spx")  return Type::CANVictorSPX;
+  if (string == "can_victor_spx") return Type::CANVictorSPX;
 #endif
   // clang-format on
-  else
-    throw std::runtime_error("Invalid simple SpeedController type '" + string + "'.");
+
+  throw std::runtime_error("Invalid simple SpeedController type '" + string + "'.");
 }
 
 std::string SimpleSpeedController::typeToString(const SimpleSpeedController::Type& type) {
@@ -77,12 +77,12 @@ std::string SimpleSpeedController::typeToString(const SimpleSpeedController::Typ
 Relay::Direction Relay::stringToDirection(const std::string& string) {
 
   // clang-format off
-  if (string == "both")         return Direction::kBoth;
-  else if (string == "forward") return Direction::kForward;
-  else if (string == "reverse") return Direction::kReverse;
+  if (string == "both")     return Direction::kBoth;
+  if (string == "forward")  return Direction::kForward;
+  if (string == "reverse")  return Direction::kReverse;
   // clang-format on
-  else
-    throw std::runtime_error("Invalid relay direction '" + string + "', must be one of 'both', 'forward', 'reverse'.");
+
+  throw std::runtime_error("Invalid relay direction '" + string + "', must be one of 'both', 'forward', 'reverse'.");
 }
 
 std::string Relay::directionToString(const Relay::Direction& direction) {
