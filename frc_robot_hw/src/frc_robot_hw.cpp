@@ -471,17 +471,17 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
 hardware_template::PIDGains FRCRobotHW::parsePIDGains(XmlRpc::XmlRpcValue& value) {
   using XmlValue = XmlRpc::XmlRpcValue;
 
-  hardware_template::PIDGains gains = {};
-  gains.k_p = validateJointParamMember(value, "p", XmlValue::TypeDouble, false, true)
-                    ? getXmlRpcDouble(value["p"]) : 0.0;
-  gains.k_i = validateJointParamMember(value, "i", XmlValue::TypeDouble, false, true)
-                    ? getXmlRpcDouble(value["i"]) : 0.0;
-  gains.k_d = validateJointParamMember(value, "d", XmlValue::TypeDouble, false, true)
-                    ? getXmlRpcDouble(value["d"]) : 0.0;
-  gains.k_f = validateJointParamMember(value, "f", XmlValue::TypeDouble, false, true)
-                    ? getXmlRpcDouble(value["f"]) : 0.0;
+  hardware_template::PIDGains gains;
+  gains.k_p = validateJointParamMember(value, "p", XmlValue::TypeDouble, false, true) ? getXmlRpcDouble(value["p"])
+                                                                                      : 0.0;
+  gains.k_i = validateJointParamMember(value, "i", XmlValue::TypeDouble, false, true) ? getXmlRpcDouble(value["i"])
+                                                                                      : 0.0;
+  gains.k_d = validateJointParamMember(value, "d", XmlValue::TypeDouble, false, true) ? getXmlRpcDouble(value["d"])
+                                                                                      : 0.0;
+  gains.k_f = validateJointParamMember(value, "f", XmlValue::TypeDouble, false, true) ? getXmlRpcDouble(value["f"])
+                                                                                      : 0.0;
   gains.has_i_clamp = validateJointParamMember(value, "i_clamp", XmlValue::TypeDouble, false, true);
-  gains.i_clamp = gains.has_i_clamp ? getXmlRpcDouble(value["i_clamp"]) : 0.0;
+  gains.i_clamp     = gains.has_i_clamp ? getXmlRpcDouble(value["i_clamp"]) : 0.0;
 
   return gains;
 }
