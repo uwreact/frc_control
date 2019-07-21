@@ -62,6 +62,6 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 # Install plugin file
-install(FILES pdp_controller_plugins.xml
+install(FILES ${PROJECT_NAME}_plugins.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

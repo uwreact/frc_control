@@ -24,6 +24,6 @@
   <depend>std_msgs</depend>
 
   <export>
-    <controller_interface plugin="${prefix}/pdp_controller_plugins.xml"/>
+    <controller_interface plugin="${prefix}/pdp_state_controller_plugins.xml"/>
   </export>
 </package>
