@@ -73,8 +73,8 @@ void CompressorStateController::update(const ros::Time& time, const ros::Duratio
         last_publish_times_[i] = last_publish_times_[i] + ros::Duration(1.0 / publish_rate_);
 
         // Populate message
-        // Note: clang_tidy doesn't like implicit conversion from bool to ROS msg bools, since msg bools are implemented
-        // as uint8_t (readability-implicit-bool-conversion). We therefore disable linting on these lines.
+        // Note: clang-tidy doesn't like implicit conversion from bool to ROS msg bools, since ROS msg bools are
+        // implemented as uint8_t. Disable linting to prevent readability-implicit-bool-conversion warning
         realtime_pubs_[i]->msg_.header.stamp           = time;
         realtime_pubs_[i]->msg_.closed_loop            = compressor_states_[i].getClosedLoop();      // NOLINT
         realtime_pubs_[i]->msg_.enabled                = compressor_states_[i].getEnabled();         // NOLINT
