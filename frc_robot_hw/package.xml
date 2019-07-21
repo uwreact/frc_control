@@ -24,10 +24,11 @@
   <depend>tinyxml2</depend>
   <depend>urdf</depend>
 
-  <depend>frc_msgs</depend>
   <depend>analog_controller</depend>
   <depend>binary_controller</depend>
-  <depend>ternary_controller</depend>
+  <depend>compressor_controller</depend>
+  <depend>frc_msgs</depend>
   <depend>pdp_state_controller</depend>
+  <depend>ternary_controller</depend>
 
 </package>
