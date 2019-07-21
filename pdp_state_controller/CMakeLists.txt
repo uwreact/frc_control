@@ -6,7 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   controller_interface
   hardware_interface
   message_generation
-  message_runtime
   pluginlib
   realtime_tools
   roscpp
@@ -30,7 +29,6 @@ catkin_package(
    CATKIN_DEPENDS
     controller_interface
     hardware_interface
-    message_generation
     message_runtime
     pluginlib
     realtime_tools
@@ -47,6 +45,7 @@ include_directories(
 # Compile the plugin
 add_library(${PROJECT_NAME} src/pdp_state_controller.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_generate_messages_cpp)
 
 # Install headers
 install(DIRECTORY include/${PROJECT_NAME}/
