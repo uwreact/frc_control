@@ -50,9 +50,9 @@ public:
   AnalogCommandController() = default;
   ~AnalogCommandController() { sub_command_.shutdown(); }
 
-  bool init(hardware_interface::AnalogCommandInterface* hw, ros::NodeHandle& n) override;
-  void starting(const ros::Time& /*time*/) override;
-  void update(const ros::Time& /*time*/, const ros::Duration& /*period*/) override;
+  bool init(hardware_interface::AnalogCommandInterface* hw, ros::NodeHandle& nh) override;
+  void starting(const ros::Time& time) override;
+  void update(const ros::Time& time, const ros::Duration& period) override;
 
 private:
   hardware_interface::AnalogCommandHandle joint_;
