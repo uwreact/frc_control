@@ -16,14 +16,15 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>controller_interface</depend>
   <depend>hardware_interface</depend>
-  <depend>message_generation</depend>
-  <depend>message_runtime</depend>
   <depend>pluginlib</depend>
   <depend>realtime_tools</depend>
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
 
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
   <export>
-    <controller_interface plugin="${prefix}/pdp_controller_plugins.xml"/>
+    <controller_interface plugin="${prefix}/pdp_state_controller_plugins.xml"/>
   </export>
 </package>
