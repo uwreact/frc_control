@@ -371,12 +371,16 @@ Key|Type|Required?|Value/Description
 These objects do not specify a URDF sensor; they are YAML only.
 
 ## 1. Compressor
- - The current state is stored in a `BinaryStateHandle`, tracking whether the
-    compressor is in closed-loop control or not. **TODO: Implement custom
-    state, as with the PDP, to also track current pressure switch and
-    current draw**
+ - The current state is stored in a `CompressorStateHandle`, tracking:
+    - If closed-loop control is enabled
+    - If the compressor output is active
+    - If the pressure switch is triggered (pressure is low)
+    - Current draw
+    - If the output has been disabled due to high current draw
+    - If the output has been disabled due to a short circuit
+    - If the output does not appear to be wired
  - The next command (enable/disable closed-loop control) is stored in a
-    `BinaryCommandHandle`
+    `CompressorCommandHandle`
 #### YAML Syntax:
 Key|Type|Required?|Value/Description
 ---|----|---------|-----------------
