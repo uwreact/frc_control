@@ -30,19 +30,19 @@
 
 namespace analog_controller {
 
-bool AnalogCommandController::init(hardware_interface::AnalogCommandInterface* hw, ros::NodeHandle& n) {
+bool AnalogCommandController::init(hardware_interface::AnalogCommandInterface* hw, ros::NodeHandle& nh) {
   std::string joint_name;
-  if (!n.getParam("joint", joint_name)) {
-    ROS_ERROR("No joint given (namespace: %s)", n.getNamespace().c_str());
+  if (!nh.getParam("joint", joint_name)) {
+    ROS_ERROR("No joint given (namespace: %s)", nh.getNamespace().c_str());
     return false;
   }
   joint_ = hw->getHandle(joint_name);
 
-  if (!n.getParam("default", default_val_)) {
+  if (!nh.getParam("default", default_val_)) {
     default_val_ = 0.0;
   }
 
-  sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &AnalogCommandController::commandCallback, this);
+  sub_command_ = nh.subscribe<std_msgs::Float64>("command", 1, &AnalogCommandController::commandCallback, this);
   return true;
 }
 

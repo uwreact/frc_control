@@ -29,16 +29,16 @@
 #include <ternary_controller/ternary_command_controller.h>
 
 namespace ternary_controller {
-bool TernaryCommandController::init(hardware_interface::TernaryCommandInterface* hw, ros::NodeHandle& n) {
+bool TernaryCommandController::init(hardware_interface::TernaryCommandInterface* hw, ros::NodeHandle& nh) {
   std::string joint_name;
-  if (!n.getParam("joint", joint_name)) {
-    ROS_ERROR("No joint given (namespace: %s)", n.getNamespace().c_str());
+  if (!nh.getParam("joint", joint_name)) {
+    ROS_ERROR("No joint given (namespace: %s)", nh.getNamespace().c_str());
     return false;
   }
   joint_ = hw->getHandle(joint_name);
 
   int def;
-  if (!n.getParam("default", def)) {
+  if (!nh.getParam("default", def)) {
     def = 0;
   }
 
@@ -50,7 +50,7 @@ bool TernaryCommandController::init(hardware_interface::TernaryCommandInterface*
     default_val_ = TernaryState::kOff;
   }
 
-  sub_command_ = n.subscribe<std_msgs::Int8>("command", 1, &TernaryCommandController::commandCallback, this);
+  sub_command_ = nh.subscribe<std_msgs::Int8>("command", 1, &TernaryCommandController::commandCallback, this);
   return true;
 }
 
