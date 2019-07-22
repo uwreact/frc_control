@@ -1,6 +1,7 @@
 # frc_control
 
 [![Build Status](https://travis-ci.com/uwreact/frc_control.svg?branch=melodic-devel)](https://travis-ci.com/uwreact/frc_control)
+[![License](https://img.shields.io/github/license/uwreact/frc_control.svg)](LICENSE)
 
 A set of packages enabling FRC teams to use ROS on their robots.
 
