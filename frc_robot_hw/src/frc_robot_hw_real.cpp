@@ -469,9 +469,9 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     }
 
     simple_speed_controllers_[pair.first]     = std::move(controller);
-    simple_speed_controller_pids_[pair.first] = boost::make_unique<MultiPIDController>(pair.second.pos_gains,
-                                                                                       pair.second.vel_gains,
-                                                                                       pair.second.eff_gains);
+    simple_speed_controller_pids_[pair.first] = std::make_unique<MultiPIDController>(pair.second.pos_gains,
+                                                                                     pair.second.vel_gains,
+                                                                                     pair.second.eff_gains);
   }
 
   // Create smart SpeedControllers
