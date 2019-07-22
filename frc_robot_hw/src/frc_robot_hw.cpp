@@ -288,8 +288,14 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
 
+      std::string joint;
+      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true))
+        joint = (std::string) cur_joint["joint"];
+      else
+        joint = "none";  // TODO: Lookup in URDF
+
       digital_input_templates_[joint_name] = {
-          .joint    = "",  // TODO: Lookup in URDF
+          .joint    = joint,
           .id       = cur_joint["dio_channel"],
           .inverted = inverted,
       };
@@ -302,7 +308,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
       digital_output_templates_[joint_name] = {
           .joint    = "",
-          .id       = cur_joint["digital_output"],
+          .id       = cur_joint["dio_channel"],
           .inverted = inverted,
       };
     } else if (joint_type == "analog_input") {
@@ -311,8 +317,14 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
         continue;
 
+      std::string joint;
+      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true))
+        joint = (std::string) cur_joint["joint"];
+      else
+        joint = "none";  // TODO: Lookup in URDF
+
       analog_input_templates_[joint_name] = {
-          .joint  = "",  // TODO: Lookup in URDF
+          .joint  = joint,
           .id     = cur_joint["ain_channel"],
           .scale  = getXmlRpcDouble(cur_joint["scale"]),
           .offset = getXmlRpcDouble(cur_joint["offset"]),
@@ -323,14 +335,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
         continue;
 
-      std::string joint;
-      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true))
-        joint = (std::string) cur_joint["joint"];
-      else
-        joint = "none";
-
       analog_output_templates_[joint_name] = {
-          .joint  = joint,
+          .joint  = "",
           .id     = cur_joint["analog_channel"],
           .scale  = getXmlRpcDouble(cur_joint["scale"]),
           .offset = getXmlRpcDouble(cur_joint["offset"]),
@@ -369,7 +375,16 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .inverted           = inverted,
           .encoding           = encoding,
       };
+    } else if (joint_type == "built_in_accel") {
+      if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString))
+        continue;
+
+      built_in_accelerometer_templates_[joint_name] = {
+          .frame_id = cur_joint["frame_id"],
+      };
+      // TODO: Ensure only 1 built-in accelerometer is created
     }
+
 #if USE_KAUAI
     else if (joint_type == "navx") {
       if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString)
@@ -725,6 +740,20 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     }
   }
 
+  // Register a state handle for each built-in accelerometer
+  for (const auto& pair : built_in_accelerometer_templates_) {
+    ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for built-in accelerometer " << pair.first);
+    imu_sensor_interface_.registerHandle(
+        hardware_interface::ImuSensorHandle(pair.first,
+                                            pair.second.frame_id,
+                                            imu_states_[pair.first].orientation,
+                                            imu_states_[pair.first].orientation_covariance,
+                                            imu_states_[pair.first].angular_velocity,
+                                            imu_states_[pair.first].angular_velocity_covariance,
+                                            imu_states_[pair.first].linear_acceleration,
+                                            imu_states_[pair.first].linear_acceleration_covariance));
+  }
+
   // Register a state handle for each navX IMU
 #if USE_KAUAI
   for (const auto& pair : navx_templates_) {
@@ -770,15 +799,19 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
 #endif
 
 
-  // TODO: Register all interfaces
-
+  // Register all interfaces
   registerInterface(&joint_state_interface_);
+  registerInterface(&compressor_state_interface_);
+  registerInterface(&imu_sensor_interface_);
+  registerInterface(&pdp_state_interface_);
   registerInterface(&joint_position_command_interface_);
   registerInterface(&joint_velocity_command_interface_);
   registerInterface(&joint_effort_command_interface_);
   registerInterface(&joint_voltage_command_interface_);
-  registerInterface(&compressor_state_interface_);
+  registerInterface(&analog_command_interface_);
+  registerInterface(&binary_command_interface_);
   registerInterface(&compressor_command_interface_);
+  registerInterface(&ternary_command_interface_);
 
   return true;
 }
@@ -807,39 +840,56 @@ void FRCRobotHW::updateRobotState() {
   for (const auto& pair : analog_output_templates_) {
     joint_states_[pair.first].pos = rate_states_[pair.first].state;
     joint_states_[pair.first].vel = rate_states_[pair.first].rate;
-    joint_states_[pair.first].eff = 0;  // TODO: ???
+    joint_states_[pair.first].eff = 0.0;  // TODO: ???
   }
 
   // Convert DigitalOutput states
   for (const auto& pair : digital_output_templates_) {
-    if (binary_states_[pair.first])
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-    else
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
-    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0;  // TODO: ???
+    if (urdf_model_.getJoint(pair.first)) {
+      if (binary_states_[pair.first])
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
+      else
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+    } else {
+      joint_states_[pair.first].pos = binary_states_[pair.first] ? 1.0 : 0.0;
+    }
+    joint_states_[pair.first].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0.0;  // TODO: ???
   }
 
   // Convert DoubleSolenoid states
   for (const auto& pair : double_solenoid_templates_) {
-    if (ternary_states_[pair.first] == TernaryState::kForward)
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-    else if (ternary_states_[pair.first] == TernaryState::kReverse)
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
-    else {
+    if (urdf_model_.getJoint(pair.first)) {
+      if (ternary_states_[pair.first] == TernaryState::kForward)
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
+      else if (ternary_states_[pair.first] == TernaryState::kReverse)
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+      else {
+      }
+    } else {
+      if (ternary_states_[pair.first] == TernaryState::kForward)
+        joint_states_[pair.first].pos = 1.0;
+      else if (ternary_states_[pair.first] == TernaryState::kReverse)
+        joint_states_[pair.first].pos = 0.0;
+      else {
+      }
     }
-    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0;  // TODO: Pressure?
+    joint_states_[pair.first].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0.0;  // TODO: Pressure?
   }
 
   // Convert Solenoid states
   for (const auto& pair : solenoid_templates_) {
-    if (binary_states_[pair.first])
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-    else
-      joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
-    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0;  // TODO: Pressure?
+    if (urdf_model_.getJoint(pair.first)) {
+      if (binary_states_[pair.first])
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
+      else
+        joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+    } else {
+      joint_states_[pair.first].pos = binary_states_[pair.first] ? 1.0 : 0.0;
+    }
+    joint_states_[pair.first].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0.0;  // TODO: Pressure?
   }
 
   // =*=*=*= Convert pure sensors to JointStates =*=*=*=
@@ -850,8 +900,8 @@ void FRCRobotHW::updateRobotState() {
   for (const auto& pair : analog_input_templates_) {
     if (pair.second.joint == "none")
       continue;
-    joint_states_[pair.first].pos = rate_states_[pair.first].state;
-    joint_states_[pair.first].vel = rate_states_[pair.first].rate;
+    joint_states_[pair.second.joint].pos = rate_states_[pair.first].state;
+    joint_states_[pair.second.joint].vel = rate_states_[pair.first].rate;
     // Note: Don't set effort, since another sensor might
   }
 
@@ -859,11 +909,16 @@ void FRCRobotHW::updateRobotState() {
   for (const auto& pair : digital_input_templates_) {
     if (pair.second.joint == "none")
       continue;
-    if (binary_states_[pair.first])
-      joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->upper;
-    else
-      joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->lower;
-    joint_states_[pair.second.joint].vel = 0;  // Set vel to 0, since binary joints can have no speed
+
+    if (urdf_model_.getJoint(pair.second.joint)) {
+      if (binary_states_[pair.first])
+        joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->upper;
+      else
+        joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->lower;
+    } else {
+      joint_states_[pair.second.joint].pos = binary_states_[pair.first] ? 1.0 : 0.0;
+    }
+    joint_states_[pair.second.joint].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
     // Note: Don't set effort, since another sensor might
   }
 
@@ -871,8 +926,8 @@ void FRCRobotHW::updateRobotState() {
   for (const auto& pair : encoder_templates_) {
     if (pair.second.joint == "none")
       continue;
-    joint_states_[pair.first].pos = rate_states_[pair.first].state;
-    joint_states_[pair.first].vel = rate_states_[pair.first].rate;
+    joint_states_[pair.second.joint].pos = rate_states_[pair.first].state;
+    joint_states_[pair.second.joint].vel = rate_states_[pair.first].rate;
     // Note: Don't set effort, since another sensor might
   }
 
@@ -894,7 +949,7 @@ void FRCRobotHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& s
     for (const auto& claimed : controller.claimed_resources) {
       for (const auto& resource : claimed.resources) {
         joint_commands_[resource].type = JointCmd::Type::kNone;
-        joint_commands_[resource].data = 0;
+        joint_commands_[resource].data = 0.0;
       }
     }
   }

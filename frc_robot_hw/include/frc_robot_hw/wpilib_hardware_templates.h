@@ -250,6 +250,11 @@ struct Encoder {
   int         encoding;            ///< The encoding format. Must be 1, 2, or 4
 };
 
+struct BuiltInAccelerometer {
+  std::string frame_id;  ///< For TF2 TODO: Doc better
+  // TODO: Range? tbh not sure why this is a feature of the wpilib and if it's worth implementing
+};
+
 #if USE_KAUAI
 struct NavX {
   std::string interface;  ///< The interface on which the NavX is connected. Must be 'i2c', 'serial', or 'spi'

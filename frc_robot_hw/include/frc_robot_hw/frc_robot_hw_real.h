@@ -47,8 +47,10 @@
 #include <frc/Joystick.h>
 
 // WPILib & vendor sensors/actuators
+#include <frc/AnalogAccelerometer.h>
 #include <frc/AnalogInput.h>
 #include <frc/AnalogOutput.h>
+#include <frc/BuiltInAccelerometer.h>
 #include <frc/Compressor.h>
 #include <frc/DMC60.h>
 #include <frc/DigitalInput.h>
@@ -126,6 +128,7 @@ private:
 
   // Maps of the WPILib objects used to interact with the HAL
   // TODO: Probably can't have generic type for smart_speed_controllers_
+  // TODO: Once AnalogAccelerometer extends Accelerometer, merge arrays
   std::map<std::string, std::unique_ptr<frc::SpeedController>>        smart_speed_controllers_;
   std::map<std::string, std::unique_ptr<frc::SpeedController>>        simple_speed_controllers_;
   std::map<std::string, std::unique_ptr<MultiPIDController>>          simple_speed_controller_pids_;
@@ -140,6 +143,8 @@ private:
   std::map<std::string, std::unique_ptr<frc::AnalogInput>>            analog_inputs_;
   std::map<std::string, std::unique_ptr<frc::AnalogOutput>>           analog_outputs_;
   std::map<std::string, std::unique_ptr<frc::Encoder>>                encoders_;
+  std::map<std::string, std::unique_ptr<frc::Accelerometer>>          generic_accelerometers_;
+  std::map<std::string, std::unique_ptr<frc::AnalogAccelerometer>>    analog_accelerometers_;
 #if USE_KAUAI
   std::map<std::string, std::unique_ptr<AHRS>> navxs_;
 #endif

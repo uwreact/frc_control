@@ -57,6 +57,7 @@ void FRCRobotHWReal::runHAL() {
   }
 
   // Tell the DS that the robot is ready to be enabled ('Robot code ready')
+  ROS_INFO("Robot code ready");
   HAL_ObserveUserProgramStarting();
 
   frc::DriverStation& ds = frc::DriverStation::GetInstance();
@@ -300,6 +301,17 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                                            pair.second.ch_b,
                                                            pair.second.inverted,
                                                            encoding);
+    encoders_[pair.first]->SetDistancePerPulse(pair.second.distance_per_pulse);
+  }
+
+  // Create built-in accelerometers
+  for (const auto& pair : built_in_accelerometer_templates_) {
+    // clang-format off
+    ROS_DEBUG_STREAM_NAMED(name_, "Creating WPILib built-in accelerometer " << pair.first
+                                  << " with tf frame " << pair.second.frame_id); // Non-wpilib feature
+    // clang-format on
+
+    generic_accelerometers_[pair.first] = std::make_unique<frc::BuiltInAccelerometer>();
   }
 
   // Create navXs
@@ -457,9 +469,9 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     }
 
     simple_speed_controllers_[pair.first]     = std::move(controller);
-    simple_speed_controller_pids_[pair.first] = boost::make_unique<MultiPIDController>(pair.second.pos_gains,
-                                                                                       pair.second.vel_gains,
-                                                                                       pair.second.eff_gains);
+    simple_speed_controller_pids_[pair.first] = std::make_unique<MultiPIDController>(pair.second.pos_gains,
+                                                                                     pair.second.vel_gains,
+                                                                                     pair.second.eff_gains);
   }
 
   // Create smart SpeedControllers
@@ -565,6 +577,19 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     rate_states_[pair.first].rate  = pair.second->GetRate();      // Distance / second, scaled by distancePerPulse
   }
 
+  // Read current accelerometer states
+  for (const auto& pair : generic_accelerometers_) {
+
+    // Linear acceleration (X, Y, Z in m/s^2)
+    imu_states_[pair.first].linear_acceleration[0] = pair.second->GetX() * 9.81;
+    imu_states_[pair.first].linear_acceleration[1] = pair.second->GetY() * 9.81;
+    imu_states_[pair.first].linear_acceleration[2] = pair.second->GetZ() * 9.81;
+
+    // Angular velocity, orientation are not reported
+    imu_states_[pair.first].angular_velocity_covariance[0] = -1.0;
+    imu_states_[pair.first].orientation_covariance[0]      = -1.0;
+  }
+
   // Read current navX IMU states
 #if USE_KAUAI
   for (const auto& pair : navxs_) {
@@ -576,10 +601,11 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     // const double cur_heading = navx->GetFusedHeading() / 180.0 * M_PI + offset;
 
     // Linear acceleration (X, Y, Z in m/s^2)
-    // TODO: Determine if we should use this or getRawAccel. Might factor into gravity.
-    imu_states_[pair.first].linear_acceleration[0] = navx->GetWorldLinearAccelX() * 9.81;
-    imu_states_[pair.first].linear_acceleration[1] = navx->GetWorldLinearAccelY() * 9.81;
-    imu_states_[pair.first].linear_acceleration[2] = navx->GetWorldLinearAccelZ() * 9.81;
+    // NOTE: Use RawAccel rather than WorldLinearAccel in order to be REP0145 compliant.
+    //       RawAccel does not compensate for gravity or orientation.
+    imu_states_[pair.first].linear_acceleration[0] = navx->GetRawAccelX() * 9.81;
+    imu_states_[pair.first].linear_acceleration[1] = navx->GetRawAccelY() * 9.81;
+    imu_states_[pair.first].linear_acceleration[2] = navx->GetRawAccelZ() * 9.81;
 
     // Angular velocity (X,Y,Z in degrees per second)
     imu_states_[pair.first].angular_velocity[0] = navx->GetRawGyroX() / 180.0 * M_PI;
@@ -632,8 +658,8 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
   // Read current AnalogOutput states
   for (const auto& pair : analog_outputs_) {
     const auto& config             = analog_output_templates_[pair.first];
-    rate_states_[pair.first].state = pair.second->GetVoltage() * config.scale + config.offset;
-    rate_states_[pair.first].rate  = 0;
+    rate_states_[pair.first].state = pair.second->GetVoltage() / 5.0 * config.scale + config.offset;
+    rate_states_[pair.first].rate  = 0.0;
   }
 
   // Read current DigitalOutput states
@@ -688,8 +714,8 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
   // Read current Servo states
   for (const auto& pair : servos_) {
     joint_states_[pair.first].pos = pair.second->Get();  // TODO: Scale to degrees, etc
-    joint_states_[pair.first].vel = 0;
-    joint_states_[pair.first].eff = 0;
+    joint_states_[pair.first].vel = 0.0;
+    joint_states_[pair.first].eff = 0.0;
   }
 
   // Read current Solenoid states
@@ -735,7 +761,7 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
   // Write AnalogOutput commands
   for (const auto& pair : analog_outputs_) {
     const auto& config = analog_output_templates_[pair.first];
-    pair.second->SetVoltage((analog_commands_[pair.first] - config.offset) / config.scale);
+    pair.second->SetVoltage((analog_commands_[pair.first] - config.offset) / config.scale * 5.0);
   }
 
   // Write DigitalOutput commands
@@ -748,7 +774,7 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
   for (const auto& pair : double_solenoids_) {
     using Value = frc::DoubleSolenoid::Value;
     Value value;
-    switch (ternary_states_[pair.first]) {
+    switch (ternary_commands_[pair.first]) {
       case TernaryState::kOff:
         value = Value::kOff;
         break;
@@ -806,12 +832,15 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
         output = 0.0;
         break;
       case JointCmd::Type::kPos:
+        pid->setSetpoint(joint_commands_[pair.first].data);
         output = pid->getOutput(joint_states_[pair.first].pos);
         break;
       case JointCmd::Type::kVel:
+        pid->setSetpoint(joint_commands_[pair.first].data);
         output = pid->getOutput(joint_states_[pair.first].vel);
         break;
       case JointCmd::Type::kEff:
+        pid->setSetpoint(joint_commands_[pair.first].data);
         output = pid->getOutput(joint_states_[pair.first].eff);
         break;
       case JointCmd::Type::kVolt:
