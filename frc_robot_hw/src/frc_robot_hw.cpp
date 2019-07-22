@@ -187,14 +187,28 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
                               "PDP channel " << pdp_ch << " specified, but no PDP specified. "
                                              << "Please verify your configuration.");
 
+      bool has_pos_gains = validateJointParamMember(cur_joint, "position_gains", XmlValue::TypeStruct, false, true);
+      bool has_vel_gains = validateJointParamMember(cur_joint, "velocity_gains", XmlValue::TypeStruct, false, true);
+      bool has_eff_gains = validateJointParamMember(cur_joint, "effort_gains", XmlValue::TypeStruct, false, true);
+
+      PIDGains pos_gains = has_pos_gains ? parsePIDGains(cur_joint["position_gains"]) : PIDGains();
+      PIDGains vel_gains = has_vel_gains ? parsePIDGains(cur_joint["velocity_gains"]) : PIDGains();
+      PIDGains eff_gains = has_eff_gains ? parsePIDGains(cur_joint["effort_gains"]) : PIDGains();
+
       simple_speed_controller_templates_[joint_name] = {
-          .type     = type,
-          .id       = cur_joint["id"],
-          .dio_id   = dio_ch,
-          .inverted = inverted,
-          .pdp      = pdp,
-          .pdp_ch   = pdp_ch,
-          .k_eff    = k_eff,
+          .type          = type,
+          .id            = cur_joint["id"],
+          .dio_id        = dio_ch,
+          .inverted      = inverted,
+          .pdp           = pdp,
+          .pdp_ch        = pdp_ch,
+          .k_eff         = k_eff,
+          .pos_gains     = pos_gains,
+          .vel_gains     = vel_gains,
+          .eff_gains     = eff_gains,
+          .has_pos_gains = has_pos_gains,
+          .has_vel_gains = has_vel_gains,
+          .has_eff_gains = has_eff_gains,
       };
     } else if (joint_type == "pdp") {
       if (validateJointParamMember(cur_joint, "id", XmlValue::TypeInt, false, true)) {
@@ -454,6 +468,29 @@ bool FRCRobotHW::validateJointParamMember(XmlRpc::XmlRpcValue&             value
   return true;
 }
 
+hardware_template::PIDGains FRCRobotHW::parsePIDGains(XmlRpc::XmlRpcValue& value) {
+  using XmlValue = XmlRpc::XmlRpcValue;
+
+  hardware_template::PIDGains gains = {
+      .k_p = validateJointParamMember(value, "p", XmlValue::TypeDouble, false, true) ? getXmlRpcDouble(value["p"])
+                                                                                     : 0.0,
+      .k_i = validateJointParamMember(value, "i", XmlValue::TypeDouble, false, true) ? getXmlRpcDouble(value["i"])
+                                                                                     : 0.0,
+      .k_d = validateJointParamMember(value, "d", XmlValue::TypeDouble, false, true) ? getXmlRpcDouble(value["d"])
+                                                                                     : 0.0,
+      .k_f = validateJointParamMember(value, "f", XmlValue::TypeDouble, false, true) ? getXmlRpcDouble(value["f"])
+                                                                                     : 0.0,
+      .i_clamp     = 0.0,
+      .has_i_clamp = validateJointParamMember(value, "i_clamp", XmlValue::TypeDouble, false, true),
+  };
+
+  if (gains.has_i_clamp) {
+    gains.i_clamp = getXmlRpcDouble(value["i_clamp"]);
+  }
+
+  return gains;
+}
+
 double FRCRobotHW::getXmlRpcDouble(XmlRpc::XmlRpcValue& value) {
   if (value.getType() == XmlRpc::XmlRpcValue::Type::TypeDouble) {
     return value;
@@ -514,13 +551,18 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
                                                       &joint_states_[pair.first].eff);
     joint_state_interface_.registerHandle(state_handle);
 
-    // TODO: Only register pos, vel, effort cmds if the controller a) has a feedback device and b) has PID tunings
-    joint_position_command_interface_.registerHandle(
-        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
-    joint_velocity_command_interface_.registerHandle(
-        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
-    joint_effort_command_interface_.registerHandle(
-        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    // TODO: Only register pos, vel, effort handles if the controller has a feedback device?
+    if (pair.second.has_pos_gains)
+      joint_position_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+    if (pair.second.has_vel_gains)
+      joint_velocity_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+    if (pair.second.has_eff_gains)
+      joint_effort_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
     joint_voltage_command_interface_.registerHandle(
         hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
   }

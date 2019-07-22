@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2018, UW REACT
+// Copyright (C) 2019, UW REACT
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -143,7 +143,7 @@ public:
   virtual bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
   virtual void read(const ros::Time& time, const ros::Duration& period) override;
   virtual void write(const ros::Time& time, const ros::Duration& period) override;
-  void         doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+  virtual void doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
                         const std::list<hardware_interface::ControllerInfo>& stop_list) override;
 
   /// Enforce limits for all values before writing.
@@ -240,6 +240,8 @@ private:
                                 const XmlRpc::XmlRpcValue::Type& type,
                                 const bool                       warn_exist = true,
                                 const bool                       warn_type  = true);
+
+  hardware_template::PIDGains parsePIDGains(XmlRpc::XmlRpcValue& value);
 
   /**
    * @brief Get TypeInt and TypeDouble XmlRpcValues as doubles

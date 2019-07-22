@@ -455,7 +455,11 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
 #endif
         // clang-format on
     }
-    simple_speed_controllers_[pair.first] = std::move(controller);
+
+    simple_speed_controllers_[pair.first]     = std::move(controller);
+    simple_speed_controller_pids_[pair.first] = boost::make_unique<MultiPIDController>(pair.second.pos_gains,
+                                                                                       pair.second.vel_gains,
+                                                                                       pair.second.eff_gains);
   }
 
   // Create smart SpeedControllers
@@ -488,6 +492,46 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
   // TODO: Set robot_code_ready once all controllers are loaded
   robot_code_ready_ = true;
   return true;
+}
+
+void FRCRobotHWReal::doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+                              const std::list<hardware_interface::ControllerInfo>& stop_list) {
+
+  FRCRobotHW::doSwitch(start_list, stop_list);
+
+  using Mode = MultiPIDController::Mode;
+
+  // Disable PID for simple speed controllers claimed by stopping controllers
+  for (const auto& controller : stop_list) {
+    for (const auto& claimed : controller.claimed_resources) {
+      for (const auto& resource : claimed.resources) {
+        if (simple_speed_controller_pids_.find(resource) == simple_speed_controller_pids_.end())
+          continue;
+
+        simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+      }
+    }
+  }
+
+  // Set PID mode for simple speed controllers claimed by starting controllers
+  for (const auto& controller : start_list) {
+    for (const auto& claimed : controller.claimed_resources) {
+      for (const auto& resource : claimed.resources) {
+        if (simple_speed_controller_pids_.find(resource) == simple_speed_controller_pids_.end())
+          continue;
+
+        if (claimed.hardware_interface == "hardware_interface::PositionJointInterface") {
+          simple_speed_controller_pids_[resource]->setMode(Mode::position);
+        } else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
+          simple_speed_controller_pids_[resource]->setMode(Mode::velocity);
+        } else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
+          simple_speed_controller_pids_[resource]->setMode(Mode::effort);
+        } else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
+          simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+        }
+      }
+    }
+  }
 }
 
 void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
@@ -746,28 +790,31 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
   // Write SpeedController commands
   for (const auto& pair : simple_speed_controllers_) {
 
-    // Get the bus voltage
     const auto&  config = simple_speed_controller_templates_[pair.first];
+    const auto&  pid    = simple_speed_controller_pids_[pair.first];
     const double vbus   = pdp_states_[config.pdp].voltage;
 
-    // TODO: Need PIDs to convert cmd from pos/vel/eff to percent Vbus, unless in voltage mode
+    // Calculate the raw output value
+    double output = 0.0;
     switch (joint_commands_[pair.first].type) {
       case JointCmd::Type::kNone:
-        pair.second->Set(0);
+        output = 0.0;
         break;
       case JointCmd::Type::kPos:
-        ROS_WARN_ONCE_NAMED(name_, "Position control is not yet implemented");
+        output = pid->getOutput(joint_states_[pair.first].pos);
         break;
       case JointCmd::Type::kVel:
-        ROS_WARN_ONCE_NAMED(name_, "Velocity control is not yet implemented");
+        output = pid->getOutput(joint_states_[pair.first].vel);
         break;
       case JointCmd::Type::kEff:
-        ROS_WARN_ONCE_NAMED(name_, "Effort control is not yet implemented");
+        output = pid->getOutput(joint_states_[pair.first].eff);
         break;
       case JointCmd::Type::kVolt:
-        pair.second->Set(joint_commands_[pair.first].data / vbus);
+        output = joint_commands_[pair.first].data / vbus;
         break;
     }
+
+    pair.second->Set(output);
   }
 
   // Write smart SpeedController commands

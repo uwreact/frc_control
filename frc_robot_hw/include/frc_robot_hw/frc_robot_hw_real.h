@@ -28,6 +28,7 @@
 #pragma once
 
 #include <frc_robot_hw/frc_robot_hw.h>
+#include <frc_robot_hw/pid_controller.h>
 
 #include <thread>
 
@@ -105,6 +106,8 @@ public:
   bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) override;
   void read(const ros::Time& time, const ros::Duration& period) override;
   void write(const ros::Time& time, const ros::Duration& period) override;
+  void doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+                const std::list<hardware_interface::ControllerInfo>& stop_list) override;
 
   inline void setPublishRate(double rate) { publish_period_ = ros::Duration(1.0 / rate); }
 
@@ -125,6 +128,7 @@ private:
   // TODO: Probably can't have generic type for smart_speed_controllers_
   std::map<std::string, std::unique_ptr<frc::SpeedController>>        smart_speed_controllers_;
   std::map<std::string, std::unique_ptr<frc::SpeedController>>        simple_speed_controllers_;
+  std::map<std::string, std::unique_ptr<MultiPIDController>>          simple_speed_controller_pids_;
   std::map<std::string, std::unique_ptr<frc::PowerDistributionPanel>> pdps_;
   std::map<std::string, std::unique_ptr<frc::Servo>>                  servos_;
   std::map<std::string, std::unique_ptr<frc::Relay>>                  relays_;

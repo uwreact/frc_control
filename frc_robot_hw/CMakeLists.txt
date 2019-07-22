@@ -67,6 +67,7 @@ endif()
 add_library(${PROJECT_NAME}
   src/frc_robot_hw.cpp
   src/robot_control_loop.cpp
+  src/pid_controller.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
