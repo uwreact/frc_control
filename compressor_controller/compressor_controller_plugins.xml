@@ -1,0 +1,12 @@
+<library path="lib/libcompressor_controller">
+  <class name="compressor_controller/CompressorStateController" type="compressor_controller::CompressorStateController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Read info from the compressor
+    </description>
+  </class>
+  <class name="compressor_controller/CompressorCommandController" type="compressor_controller::CompressorCommandController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Command the compressor
+    </description>
+  </class>
+</library>

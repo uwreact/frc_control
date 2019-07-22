@@ -54,6 +54,7 @@
 // Custom
 #include <analog_controller/analog_command_interface.h>
 #include <binary_controller/binary_command_interface.h>
+#include <compressor_controller/compressor_command_interface.h>
 #include <pdp_state_controller/pdp_state_interface.h>
 #include <ternary_controller/ternary_command_interface.h>
 
@@ -70,8 +71,9 @@ protected:
 public:
   FRCRobotHW() : FRCRobotHW("frc_robot_hw") {}
 
-  using TernaryState = hardware_interface::TernaryStateHandle::TernaryState;
-  using PDPState     = hardware_interface::PDPStateHandle::PDPState;
+  using TernaryState    = hardware_interface::TernaryStateHandle::TernaryState;
+  using CompressorState = hardware_interface::CompressorStateHandle::CompressorState;
+  using PDPState        = hardware_interface::PDPStateHandle::PDPState;
 
   /// Joint feedback data
   struct JointState {
@@ -162,12 +164,13 @@ protected:
   const std::string name_;
 
   // Hardware state interfaces
-  hardware_interface::JointStateInterface   joint_state_interface_;
-  hardware_interface::PDPStateInterface     pdp_state_interface_;
-  hardware_interface::AnalogStateInterface  analog_state_interface_;
-  hardware_interface::BinaryStateInterface  binary_state_interface_;
-  hardware_interface::TernaryStateInterface ternary_state_interface_;
-  hardware_interface::ImuSensorInterface    imu_sensor_interface_;
+  hardware_interface::JointStateInterface      joint_state_interface_;
+  hardware_interface::ImuSensorInterface       imu_sensor_interface_;
+  hardware_interface::AnalogStateInterface     analog_state_interface_;
+  hardware_interface::BinaryStateInterface     binary_state_interface_;
+  hardware_interface::CompressorStateInterface compressor_state_interface_;
+  hardware_interface::PDPStateInterface        pdp_state_interface_;
+  hardware_interface::TernaryStateInterface    ternary_state_interface_;
 
   // Transmission interfaces
   // Convert actuator state to joint state
@@ -176,13 +179,14 @@ protected:
   // transmission_interface::JointToActuatorStateInterface jnt_to_act_state_interface_;
 
   // Hardware command iterfaces
-  hardware_interface::PositionJointInterface  joint_position_command_interface_;  // Position
-  hardware_interface::VelocityJointInterface  joint_velocity_command_interface_;  // Veloicty
-  hardware_interface::EffortJointInterface    joint_effort_command_interface_;    // Effort
-  hardware_interface::VoltageJointInterface   joint_voltage_command_interface_;   // Voltage (-12ish to 12ish)
-  hardware_interface::AnalogCommandInterface  analog_command_interface_;
-  hardware_interface::BinaryCommandInterface  binary_command_interface_;
-  hardware_interface::TernaryCommandInterface ternary_command_interface_;
+  hardware_interface::PositionJointInterface     joint_position_command_interface_;  // Position
+  hardware_interface::VelocityJointInterface     joint_velocity_command_interface_;  // Veloicty
+  hardware_interface::EffortJointInterface       joint_effort_command_interface_;    // Effort
+  hardware_interface::VoltageJointInterface      joint_voltage_command_interface_;   // Voltage (-12ish to 12ish)
+  hardware_interface::AnalogCommandInterface     analog_command_interface_;
+  hardware_interface::BinaryCommandInterface     binary_command_interface_;
+  hardware_interface::CompressorCommandInterface compressor_command_interface_;
+  hardware_interface::TernaryCommandInterface    ternary_command_interface_;
 
   // Sensors and actuator templates
   // TODO: Change servo_templates_ to struct containing scale?
@@ -219,19 +223,20 @@ protected:
 
   // States
   // std::map<std::string, JointState> actuator_states_;///< Transmission stuff
-  std::map<std::string, JointState>   joint_states_;    ///< State of SpeedControllers, (Servos???)
-  std::map<std::string, PDPState>     pdp_states_;      ///< State of PowerDistributionPanels
-  std::map<std::string, RateState>    rate_states_;     ///< State of AnalogInput/Outputs, Encoders, etc
-  std::map<std::string, bool>         binary_states_;   ///< State of DigitalInputs/Outputs, Solenoids, etc
-  std::map<std::string, TernaryState> ternary_states_;  ///< State of Relays, DoubleSolenoids, etc
-  std::map<std::string, ImuData>      imu_states_;      ///< State of IMUs such as PigeonIMU, NavX
+  std::map<std::string, JointState>      joint_states_;       ///< State of SpeedControllers, (Servos???)
+  std::map<std::string, ImuData>         imu_states_;         ///< State of IMUs such as PigeonIMU, NavX
+  std::map<std::string, bool>            binary_states_;      ///< State of DigitalInputs/Outputs, Solenoids, etc
+  std::map<std::string, CompressorState> compressor_states_;  ///< State of Compressors
+  std::map<std::string, PDPState>        pdp_states_;         ///< State of PowerDistributionPanels
+  std::map<std::string, RateState>       rate_states_;        ///< State of AnalogInput/Outputs, Encoders, etc
+  std::map<std::string, TernaryState>    ternary_states_;     ///< State of Relays, DoubleSolenoids, etc
 
   // Commands
   // TODO: Servos as Joint or Analog commands?
   // std::map<std::string, double> actuator_commands_;    ///< Transmission stuff
   std::map<std::string, JointCmd>     joint_commands_;    ///< Commands for SpeedControllers, Servos
   std::map<std::string, double>       analog_commands_;   ///< Commands for AnalogOutputs
-  std::map<std::string, bool>         binary_commands_;   ///< Commands for DigitalOutputs, Solenoids
+  std::map<std::string, bool>         binary_commands_;   ///< Commands for DigitalOutputs, Solenoids, Compressors
   std::map<std::string, TernaryState> ternary_commands_;  ///< Commands for Relays, DoubleSolenoids
 
 private:

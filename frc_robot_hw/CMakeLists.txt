@@ -14,9 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
 
   analog_controller
   binary_controller
+  compressor_controller
   frc_msgs
-  ternary_controller
   pdp_state_controller
+  ternary_controller
 )
 
 # Declare a catkin package
@@ -35,9 +36,10 @@ catkin_package(
 
     analog_controller
     binary_controller
+    compressor_controller
     frc_msgs
-    ternary_controller
     pdp_state_controller
+    ternary_controller
 )
 
 # Specify additional locations of header files

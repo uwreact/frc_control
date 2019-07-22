@@ -637,10 +637,10 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   // Register a command handle for each compressor
   for (const auto& pair : compressor_templates_) {
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for compressor " << pair.first);
-    hardware_interface::BinaryStateHandle state_handle(pair.first, &binary_states_[pair.first]);
-    binary_state_interface_.registerHandle(state_handle);
-    binary_command_interface_.registerHandle(
-        hardware_interface::BinaryCommandHandle(state_handle, &binary_commands_[pair.first]));
+    hardware_interface::CompressorStateHandle state_handle(pair.first, &compressor_states_[pair.first]);
+    compressor_state_interface_.registerHandle(state_handle);
+    compressor_command_interface_.registerHandle(
+        hardware_interface::CompressorCommandHandle(state_handle, &binary_commands_[pair.first]));
   }
 
   // Register a state handle for each digital input
@@ -777,6 +777,8 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   registerInterface(&joint_velocity_command_interface_);
   registerInterface(&joint_effort_command_interface_);
   registerInterface(&joint_voltage_command_interface_);
+  registerInterface(&compressor_state_interface_);
+  registerInterface(&compressor_command_interface_);
 
   return true;
 }

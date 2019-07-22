@@ -708,9 +708,14 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
   // =*=*=*=*=*=*=*= Misc =*=*=*=*=*=*=*=
 
   // Read current Compressor states
-  // TODO: Implement current, pressure switch feedback
   for (const auto& pair : compressors_) {
-    binary_states_[pair.first] = pair.second->GetClosedLoopControl();
+    compressor_states_[pair.first].closed_loop            = pair.second->GetClosedLoopControl();
+    compressor_states_[pair.first].enabled                = pair.second->Enabled();
+    compressor_states_[pair.first].pressure_switch        = pair.second->GetPressureSwitchValue();
+    compressor_states_[pair.first].current                = pair.second->GetCompressorCurrent();
+    compressor_states_[pair.first].fault_current_too_high = pair.second->GetCompressorCurrentTooHighFault();
+    compressor_states_[pair.first].fault_shorted          = pair.second->GetCompressorShortedFault();
+    compressor_states_[pair.first].fault_not_connected    = pair.second->GetCompressorNotConnectedFault();
   }
 
   // Read current PDP current draw states
