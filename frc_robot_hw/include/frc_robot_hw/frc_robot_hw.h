@@ -192,22 +192,22 @@ protected:
   // TODO: Change servo_templates_ to struct containing scale?
   // NOTE: built_in_accelerometer_templates_ should contain at max one element
   std::map<std::string, hardware_template::SmartSpeedController>  smart_speed_controller_templates_;
-  std::map<std::string, hardware_template::SimpleSpeedController> simple_speed_controller_templates_;  // Works
-  std::map<std::string, int>                                      pdp_templates_;                      // Works
+  std::map<std::string, hardware_template::SimpleSpeedController> simple_speed_controller_templates_;  // Verified
+  std::map<std::string, int>                                      pdp_templates_;                      // Verified
   std::map<std::string, int>                                      servo_templates_;                    // Untested
-  std::map<std::string, hardware_template::Relay>                 relay_templates_;                    // Works
-  std::map<std::string, hardware_template::Solenoid>              solenoid_templates_;                 // Works
-  std::map<std::string, hardware_template::DoubleSolenoid>        double_solenoid_templates_;          // Works
-  std::map<std::string, int>                                      compressor_templates_;               // Works
-  std::map<std::string, hardware_template::DigitalIO>             digital_input_templates_;            // Works
-  std::map<std::string, hardware_template::DigitalIO>             digital_output_templates_;           // Works
-  std::map<std::string, hardware_template::AnalogIO>              analog_input_templates_;             // Works
-  std::map<std::string, hardware_template::AnalogIO>              analog_output_templates_;            // Works
-  std::map<std::string, hardware_template::Encoder>               encoder_templates_;                  // Works
-  std::map<std::string, hardware_template::BuiltInAccelerometer>  built_in_accelerometer_templates_;   // Works
+  std::map<std::string, hardware_template::Relay>                 relay_templates_;                    // Verified
+  std::map<std::string, hardware_template::Solenoid>              solenoid_templates_;                 // Verified
+  std::map<std::string, hardware_template::DoubleSolenoid>        double_solenoid_templates_;          // Verified
+  std::map<std::string, int>                                      compressor_templates_;               // Verified
+  std::map<std::string, hardware_template::DigitalIO>             digital_input_templates_;            // Verified
+  std::map<std::string, hardware_template::DigitalIO>             digital_output_templates_;           // Verified
+  std::map<std::string, hardware_template::AnalogIO>              analog_input_templates_;             // Verified
+  std::map<std::string, hardware_template::AnalogIO>              analog_output_templates_;            // Verified
+  std::map<std::string, hardware_template::Encoder>               encoder_templates_;                  // Verified
+  std::map<std::string, hardware_template::BuiltInAccelerometer>  built_in_accelerometer_templates_;   // Verified
 // TODO: More IMUs! AnalogGyro, AnalogAccelerometer, ADXL/ADXR series
 #if USE_KAUAI
-  std::map<std::string, hardware_template::NavX> navx_templates_;  // Works
+  std::map<std::string, hardware_template::NavX> navx_templates_;  // Verified
 #endif
 #if USE_CTRE
   std::map<std::string, hardware_template::PigeonIMU> pigeon_templates_;  // Untested
