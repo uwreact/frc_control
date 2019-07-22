@@ -380,7 +380,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .inverted           = inverted,
           .encoding           = encoding,
       };
-    } else if (joint_type == "built_in_accel") {
+    }
+
+    // Built-In Accelerometer
+    else if (joint_type == "built_in_accel") {
       if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString))
         continue;
 
