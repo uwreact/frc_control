@@ -840,7 +840,7 @@ void FRCRobotHW::updateRobotState() {
   for (const auto& pair : analog_output_templates_) {
     joint_states_[pair.first].pos = rate_states_[pair.first].state;
     joint_states_[pair.first].vel = rate_states_[pair.first].rate;
-    joint_states_[pair.first].eff = 0;  // TODO: ???
+    joint_states_[pair.first].eff = 0.0;  // TODO: ???
   }
 
   // Convert DigitalOutput states
@@ -853,8 +853,8 @@ void FRCRobotHW::updateRobotState() {
     } else {
       joint_states_[pair.first].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
-    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0;  // TODO: ???
+    joint_states_[pair.first].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0.0;  // TODO: ???
   }
 
   // Convert DoubleSolenoid states
@@ -868,14 +868,14 @@ void FRCRobotHW::updateRobotState() {
       }
     } else {
       if (ternary_states_[pair.first] == TernaryState::kForward)
-        joint_states_[pair.first].pos = 1;
+        joint_states_[pair.first].pos = 1.0;
       else if (ternary_states_[pair.first] == TernaryState::kReverse)
-        joint_states_[pair.first].pos = 0;
+        joint_states_[pair.first].pos = 0.0;
       else {
       }
     }
-    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0;  // TODO: Pressure?
+    joint_states_[pair.first].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0.0;  // TODO: Pressure?
   }
 
   // Convert Solenoid states
@@ -888,8 +888,8 @@ void FRCRobotHW::updateRobotState() {
     } else {
       joint_states_[pair.first].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
-    joint_states_[pair.first].vel = 0;  // Set vel to 0, since binary joints can have no speed
-    joint_states_[pair.first].eff = 0;  // TODO: Pressure?
+    joint_states_[pair.first].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.first].eff = 0.0;  // TODO: Pressure?
   }
 
   // =*=*=*= Convert pure sensors to JointStates =*=*=*=
@@ -918,7 +918,7 @@ void FRCRobotHW::updateRobotState() {
     } else {
       joint_states_[pair.second.joint].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
-    joint_states_[pair.second.joint].vel = 0;  // Set vel to 0, since binary joints can have no speed
+    joint_states_[pair.second.joint].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
     // Note: Don't set effort, since another sensor might
   }
 
@@ -949,7 +949,7 @@ void FRCRobotHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& s
     for (const auto& claimed : controller.claimed_resources) {
       for (const auto& resource : claimed.resources) {
         joint_commands_[resource].type = JointCmd::Type::kNone;
-        joint_commands_[resource].data = 0;
+        joint_commands_[resource].data = 0.0;
       }
     }
   }

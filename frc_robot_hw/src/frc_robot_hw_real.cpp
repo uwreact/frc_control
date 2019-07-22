@@ -586,8 +586,8 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     imu_states_[pair.first].linear_acceleration[2] = pair.second->GetZ() * 9.81;
 
     // Angular velocity, orientation are not reported
-    imu_states_[pair.first].angular_velocity_covariance[0] = -1;
-    imu_states_[pair.first].orientation_covariance[0]      = -1;
+    imu_states_[pair.first].angular_velocity_covariance[0] = -1.0;
+    imu_states_[pair.first].orientation_covariance[0]      = -1.0;
   }
 
   // Read current navX IMU states
@@ -659,7 +659,7 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
   for (const auto& pair : analog_outputs_) {
     const auto& config             = analog_output_templates_[pair.first];
     rate_states_[pair.first].state = pair.second->GetVoltage() / 5.0 * config.scale + config.offset;
-    rate_states_[pair.first].rate  = 0;
+    rate_states_[pair.first].rate  = 0.0;
   }
 
   // Read current DigitalOutput states
@@ -714,8 +714,8 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
   // Read current Servo states
   for (const auto& pair : servos_) {
     joint_states_[pair.first].pos = pair.second->Get();  // TODO: Scale to degrees, etc
-    joint_states_[pair.first].vel = 0;
-    joint_states_[pair.first].eff = 0;
+    joint_states_[pair.first].vel = 0.0;
+    joint_states_[pair.first].eff = 0.0;
   }
 
   // Read current Solenoid states
