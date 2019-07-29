@@ -27,6 +27,8 @@
 
 #include <frc_robot_sim/frc_robot_hw_sim.h>
 
+#include <frc_robot_hw/wpilib_hardware_templates.h>
+
 namespace frc_robot_sim {
 
 bool FRCRobotHWSim::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
@@ -86,6 +88,18 @@ void FRCRobotHWSim::read(const ros::Time& /*time*/, const ros::Duration& /*perio
   }
 
   // TODO: Support DigitalInput, AnalogInput, IMUs
+
+  // Read current CANTalonSRX states
+#if USE_CTRE
+  for (const auto& pair : can_talon_srx_templates_) {
+    const auto& joint = model_->GetJoint(pair.first);
+    if (pair.second.feedback != frc_robot_hw::hardware_template::CANTalonSrx::FeedbackType::kNone) {
+      joint_states_[pair.first].pos = joint->Position();
+      joint_states_[pair.first].vel = joint->GetVelocity(0);
+    }
+    joint_states_[pair.first].eff = joint->GetForce(0);
+  }
+#endif
 }
 
 void FRCRobotHWSim::write(const ros::Time& /*time*/, const ros::Duration& /*period*/) {
@@ -157,6 +171,33 @@ void FRCRobotHWSim::write(const ros::Time& /*time*/, const ros::Duration& /*peri
   }
 
   // TODO: Support DigitalOutput, AnalogOutput, (Relay?)
+
+  // Write CANTalonSrx commands
+#if USE_CTRE
+  for (const auto& pair : can_talon_srx_templates_) {
+    const auto& joint = model_->GetJoint(pair.first);
+    switch (joint_commands_[pair.first].type) {
+      case JointCmd::Type::kPos:
+        joint->SetParam("fmax", 0, 0.0);
+        joint->SetPosition(0, joint_commands_[pair.first].data);
+        break;
+      case JointCmd::Type::kVel:
+        joint->SetParam("fmax", 0, 1000.0);
+        joint->SetParam("vel", 0, joint_commands_[pair.first].data);
+        break;
+      case JointCmd::Type::kEff:
+        joint->SetParam("fmax", 0, 0.0);
+        joint->SetForce(0, joint_commands_[pair.first].data);
+        break;
+      case JointCmd::Type::kVolt:
+        break;
+      case JointCmd::Type::kNone:
+        joint->SetForce(0, 0.0);
+        joint->SetParam("vel", 0, 0.0);
+        break;
+    }
+  }
+#endif
 }
 
 }  // namespace frc_robot_sim

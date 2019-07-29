@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(frc_robot_sim)
 
+# Optionally enable external vendor-specific libraries.
+option(CTRE "Use CTRE Phoenix library (eg. CAN-enabled TalonSRX and VictorSPX)" OFF)
+if (CTRE)
+  add_definitions(-DUSE_CTRE=1)
+endif()
+
+option(KAUAI "Use Kauai Labs NavX library" OFF)
+if (KAUAI)
+  add_definitions(-DUSE_KAUAI=1)
+endif()
+
 # Load catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS
   frc_robot_hw
