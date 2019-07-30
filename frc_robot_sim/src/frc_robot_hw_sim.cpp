@@ -32,8 +32,9 @@
 namespace frc_robot_sim {
 
 bool FRCRobotHWSim::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
-  if (!FRCRobotHW::init(root_nh, robot_hw_nh))
+  if (!FRCRobotHW::init(root_nh, robot_hw_nh)) {
     return false;  // NOLINT(readability-simplify-boolean-expr)
+  }
 
   // TODO: Any other require initialization
 
@@ -77,14 +78,8 @@ void FRCRobotHWSim::read(const ros::Time& /*time*/, const ros::Duration& /*perio
     const double mid   = (max - min) / 2.0 + min;
     const double pos   = joint->Position();
 
-    TernaryState state;
-    if (pos > mid)
-      state = TernaryState::kForward;
-    else
-      state = TernaryState::kReverse;
     // TODO: How to implement TernaryState::kOff? Not sure it's needed but would be nice for completeness
-
-    ternary_states_[pair.first] = state;
+    ternary_states_[pair.first] = (pos > mid) ? TernaryState::kForward : TernaryState::kReverse;
   }
 
   // TODO: Support DigitalInput, AnalogInput, IMUs
@@ -154,10 +149,11 @@ void FRCRobotHWSim::write(const ros::Time& /*time*/, const ros::Duration& /*peri
   for (const auto& pair : solenoid_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
     double      position;
-    if (binary_commands_[pair.first])
+    if (binary_commands_[pair.first]) {
       position = joint->UpperLimit();
-    else
+    } else {
       position = joint->LowerLimit();
+    }
     joint->SetPosition(0, position);
   }
 
@@ -165,12 +161,13 @@ void FRCRobotHWSim::write(const ros::Time& /*time*/, const ros::Duration& /*peri
   for (const auto& pair : double_solenoid_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
     double      position;
-    if (ternary_commands_[pair.first] == TernaryState::kForward)
+    if (ternary_commands_[pair.first] == TernaryState::kForward) {
       position = joint->UpperLimit();
-    else if (ternary_commands_[pair.first] == TernaryState::kReverse)
+    } else if (ternary_commands_[pair.first] == TernaryState::kReverse) {
       position = joint->LowerLimit();
-    else
+    } else {
       position = joint->Position();
+    }
     joint->SetPosition(0, position);
   }
 

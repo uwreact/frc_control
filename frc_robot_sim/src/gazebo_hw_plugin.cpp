@@ -49,10 +49,11 @@ void GazeboHWPlugin::Load(gazebo::physics::ModelPtr model, sdf::ElementPtr sdf) 
   }
 
   // Setup the node handle
-  if (sdf_->HasElement("robotNamespace"))
+  if (sdf_->HasElement("robotNamespace")) {
     robot_namespace_ = sdf_->Get<std::string>("robotNamespace");
-  else
+  } else {
     robot_namespace_ = parent_model_->GetName();  // Default namespace
+  }
   nh_ = ros::NodeHandle(robot_namespace_);
 
   // Setup the RobotHW
