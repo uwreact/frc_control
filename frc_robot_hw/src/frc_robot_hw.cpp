@@ -111,16 +111,18 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
     // Simple (no feedback) speed controllers
     if (is_simple_speed_controller) {
-      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
+      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt)) {
         continue;
+      }
 
       SimpleSpeedController::Type type = SimpleSpeedController::stringToType(joint_type);
 
       // Nidec additionally requires a dio channel
       int dio_ch = -1;
       if (type == SimpleSpeedController::Type::Nidec) {
-        if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
+        if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt)) {
           continue;
+        }
         dio_ch = cur_joint["dio_channel"];
       }
 
@@ -128,17 +130,15 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
                       && cur_joint["inverted"];
 
       // Can be "none" or the name of a PDP
-      std::string pdp;
-      if (validateJointParamMember(cur_joint, "pdp", XmlValue::TypeString, false, true))
+      std::string pdp = "none";
+      if (validateJointParamMember(cur_joint, "pdp", XmlValue::TypeString, false, true)) {
         pdp = (std::string) cur_joint["pdp"];
-      else
-        pdp = "none";
+      }
 
-      int pdp_ch;
-      if (validateJointParamMember(cur_joint, "pdp_ch", XmlValue::TypeInt, false, true))
+      int pdp_ch = -1;
+      if (validateJointParamMember(cur_joint, "pdp_ch", XmlValue::TypeInt, false, true)) {
         pdp_ch = cur_joint["pdp_ch"];
-      else
-        pdp_ch = -1;
+      }
 
       if (pdp_ch < -1 || pdp_ch > 15) {
         ROS_WARN_STREAM_NAMED(name_,
@@ -148,16 +148,16 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
         pdp_ch = -1;
       }
 
-      double k_eff;
-      if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true))
+      double k_eff = 1.0;
+      if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true)) {
         k_eff = getXmlRpcDouble(cur_joint["k_eff"]);
-      else
-        k_eff = 1.0;
+      }
 
-      if (pdp == "none" && pdp_ch != -1)
+      if (pdp == "none" && pdp_ch != -1) {
         ROS_WARN_STREAM_NAMED(name_,
                               "PDP channel " << pdp_ch << " specified, but no PDP specified. "
                                              << "Please verify your configuration.");
+      }
 
       bool has_pos_gains = validateJointParamMember(cur_joint, "position_gains", XmlValue::TypeStruct, false, true);
       bool has_vel_gains = validateJointParamMember(cur_joint, "velocity_gains", XmlValue::TypeStruct, false, true);
@@ -198,16 +198,18 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
     // Servo
     else if (joint_type == "servo") {
-      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
+      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt)) {
         continue;
+      }
       servo_templates_[joint_name] = cur_joint["id"];
     }
 
     // Relay
     else if (joint_type == "relay") {
       if (!validateJointParamMember(cur_joint, "relay_id", XmlValue::TypeInt)
-          || !validateJointParamMember(cur_joint, "direction", XmlValue::TypeString))
+          || !validateJointParamMember(cur_joint, "direction", XmlValue::TypeString)) {
         continue;
+      }
 
       using Direction = Relay::Direction;
       Direction direction;
@@ -228,14 +230,14 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
     // (Single) Solenoid
     else if (joint_type == "solenoid") {
-      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
+      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt)) {
         continue;
+      }
 
-      int pcm_id;
-      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
+      int pcm_id = 0;
+      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)) {
         pcm_id = cur_joint["pcm_id"];
-      else
-        pcm_id = 0;
+      }
 
       solenoid_templates_[joint_name] = {
           .id     = cur_joint["id"],
@@ -246,14 +248,14 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     // Double Solenoid
     else if (joint_type == "double_solenoid") {
       if (!validateJointParamMember(cur_joint, "forward_id", XmlValue::TypeInt)
-          || !validateJointParamMember(cur_joint, "reverse_id", XmlValue::TypeInt))
+          || !validateJointParamMember(cur_joint, "reverse_id", XmlValue::TypeInt)) {
         continue;
+      }
 
-      int pcm_id;
-      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
+      int pcm_id = 0;
+      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)) {
         pcm_id = cur_joint["pcm_id"];
-      else
-        pcm_id = 0;
+      }
 
       double_solenoid_templates_[joint_name] = {
           .forward_id = cur_joint["forward_id"],
@@ -264,28 +266,28 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
     // Compressor
     else if (joint_type == "compressor") {
-      int pcm_id;
-      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
+      int pcm_id = 0;
+      if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true)) {
         pcm_id = cur_joint["pcm_id"];
-      else
-        pcm_id = 0;
+      }
 
       compressor_templates_[joint_name] = pcm_id;
     }
 
     // Digital Input
     else if (joint_type == "digital_input") {
-      if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
+      if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt)) {
         continue;
+      }
 
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
 
-      std::string joint;
-      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true))
+      // TODO: If unspecified, lookup in URDF
+      std::string joint = "none";
+      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true)) {
         joint = (std::string) cur_joint["joint"];
-      else
-        joint = "none";  // TODO: Lookup in URDF
+      }
 
       digital_input_templates_[joint_name] = {
           .joint    = joint,
@@ -296,8 +298,9 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
     // Digital Output
     else if (joint_type == "digital_output") {
-      if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
+      if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt)) {
         continue;
+      }
 
       bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                       && cur_joint["inverted"];
@@ -313,14 +316,15 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     else if (joint_type == "analog_input") {
       if (!validateJointParamMember(cur_joint, "ain_channel", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble)
-          || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
+          || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble)) {
         continue;
+      }
 
-      std::string joint;
-      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true))
+      // TODO: If unspecified, lookup in URDF
+      std::string joint = "none";
+      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true)) {
         joint = (std::string) cur_joint["joint"];
-      else
-        joint = "none";  // TODO: Lookup in URDF
+      }
 
       analog_input_templates_[joint_name] = {
           .joint  = joint,
@@ -334,8 +338,9 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     else if (joint_type == "analog_output") {
       if (!validateJointParamMember(cur_joint, "aout_channel", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble)
-          || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
+          || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble)) {
         continue;
+      }
 
       analog_output_templates_[joint_name] = {
           .joint  = "",
@@ -349,16 +354,16 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     else if (joint_type == "encoder") {
       if (!validateJointParamMember(cur_joint, "ch_a", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "ch_b", XmlValue::TypeInt)
-          || !validateJointParamMember(cur_joint, "dist_per_pulse", XmlValue::TypeDouble))
+          || !validateJointParamMember(cur_joint, "dist_per_pulse", XmlValue::TypeDouble)) {
         continue;
+      }
 
       const bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
                             && cur_joint["inverted"];
-      int encoding;
-      if (validateJointParamMember(cur_joint, "encoding", XmlValue::TypeInt, false, true))
+      int encoding = 4;
+      if (validateJointParamMember(cur_joint, "encoding", XmlValue::TypeInt, false, true)) {
         encoding = cur_joint["encoding"];
-      else
-        encoding = 4;
+      }
 
       if (encoding != 1 && encoding != 2 && encoding != 4) {
         ROS_WARN_STREAM_NAMED(name_,
@@ -366,11 +371,11 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
         encoding = 4;
       }
 
-      std::string joint;
-      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true))
+      // TODO: If unspecified, lookup in URDF
+      std::string joint = "none";
+      if (validateJointParamMember(cur_joint, "joint", XmlValue::TypeString, false, true)) {
         joint = (std::string) cur_joint["joint"];
-      else
-        joint = "none";
+      }
 
       encoder_templates_[joint_name] = {
           .joint              = joint,
@@ -384,8 +389,9 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
     // Built-In Accelerometer
     else if (joint_type == "built_in_accel") {
-      if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString))
+      if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString)) {
         continue;
+      }
 
       built_in_accelerometer_templates_[joint_name] = {
           .frame_id = cur_joint["frame_id"],
@@ -399,8 +405,9 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     else if (joint_type == "navx") {
       if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString)
           || !validateJointParamMember(cur_joint, "interface", XmlValue::TypeString)
-          || !validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
+          || !validateJointParamMember(cur_joint, "id", XmlValue::TypeInt)) {
         continue;
+      }
 
       std::string interface = cur_joint["interface"];
       if (interface != "spi" && interface != "i2c" && interface != "serial") {
@@ -504,8 +511,9 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
 
     // Pigeon IMU
     else if (joint_type == "pigeon_imu") {
-      if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString))
+      if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString)) {
         continue;
+      }
 
       bool has_can_id     = validateJointParamMember(cur_joint, "id", XmlValue::TypeInt, false, true);
       bool has_talon_name = validateJointParamMember(cur_joint, "talon", XmlValue::TypeString, false, true);
@@ -662,17 +670,20 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     joint_state_interface_.registerHandle(state_handle);
 
     // TODO: Only register pos, vel, effort handles if the controller has a feedback device?
-    if (pair.second.has_pos_gains)
+    if (pair.second.has_pos_gains) {
       joint_position_command_interface_.registerHandle(
           hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    }
 
-    if (pair.second.has_vel_gains)
+    if (pair.second.has_vel_gains) {
       joint_velocity_command_interface_.registerHandle(
           hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    }
 
-    if (pair.second.has_eff_gains)
+    if (pair.second.has_eff_gains) {
       joint_effort_command_interface_.registerHandle(
           hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    }
 
     joint_voltage_command_interface_.registerHandle(
         hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
@@ -890,17 +901,20 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
 
     // TODO: Only register pos, vel, effort handles if the controller has a feedback device?
     if (pair.second.follow.empty()) {
-      if (pair.second.has_pos_gains)
+      if (pair.second.has_pos_gains) {
         joint_position_command_interface_.registerHandle(
             hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+      }
 
-      if (pair.second.has_vel_gains)
+      if (pair.second.has_vel_gains) {
         joint_velocity_command_interface_.registerHandle(
             hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+      }
 
-      if (pair.second.has_eff_gains)
+      if (pair.second.has_eff_gains) {
         joint_effort_command_interface_.registerHandle(
             hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+      }
 
       joint_voltage_command_interface_.registerHandle(
           hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
@@ -976,10 +990,11 @@ void FRCRobotHW::updateRobotState() {
   // Convert DigitalOutput states
   for (const auto& pair : digital_output_templates_) {
     if (urdf_model_.getJoint(pair.first)) {
-      if (binary_states_[pair.first])
+      if (binary_states_[pair.first]) {
         joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-      else
+      } else {
         joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+      }
     } else {
       joint_states_[pair.first].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
@@ -990,18 +1005,18 @@ void FRCRobotHW::updateRobotState() {
   // Convert DoubleSolenoid states
   for (const auto& pair : double_solenoid_templates_) {
     if (urdf_model_.getJoint(pair.first)) {
-      if (ternary_states_[pair.first] == TernaryState::kForward)
+      if (ternary_states_[pair.first] == TernaryState::kForward) {
         joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-      else if (ternary_states_[pair.first] == TernaryState::kReverse)
+      } else if (ternary_states_[pair.first] == TernaryState::kReverse) {
         joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
-      else {
+      } else {
       }
     } else {
-      if (ternary_states_[pair.first] == TernaryState::kForward)
+      if (ternary_states_[pair.first] == TernaryState::kForward) {
         joint_states_[pair.first].pos = 1.0;
-      else if (ternary_states_[pair.first] == TernaryState::kReverse)
+      } else if (ternary_states_[pair.first] == TernaryState::kReverse) {
         joint_states_[pair.first].pos = 0.0;
-      else {
+      } else {
       }
     }
     joint_states_[pair.first].vel = 0.0;  // Set vel to 0, since binary joints can have no speed
@@ -1011,10 +1026,11 @@ void FRCRobotHW::updateRobotState() {
   // Convert Solenoid states
   for (const auto& pair : solenoid_templates_) {
     if (urdf_model_.getJoint(pair.first)) {
-      if (binary_states_[pair.first])
+      if (binary_states_[pair.first]) {
         joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->upper;
-      else
+      } else {
         joint_states_[pair.first].pos = urdf_model_.getJoint(pair.first)->limits->lower;
+      }
     } else {
       joint_states_[pair.first].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
@@ -1028,8 +1044,9 @@ void FRCRobotHW::updateRobotState() {
 
   // Convert AnalogInput states
   for (const auto& pair : analog_input_templates_) {
-    if (pair.second.joint == "none")
+    if (pair.second.joint == "none") {
       continue;
+    }
     joint_states_[pair.second.joint].pos = rate_states_[pair.first].state;
     joint_states_[pair.second.joint].vel = rate_states_[pair.first].rate;
     // Note: Don't set effort, since another sensor might
@@ -1037,14 +1054,15 @@ void FRCRobotHW::updateRobotState() {
 
   // Convert DigitalInput states
   for (const auto& pair : digital_input_templates_) {
-    if (pair.second.joint == "none")
+    if (pair.second.joint == "none") {
       continue;
-
+    }
     if (urdf_model_.getJoint(pair.second.joint)) {
-      if (binary_states_[pair.first])
+      if (binary_states_[pair.first]) {
         joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->upper;
-      else
+      } else {
         joint_states_[pair.second.joint].pos = urdf_model_.getJoint(pair.second.joint)->limits->lower;
+      }
     } else {
       joint_states_[pair.second.joint].pos = binary_states_[pair.first] ? 1.0 : 0.0;
     }
@@ -1054,8 +1072,9 @@ void FRCRobotHW::updateRobotState() {
 
   // Convert Encoder states
   for (const auto& pair : encoder_templates_) {
-    if (pair.second.joint == "none")
+    if (pair.second.joint == "none") {
       continue;
+    }
     joint_states_[pair.second.joint].pos = rate_states_[pair.first].state;
     joint_states_[pair.second.joint].vel = rate_states_[pair.first].rate;
     // Note: Don't set effort, since another sensor might
@@ -1066,8 +1085,9 @@ void FRCRobotHW::updateRobotState() {
   for (const auto& pair : simple_speed_controller_templates_) {
     const auto& config = pair.second;
 
-    if (config.pdp != "none" && config.pdp_ch != -1)
+    if (config.pdp != "none" && config.pdp_ch != -1) {
       joint_states_[pair.first].eff = pdp_states_[config.pdp].current[config.pdp_ch] * config.k_eff;
+    }
   }
 }
 
