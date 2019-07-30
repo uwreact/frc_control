@@ -80,8 +80,9 @@ void PDPStateController::update(const ros::Time& time, const ros::Duration& /*pe
         realtime_pubs_[i]->msg_.total_power   = pdp_states_[i].getTotalPower();
         realtime_pubs_[i]->msg_.total_energy  = pdp_states_[i].getTotalEnergy();
 
-        for (unsigned channel = 0; channel < 16; channel++)
+        for (unsigned channel = 0; channel < 16; channel++) {
           realtime_pubs_[i]->msg_.current[channel] = pdp_states_[i].getCurrent(channel);
+        }
 
         // Publish data
         realtime_pubs_[i]->unlockAndPublish();
