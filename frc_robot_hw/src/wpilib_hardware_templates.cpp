@@ -35,18 +35,18 @@ namespace hardware_template {
 SimpleSpeedController::Type SimpleSpeedController::stringToType(const std::string& string) {
 
   // clang-format off
-  if (string == "dmc60")          return Type::DMC60;
-  if (string == "jaguar")         return Type::Jaguar;
-  if (string == "pwm_talon_srx")  return Type::PWMTalonSRX;
-  if (string == "pwm_victor_spx") return Type::PWMVictorSPX;
-  if (string == "sd540")          return Type::SD540;
-  if (string == "spark")          return Type::Spark;
-  if (string == "talon")          return Type::Talon;
-  if (string == "victor")         return Type::Victor;
-  if (string == "victor_sp")      return Type::VictorSP;
-  if (string == "nidec")          return Type::Nidec;
+  if (string == "dmc60")          {return Type::DMC60;}
+  if (string == "jaguar")         {return Type::Jaguar;}
+  if (string == "pwm_talon_srx")  {return Type::PWMTalonSRX;}
+  if (string == "pwm_victor_spx") {return Type::PWMVictorSPX;}
+  if (string == "sd540")          {return Type::SD540;}
+  if (string == "spark")          {return Type::Spark;}
+  if (string == "talon")          {return Type::Talon;}
+  if (string == "victor")         {return Type::Victor;}
+  if (string == "victor_sp")      {return Type::VictorSP;}
+  if (string == "nidec")          {return Type::Nidec;}
 #if USE_CTRE
-  if (string == "can_victor_spx") return Type::CANVictorSPX;
+  if (string == "can_victor_spx") {return Type::CANVictorSPX;}
 #endif
   // clang-format on
 
@@ -56,18 +56,18 @@ SimpleSpeedController::Type SimpleSpeedController::stringToType(const std::strin
 std::string SimpleSpeedController::typeToString(const SimpleSpeedController::Type& type) {
   switch (type) {
     // clang-format off
-    case Type::DMC60:         return "dmc60";
-    case Type::Jaguar:        return "jaguar";
-    case Type::PWMTalonSRX:   return "pwm_talon_srx";
-    case Type::PWMVictorSPX:  return "pwm_victor_spx";
-    case Type::SD540:         return "sd540";
-    case Type::Spark:         return "spark";
-    case Type::Talon:         return "talon";
-    case Type::Victor:        return "victor";
-    case Type::VictorSP:      return "victor_sp";
-    case Type::Nidec:         return "nidex";
+    case Type::DMC60:         {return "dmc60";}
+    case Type::Jaguar:        {return "jaguar";}
+    case Type::PWMTalonSRX:   {return "pwm_talon_srx";}
+    case Type::PWMVictorSPX:  {return "pwm_victor_spx";}
+    case Type::SD540:         {return "sd540";}
+    case Type::Spark:         {return "spark";}
+    case Type::Talon:         {return "talon";}
+    case Type::Victor:        {return "victor";}
+    case Type::VictorSP:      {return "victor_sp";}
+    case Type::Nidec:         {return "nidex";}
 #if USE_CTRE
-    case Type::CANVictorSPX:  return "can_victor_spx";
+    case Type::CANVictorSPX:  {return "can_victor_spx";}
 #endif
       // clang-format on
       // Note: No default case - Generates compile-time error if a case is missed
@@ -77,9 +77,9 @@ std::string SimpleSpeedController::typeToString(const SimpleSpeedController::Typ
 Relay::Direction Relay::stringToDirection(const std::string& string) {
 
   // clang-format off
-  if (string == "both")     return Direction::kBoth;
-  if (string == "forward")  return Direction::kForward;
-  if (string == "reverse")  return Direction::kReverse;
+  if (string == "both")     {return Direction::kBoth;}
+  if (string == "forward")  {return Direction::kForward;}
+  if (string == "reverse")  {return Direction::kReverse;}
   // clang-format on
 
   throw std::runtime_error("Invalid relay direction '" + string + "', must be one of 'both', 'forward', 'reverse'.");
@@ -88,9 +88,9 @@ Relay::Direction Relay::stringToDirection(const std::string& string) {
 std::string Relay::directionToString(const Relay::Direction& direction) {
   switch (direction) {
     // clang-format off
-    case Direction::kBoth:    return "both";
-    case Direction::kForward: return "forward";
-    case Direction::kReverse: return "reverse";
+    case Direction::kBoth:    {return "both";}
+    case Direction::kForward: {return "forward";}
+    case Direction::kReverse: {return "reverse";}
       // clang-format on
       // Note: No default case - Generates compile-time error if a case is missed
   }
