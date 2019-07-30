@@ -169,6 +169,7 @@ struct CANTalonSrx {
 
   int             id;                  ///< The CAN ID of the controller
   bool            inverted;            ///< Whether to invert the direction of the motor
+  std::string     follow;              ///< The name of another CANTalonSrx to follow, or empty for none
   FeedbackType    feedback;            ///< The type of feedback sensor attached to the Talon
   bool            feedback_inverted;   ///< Whether to invert the direction of the feedback sensor
   LimitSwitchMode forward_lim_switch;  ///< The mode of the forward limit switch

@@ -438,6 +438,12 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       bool fb_inverted = validateJointParamMember(cur_joint, "feedback_inverted", XmlValue::TypeBoolean, false, true)
                          && cur_joint["feedback_inverted"];
 
+      // Parse whether the Talon is in follow mode
+      std::string follow = "";
+      if (validateJointParamMember(cur_joint, "follow", XmlValue::TypeString, false, true)) {
+        follow = (std::string) cur_joint["follow"];
+      }
+
       // Parse the feedback type if valid, otherwise kNone
       CANTalonSrx::FeedbackType feedback = CANTalonSrx::FeedbackType::kNone;
       if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true)) {
@@ -481,6 +487,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       can_talon_srx_templates_[joint_name] = {
           .id                 = cur_joint["id"],
           .inverted           = inverted,
+          .follow             = follow,
           .feedback           = feedback,
           .feedback_inverted  = fb_inverted,
           .forward_lim_switch = forward_lim_switch,
@@ -882,20 +889,22 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     joint_state_interface_.registerHandle(state_handle);
 
     // TODO: Only register pos, vel, effort handles if the controller has a feedback device?
-    if (pair.second.has_pos_gains)
-      joint_position_command_interface_.registerHandle(
-          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    if (pair.second.follow.empty()) {
+      if (pair.second.has_pos_gains)
+        joint_position_command_interface_.registerHandle(
+            hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
 
-    if (pair.second.has_vel_gains)
-      joint_velocity_command_interface_.registerHandle(
-          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+      if (pair.second.has_vel_gains)
+        joint_velocity_command_interface_.registerHandle(
+            hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
 
-    if (pair.second.has_eff_gains)
-      joint_effort_command_interface_.registerHandle(
-          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+      if (pair.second.has_eff_gains)
+        joint_effort_command_interface_.registerHandle(
+            hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
 
-    joint_voltage_command_interface_.registerHandle(
-        hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+      joint_voltage_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    }
   }
 
   // Register a state handle for each Pigeon IMU

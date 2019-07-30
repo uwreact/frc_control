@@ -92,6 +92,10 @@ void FRCRobotHWSim::read(const ros::Time& /*time*/, const ros::Duration& /*perio
   // Read current CANTalonSRX states
 #if USE_CTRE
   for (const auto& pair : can_talon_srx_templates_) {
+    if (can_talon_srx_templates_[pair.first].follow != "") {
+      continue;
+    }
+
     const auto& joint = model_->GetJoint(pair.first);
     if (pair.second.feedback != frc_robot_hw::hardware_template::CANTalonSrx::FeedbackType::kNone) {
       joint_states_[pair.first].pos = joint->Position();
@@ -176,18 +180,19 @@ void FRCRobotHWSim::write(const ros::Time& /*time*/, const ros::Duration& /*peri
 #if USE_CTRE
   for (const auto& pair : can_talon_srx_templates_) {
     const auto& joint = model_->GetJoint(pair.first);
-    switch (joint_commands_[pair.first].type) {
+    const std::string& cmd_name = pair.second.follow.empty() ? pair.first : pair.second.follow;
+    switch (joint_commands_[cmd_name].type) {
       case JointCmd::Type::kPos:
         joint->SetParam("fmax", 0, 0.0);
-        joint->SetPosition(0, joint_commands_[pair.first].data);
+        joint->SetPosition(0, joint_commands_[cmd_name].data);
         break;
       case JointCmd::Type::kVel:
         joint->SetParam("fmax", 0, 1000.0);
-        joint->SetParam("vel", 0, joint_commands_[pair.first].data);
+        joint->SetParam("vel", 0, joint_commands_[cmd_name].data);
         break;
       case JointCmd::Type::kEff:
         joint->SetParam("fmax", 0, 0.0);
-        joint->SetForce(0, joint_commands_[pair.first].data);
+        joint->SetForce(0, joint_commands_[cmd_name].data);
         break;
       case JointCmd::Type::kVolt:
         break;

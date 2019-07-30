@@ -535,6 +535,14 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
     }
   }
 
+  // Setup CANTalonSRX followers
+  for (const auto& pair : can_talon_srx_templates_) {
+    if (!pair.second.follow.empty()) {
+      ROS_DEBUG_STREAM_NAMED(name_, "Setting CANTalonSrx " << pair.first << " to follow " << pair.second.follow);
+      can_talon_srxs_[pair.first]->Follow(*can_talon_srxs_[pair.second.follow]);
+    }
+  }
+
 #endif
 
   // =*=*=*=*=*=*=*= Misc =*=*=*=*=*=*=*=
@@ -805,6 +813,10 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
 
   // Read current CANTalonSRX states
   for (const auto& pair : can_talon_srxs_) {
+    if (!can_talon_srx_templates_[pair.first].follow.empty()) {
+      continue;
+    }
+
     if (can_talon_srx_templates_[pair.first].feedback != hardware_template::CANTalonSrx::FeedbackType::kNone) {
       joint_states_[pair.first].pos = pair.second->GetSelectedSensorPosition();
       joint_states_[pair.first].vel = pair.second->GetSelectedSensorVelocity() / 10.0;  // Units/100ms to units/sec
@@ -947,6 +959,10 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
   // Write CANTalonSrx commands
   for (const auto& pair : can_talon_srxs_) {
     using ctre::phoenix::motorcontrol::ControlMode;
+
+    if (!can_talon_srx_templates_[pair.first].follow.empty()) {
+      continue;
+    }
 
     switch (joint_commands_[pair.first].type) {
       case JointCmd::Type::kNone:
