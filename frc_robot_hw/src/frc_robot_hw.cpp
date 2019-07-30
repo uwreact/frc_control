@@ -439,7 +439,7 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
                          && cur_joint["feedback_inverted"];
 
       // Parse whether the Talon is in follow mode
-      std::string follow = "";
+      std::string follow;
       if (validateJointParamMember(cur_joint, "follow", XmlValue::TypeString, false, true)) {
         follow = (std::string) cur_joint["follow"];
       }

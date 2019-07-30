@@ -92,7 +92,7 @@ void FRCRobotHWSim::read(const ros::Time& /*time*/, const ros::Duration& /*perio
   // Read current CANTalonSRX states
 #if USE_CTRE
   for (const auto& pair : can_talon_srx_templates_) {
-    if (can_talon_srx_templates_[pair.first].follow != "") {
+    if (!can_talon_srx_templates_[pair.first].follow.empty()) {
       continue;
     }
 
@@ -179,8 +179,8 @@ void FRCRobotHWSim::write(const ros::Time& /*time*/, const ros::Duration& /*peri
   // Write CANTalonSrx commands
 #if USE_CTRE
   for (const auto& pair : can_talon_srx_templates_) {
-    const auto& joint = model_->GetJoint(pair.first);
-    const std::string& cmd_name = pair.second.follow.empty() ? pair.first : pair.second.follow;
+    const auto& joint    = model_->GetJoint(pair.first);
+    const auto& cmd_name = pair.second.follow.empty() ? pair.first : pair.second.follow;
     switch (joint_commands_[cmd_name].type) {
       case JointCmd::Type::kPos:
         joint->SetParam("fmax", 0, 0.0);
