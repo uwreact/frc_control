@@ -38,8 +38,9 @@ public:
 
     // Load RobotHW and controller manager
     robot_hw_ = std::make_unique<FRCRobotHWReal>();
-    if (!init())
+    if (!init()) {
       throw std::runtime_error("Failed to initialize RobotHW");
+    }
 
     // Get current time for use with first update
     ros::ros_steadytime(last_update_time_.sec, last_update_time_.nsec);

@@ -87,13 +87,15 @@ void FRCRobotHWReal::runHAL() {
         stick.header.stamp = time;
 
         stick.axes.resize(ds.GetStickAxisCount(i));
-        for (unsigned axis = 0; axis < ds.GetStickAxisCount(i); axis++)
+        for (unsigned axis = 0; axis < ds.GetStickAxisCount(i); axis++) {
           stick.axes[axis] = ds.GetStickAxis(i, axis);
+        }
 
         // Note: Buttons, unlike axes, are indexed from 1 rather than 0
         stick.buttons.resize(ds.GetStickButtonCount(i));
-        for (unsigned button = 0; button < ds.GetStickButtonCount(i); button++)
+        for (unsigned button = 0; button < ds.GetStickButtonCount(i); button++) {
           stick.buttons[button] = ds.GetStickButton(i, button + 1);
+        }
 
         // TODO(matt.reynolds): Ensure POV hat is covered. If not, append it to buttons[] and axes[] or add new array
         // See https://github.com/uwreact/frc_control/issues/51
@@ -149,16 +151,17 @@ void FRCRobotHWReal::runHAL() {
       ds_mode_pub_.msg_.header.stamp = time;
 
       // TODO(matt.reynolds): Estop
-      if (ds.IsDisabled())
+      if (ds.IsDisabled()) {
         ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_DISABLED;
-      else if (ds.IsOperatorControl())
+      } else if (ds.IsOperatorControl()) {
         ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_OPERATOR;
-      else if (ds.IsAutonomous())
+      } else if (ds.IsAutonomous()) {
         ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_AUTONOMOUS;
-      else if (ds.IsTest())
+      } else if (ds.IsTest()) {
         ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_TEST;
-      else
+      } else {
         ds_mode_pub_.msg_.mode = frc_msgs::DriverStationMode::MODE_DISABLED;
+      }
 
       ds_mode_pub_.msg_.is_ds_attached  = ds.IsDSAttached();
       ds_mode_pub_.msg_.is_fms_attached = ds.IsFMSAttached();
@@ -234,11 +237,13 @@ void FRCRobotHWReal::joyFeedbackCallback(const frc_msgs::JoyFeedbackConstPtr& ms
 
 // Setup HAL interaction. Create WPILib objects for each specified sensor and actuator.
 bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
-  if (!FRCRobotHW::init(root_nh, robot_hw_nh))
+  if (!FRCRobotHW::init(root_nh, robot_hw_nh)) {
     return false;
+  }
 
-  if (!initHAL())
+  if (!initHAL()) {
     return false;
+  }
 
   double publish_freq;
   robot_hw_nh.param("frc_msg_publish_frequency", publish_freq, 10.0);
@@ -290,12 +295,13 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                   << " and inverted " << pair.second.inverted);
     // clang-format on
     frc::CounterBase::EncodingType encoding;
-    if (pair.second.encoding == 1)
+    if (pair.second.encoding == 1) {
       encoding = frc::CounterBase::EncodingType::k1X;
-    else if (pair.second.encoding == 2)
+    } else if (pair.second.encoding == 2) {
       encoding = frc::CounterBase::EncodingType::k2X;
-    else
+    } else {
       encoding = frc::CounterBase::EncodingType::k4X;
+    }
 
     encoders_[pair.first] = std::make_unique<frc::Encoder>(pair.second.ch_a,
                                                            pair.second.ch_b,
@@ -324,12 +330,13 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                   << " with tf frame " << pair.second.frame_id); // Non-wpilib feature
     // clang-format on
 
-    if (pair.second.interface == "i2c")
+    if (pair.second.interface == "i2c") {
       navxs_[pair.first] = std::make_unique<AHRS>((frc::I2C::Port) pair.second.id);
-    else if (pair.second.interface == "serial")
+    } else if (pair.second.interface == "serial") {
       navxs_[pair.first] = std::make_unique<AHRS>((frc::SerialPort::Port) pair.second.id);
-    else
+    } else {
       navxs_[pair.first] = std::make_unique<AHRS>((frc::SPI::Port) pair.second.id);
+    }
   }
 #endif
 
@@ -778,19 +785,20 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     using Direction = hardware_template::Relay::Direction;
 
     Value value = pair.second->Get();
-    if (value == Value::kOff)
+    if (value == Value::kOff) {
       ternary_states_[pair.first] = TernaryState::kOff;
-    else if (value == Value::kForward)
+    } else if (value == Value::kForward) {
       ternary_states_[pair.first] = TernaryState::kForward;
-    else if (value == Value::kReverse)
+    } else if (value == Value::kReverse) {
       ternary_states_[pair.first] = TernaryState::kReverse;
+    }
 
     // We cannot get direction of relay from WPILib, so instead fetch from template
-    else if (value == Value::kOn && relay_templates_[pair.first].direction == Direction::kForward)
+    else if (value == Value::kOn && relay_templates_[pair.first].direction == Direction::kForward) {
       ternary_states_[pair.first] = TernaryState::kForward;
-    else if (value == Value::kOn && relay_templates_[pair.first].direction == Direction::kReverse)
+    } else if (value == Value::kOn && relay_templates_[pair.first].direction == Direction::kReverse) {
       ternary_states_[pair.first] = TernaryState::kReverse;
-    else {
+    } else {
       ROS_ERROR_STREAM_NAMED(name_, "Error: Unexpected state kOn on bidirectional relay! Setting state to kOff");
       ternary_states_[pair.first]   = TernaryState::kOff;
       ternary_commands_[pair.first] = TernaryState::kOff;
