@@ -54,14 +54,18 @@ bool MultiPIDController::setMode(Mode mode) {
 }
 
 bool MultiPIDController::setMode(const std::string& mode) {
-  if (mode == "disabled" || mode == "Disabled")
+  if (mode == "disabled" || mode == "Disabled") {
     return setMode(Mode::disabled);
-  if (mode == "position" || mode == "Position")
+  }
+  if (mode == "position" || mode == "Position") {
     return setMode(Mode::position);
-  if (mode == "velocity" || mode == "Velocity")
+  }
+  if (mode == "velocity" || mode == "Velocity") {
     return setMode(Mode::velocity);
-  if (mode == "effort" || mode == "Effort")
+  }
+  if (mode == "effort" || mode == "Effort") {
     return setMode(Mode::effort);
+  }
   return false;
 }
 
@@ -77,8 +81,9 @@ void MultiPIDController::setSetpoint(float setpoint) {
 }
 
 void MultiPIDController::update(float input) {
-  if (mode_ == Mode::disabled)
+  if (mode_ == Mode::disabled) {
     return;
+  }
 
   float error = setpoint_ - input;
 
@@ -97,10 +102,11 @@ void MultiPIDController::update(float input) {
 
   // Calculate integral term
   integral_ += cur_gains_->k_i * error * step.toSec();
-  if (cur_gains_->has_i_clamp && integral_ > cur_gains_->i_clamp)
+  if (cur_gains_->has_i_clamp && integral_ > cur_gains_->i_clamp) {
     integral_ = cur_gains_->i_clamp;
-  else if (cur_gains_->has_i_clamp && integral_ < -cur_gains_->i_clamp)
+  } else if (cur_gains_->has_i_clamp && integral_ < -cur_gains_->i_clamp) {
     integral_ = -cur_gains_->i_clamp;
+  }
 
   // Calculate output
   float ff_term = cur_gains_->k_f * setpoint_;  // TODO: Plus intercept
@@ -114,9 +120,7 @@ void MultiPIDController::update(float input) {
 }
 
 float MultiPIDController::getOutput() const {
-  if (mode_ == Mode::disabled)
-    return 0.0;
-  return output_;
+  return (mode_ == Mode::disabled) ? 0.0 : output_;
 }
 
 float MultiPIDController::getOutput(float input) {
