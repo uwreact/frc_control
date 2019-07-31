@@ -218,7 +218,6 @@ def test_catkin_lint():
 
     ret = subprocess.call(['catkin_lint', '.', '--resolve-env', '-W1', '--quiet', '--strict', '--package-path', parent])
     if ret != 0:
-        print(ret)
         print('catkin_lint failed!')
         return 1
 

@@ -14,7 +14,7 @@ env:
   global:
 
     # Run linters and style checks
-    - CATKIN_CONFIG='-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+    - CATKIN_CONFIG="-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
     - AFTER_SCRIPT="source /root/catkin_ws/install/setup.bash; cd /root/catkin_ws/src/frc_control; ./scripts/run_linters.py"
   matrix:
     - ROS_DISTRO="melodic"   ROS_REPO="ros"
