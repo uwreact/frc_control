@@ -68,6 +68,7 @@ endif()
 # Compile the standard, generic base classes for both sim and real
 add_library(${PROJECT_NAME}
   src/frc_robot_hw.cpp
+  src/wpilib_hardware_templates.cpp
   src/robot_control_loop.cpp
   src/pid_controller.cpp
 )

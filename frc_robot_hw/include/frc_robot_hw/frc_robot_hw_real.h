@@ -127,9 +127,7 @@ private:
   void joyFeedbackCallback(const frc_msgs::JoyFeedbackConstPtr& msg);
 
   // Maps of the WPILib objects used to interact with the HAL
-  // TODO: Probably can't have generic type for smart_speed_controllers_
   // TODO: Once AnalogAccelerometer extends Accelerometer, merge arrays
-  std::map<std::string, std::unique_ptr<frc::SpeedController>>        smart_speed_controllers_;
   std::map<std::string, std::unique_ptr<frc::SpeedController>>        simple_speed_controllers_;
   std::map<std::string, std::unique_ptr<MultiPIDController>>          simple_speed_controller_pids_;
   std::map<std::string, std::unique_ptr<frc::PowerDistributionPanel>> pdps_;
@@ -149,7 +147,8 @@ private:
   std::map<std::string, std::unique_ptr<AHRS>> navxs_;
 #endif
 #if USE_CTRE
-  std::map<std::string, std::unique_ptr<ctre::phoenix::sensors::PigeonIMU>> pigeons_;
+  std::map<std::string, std::unique_ptr<ctre::phoenix::motorcontrol::can::WPI_TalonSRX>> can_talon_srxs_;
+  std::map<std::string, std::unique_ptr<ctre::phoenix::sensors::PigeonIMU>>              pigeons_;
 #endif
 
   std::thread hal_thread_;

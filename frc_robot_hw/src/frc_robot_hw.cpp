@@ -101,14 +101,6 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     // Get the type of the joint
     const std::string joint_type = cur_joint["type"];
 
-    bool is_smart_speed_controller;
-    try {
-      SmartSpeedController::stringToType(joint_type);
-      is_smart_speed_controller = true;
-    } catch (const std::runtime_error& e) {
-      is_smart_speed_controller = false;
-    }
-
     bool is_simple_speed_controller;
     try {
       SimpleSpeedController::stringToType(joint_type);
@@ -117,28 +109,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       is_simple_speed_controller = false;
     }
 
-    // Depending on the type of joint, parse the data further and store the config in a template
-    if (is_smart_speed_controller) {
-      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
-        continue;
-
-      bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
-                      && cur_joint["inverted"];
-
-
-      // Can be "none", "internal", or another feedback device (eg. analog, encoder)
-      std::string feedback;
-      if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true))
-        feedback = (std::string) cur_joint["feedback"];
-      else
-        feedback = "none";
-
-      smart_speed_controller_templates_[joint_name] = {
-          .type     = SmartSpeedController::stringToType(joint_type),
-          .id       = cur_joint["id"],
-          .inverted = inverted,
-      };
-    } else if (is_simple_speed_controller) {
+    // Simple (no feedback) speed controllers
+    if (is_simple_speed_controller) {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
 
@@ -210,7 +182,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .has_vel_gains = has_vel_gains,
           .has_eff_gains = has_eff_gains,
       };
-    } else if (joint_type == "pdp") {
+    }
+
+    // Power Distribution Panel
+    else if (joint_type == "pdp") {
       if (validateJointParamMember(cur_joint, "id", XmlValue::TypeInt, false, true)) {
         pdp_templates_[joint_name] = cur_joint["id"];
       } else {
@@ -219,11 +194,17 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
                                                                                                      << "'");
         pdp_templates_[joint_name] = 0;
       }
-    } else if (joint_type == "servo") {
+    }
+
+    // Servo
+    else if (joint_type == "servo") {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
       servo_templates_[joint_name] = cur_joint["id"];
-    } else if (joint_type == "relay") {
+    }
+
+    // Relay
+    else if (joint_type == "relay") {
       if (!validateJointParamMember(cur_joint, "relay_id", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "direction", XmlValue::TypeString))
         continue;
@@ -243,7 +224,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id        = cur_joint["relay_id"],
           .direction = direction,
       };
-    } else if (joint_type == "solenoid") {
+    }
+
+    // (Single) Solenoid
+    else if (joint_type == "solenoid") {
       if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt))
         continue;
 
@@ -257,7 +241,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id     = cur_joint["id"],
           .pcm_id = pcm_id,
       };
-    } else if (joint_type == "double_solenoid") {
+    }
+
+    // Double Solenoid
+    else if (joint_type == "double_solenoid") {
       if (!validateJointParamMember(cur_joint, "forward_id", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "reverse_id", XmlValue::TypeInt))
         continue;
@@ -273,7 +260,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .reverse_id = cur_joint["reverse_id"],
           .pcm_id     = pcm_id,
       };
-    } else if (joint_type == "compressor") {
+    }
+
+    // Compressor
+    else if (joint_type == "compressor") {
       int pcm_id;
       if (validateJointParamMember(cur_joint, "pcm_id", XmlValue::TypeInt, false, true))
         pcm_id = cur_joint["pcm_id"];
@@ -281,7 +271,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
         pcm_id = 0;
 
       compressor_templates_[joint_name] = pcm_id;
-    } else if (joint_type == "digital_input") {
+    }
+
+    // Digital Input
+    else if (joint_type == "digital_input") {
       if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
         continue;
 
@@ -299,7 +292,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id       = cur_joint["dio_channel"],
           .inverted = inverted,
       };
-    } else if (joint_type == "digital_output") {
+    }
+
+    // Digital Output
+    else if (joint_type == "digital_output") {
       if (!validateJointParamMember(cur_joint, "dio_channel", XmlValue::TypeInt))
         continue;
 
@@ -311,7 +307,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .id       = cur_joint["dio_channel"],
           .inverted = inverted,
       };
-    } else if (joint_type == "analog_input") {
+    }
+
+    // Analog Input
+    else if (joint_type == "analog_input") {
       if (!validateJointParamMember(cur_joint, "ain_channel", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble)
           || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
@@ -329,7 +328,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .scale  = getXmlRpcDouble(cur_joint["scale"]),
           .offset = getXmlRpcDouble(cur_joint["offset"]),
       };
-    } else if (joint_type == "analog_output") {
+    }
+
+    // Analog Output
+    else if (joint_type == "analog_output") {
       if (!validateJointParamMember(cur_joint, "aout_channel", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "scale", XmlValue::TypeDouble)
           || !validateJointParamMember(cur_joint, "offset", XmlValue::TypeDouble))
@@ -341,7 +343,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .scale  = getXmlRpcDouble(cur_joint["scale"]),
           .offset = getXmlRpcDouble(cur_joint["offset"]),
       };
-    } else if (joint_type == "encoder") {
+    }
+
+    // Encoder
+    else if (joint_type == "encoder") {
       if (!validateJointParamMember(cur_joint, "ch_a", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "ch_b", XmlValue::TypeInt)
           || !validateJointParamMember(cur_joint, "dist_per_pulse", XmlValue::TypeDouble))
@@ -375,7 +380,10 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
           .inverted           = inverted,
           .encoding           = encoding,
       };
-    } else if (joint_type == "built_in_accel") {
+    }
+
+    // Built-In Accelerometer
+    else if (joint_type == "built_in_accel") {
       if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString))
         continue;
 
@@ -386,6 +394,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
     }
 
 #if USE_KAUAI
+
+    // NavX MXP
     else if (joint_type == "navx") {
       if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString)
           || !validateJointParamMember(cur_joint, "interface", XmlValue::TypeString)
@@ -407,7 +417,92 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       };
     }
 #endif
+
 #if USE_CTRE
+
+    // CAN Talon SRX smart (feedback) speed controller
+    else if (joint_type == "can_talon_srx") {
+
+      // Ensure the required parameters are specified
+      if (!validateJointParamMember(cur_joint, "id", XmlValue::TypeInt)) {
+        continue;
+      }
+
+      using hardware_template::CANTalonSrx;
+      const auto& feedback_bimap   = CANTalonSrx::FEEDBACK_TYPE_BIMAP.right;
+      const auto& lim_switch_bimap = CANTalonSrx::LIMIT_SWITCH_MODE_BIMAP.right;
+
+      // Parse inverted states if valid, otherwise false
+      bool inverted = validateJointParamMember(cur_joint, "inverted", XmlValue::TypeBoolean, false, true)
+                      && cur_joint["inverted"];
+      bool fb_inverted = validateJointParamMember(cur_joint, "feedback_inverted", XmlValue::TypeBoolean, false, true)
+                         && cur_joint["feedback_inverted"];
+
+      // Parse whether the Talon is in follow mode
+      std::string follow;
+      if (validateJointParamMember(cur_joint, "follow", XmlValue::TypeString, false, true)) {
+        follow = (std::string) cur_joint["follow"];
+      }
+
+      // Parse the feedback type if valid, otherwise kNone
+      CANTalonSrx::FeedbackType feedback = CANTalonSrx::FeedbackType::kNone;
+      if (validateJointParamMember(cur_joint, "feedback", XmlValue::TypeString, false, true)) {
+        if (feedback_bimap.count((std::string) cur_joint["feedback"]) > 0) {
+          feedback = feedback_bimap.at((std::string) cur_joint["feedback"]);
+        }
+      }
+
+      // Parse the forward limit switch mode if valid, otherwise use kNone
+      CANTalonSrx::LimitSwitchMode forward_lim_switch = CANTalonSrx::LimitSwitchMode::kNone;
+      if (validateJointParamMember(cur_joint, "forward_lim_switch", XmlValue::TypeString, false, true)) {
+        if (lim_switch_bimap.count((std::string) cur_joint["forward_lim_switch"]) > 0) {
+          forward_lim_switch = lim_switch_bimap.at((std::string) cur_joint["forward_lim_switch"]);
+        }
+      }
+
+      // Parse the reverse limit switch mode if valid, otherwise use kNone
+      CANTalonSrx::LimitSwitchMode reverse_lim_switch = CANTalonSrx::LimitSwitchMode::kNone;
+      if (validateJointParamMember(cur_joint, "reverse_lim_switch", XmlValue::TypeString, false, true)) {
+        if (lim_switch_bimap.count((std::string) cur_joint["reverse_lim_switch"]) > 0) {
+          reverse_lim_switch = lim_switch_bimap.at((std::string) cur_joint["reverse_lim_switch"]);
+        }
+      }
+
+      // Parse effort multiplier if valid, otherwise use 1.0
+      double k_eff = 1.0;
+      if (validateJointParamMember(cur_joint, "k_eff", XmlValue::TypeDouble, false, true)) {
+        k_eff = getXmlRpcDouble(cur_joint["k_eff"]);
+      }
+
+      // Check if PID gains are specified
+      bool has_pos_gains = validateJointParamMember(cur_joint, "position_gains", XmlValue::TypeStruct, false, true);
+      bool has_vel_gains = validateJointParamMember(cur_joint, "velocity_gains", XmlValue::TypeStruct, false, true);
+      bool has_eff_gains = validateJointParamMember(cur_joint, "effort_gains", XmlValue::TypeStruct, false, true);
+
+      // Parse available PID gains
+      PIDGains pos_gains = has_pos_gains ? parsePIDGains(cur_joint["position_gains"]) : PIDGains();
+      PIDGains vel_gains = has_vel_gains ? parsePIDGains(cur_joint["velocity_gains"]) : PIDGains();
+      PIDGains eff_gains = has_eff_gains ? parsePIDGains(cur_joint["effort_gains"]) : PIDGains();
+
+      can_talon_srx_templates_[joint_name] = {
+          .id                 = cur_joint["id"],
+          .inverted           = inverted,
+          .follow             = follow,
+          .feedback           = feedback,
+          .feedback_inverted  = fb_inverted,
+          .forward_lim_switch = forward_lim_switch,
+          .reverse_lim_switch = reverse_lim_switch,
+          .k_eff              = k_eff,
+          .pos_gains          = pos_gains,
+          .vel_gains          = vel_gains,
+          .eff_gains          = eff_gains,
+          .has_pos_gains      = has_pos_gains,
+          .has_vel_gains      = has_vel_gains,
+          .has_eff_gains      = has_eff_gains,
+      };
+    }
+
+    // Pigeon IMU
     else if (joint_type == "pigeon_imu") {
       if (!validateJointParamMember(cur_joint, "frame_id", XmlValue::TypeString))
         continue;
@@ -439,6 +534,8 @@ void FRCRobotHW::loadJoints(const ros::NodeHandle& nh, const std::string& param_
       };
     }
 #endif
+
+    // Unknown joint type!
     else {
       ROS_WARN_STREAM_NAMED(name_,
                             "Skipping malformed joint, invalid type '" << joint_type << "': '" << cur_joint << "'");
@@ -551,8 +648,6 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   // and any KEY additional information, eg. cross-references interfaces. We do not need to print out additional joint
   // configuration information such as ID, inverted, etc. This data is irrelevant to the state interfaces.
 
-  // TODO: Register handles for smart_motor_controllers
-
   // Register a command handle for each simple motor controller
   for (const auto& pair : simple_speed_controller_templates_) {
     // clang-format off
@@ -578,6 +673,7 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
     if (pair.second.has_eff_gains)
       joint_effort_command_interface_.registerHandle(
           hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
     joint_voltage_command_interface_.registerHandle(
         hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
   }
@@ -754,8 +850,9 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
                                             imu_states_[pair.first].linear_acceleration_covariance));
   }
 
-  // Register a state handle for each navX IMU
 #if USE_KAUAI
+
+  // Register a state handle for each navX IMU
   for (const auto& pair : navx_templates_) {
     // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for navX-MXP IMU " << pair.first
@@ -776,8 +873,41 @@ bool FRCRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   }
 #endif
 
-  // Register a state handle for each Pigeon IMU
 #if USE_CTRE
+
+  // Register a command handle for each CANTalonSRX
+  for (const auto& pair : can_talon_srx_templates_) {
+    // clang-format off
+    ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for CANTalonSrx " << pair.first
+                                  << " with id " << pair.second.id
+                                  << " with inverted " << pair.second.inverted);
+    // clang-format on
+    hardware_interface::JointStateHandle state_handle(pair.first,
+                                                      &joint_states_[pair.first].pos,
+                                                      &joint_states_[pair.first].vel,
+                                                      &joint_states_[pair.first].eff);
+    joint_state_interface_.registerHandle(state_handle);
+
+    // TODO: Only register pos, vel, effort handles if the controller has a feedback device?
+    if (pair.second.follow.empty()) {
+      if (pair.second.has_pos_gains)
+        joint_position_command_interface_.registerHandle(
+            hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+      if (pair.second.has_vel_gains)
+        joint_velocity_command_interface_.registerHandle(
+            hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+      if (pair.second.has_eff_gains)
+        joint_effort_command_interface_.registerHandle(
+            hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+
+      joint_voltage_command_interface_.registerHandle(
+          hardware_interface::JointHandle(state_handle, &(joint_commands_[pair.first].data)));
+    }
+  }
+
+  // Register a state handle for each Pigeon IMU
   for (const auto& pair : pigeon_templates_) {
     // clang-format off
     ROS_DEBUG_STREAM_NAMED(name_, "Registering interface for Pigeon IMU " << pair.first

@@ -474,9 +474,76 @@ bool FRCRobotHWReal::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh
                                                                                      pair.second.eff_gains);
   }
 
-  // Create smart SpeedControllers
-  // TODO
 
+#if USE_CTRE
+
+  // Create CANTalonSRXs
+  for (const auto& pair : can_talon_srx_templates_) {
+    // clang-format off
+    ROS_DEBUG_STREAM_NAMED(name_, "Creating CANTalonSrx " << pair.first
+                                  << " on channel " << pair.second.id
+                                  << " w/ inverted=" << pair.second.inverted);
+    // clang-format on
+
+    using ctre::phoenix::motorcontrol::FeedbackDevice;
+    using ctre::phoenix::motorcontrol::can::WPI_TalonSRX;
+
+    // Create the object
+    can_talon_srxs_[pair.first] = std::make_unique<WPI_TalonSRX>(pair.second.id);
+    can_talon_srxs_[pair.first]->SetInverted(pair.second.inverted);
+    can_talon_srxs_[pair.first]->SetSensorPhase(pair.second.feedback_inverted);
+
+    // Load position PID gains
+    can_talon_srxs_[pair.first]->Config_kP(0, pair.second.pos_gains.k_p);
+    can_talon_srxs_[pair.first]->Config_kI(0, pair.second.pos_gains.k_i);
+    can_talon_srxs_[pair.first]->Config_kD(0, pair.second.pos_gains.k_d);
+    can_talon_srxs_[pair.first]->Config_kF(0, pair.second.pos_gains.k_f);
+    can_talon_srxs_[pair.first]->ConfigMaxIntegralAccumulator(0, pair.second.pos_gains.i_clamp);
+
+    // Load velocity PID gains
+    can_talon_srxs_[pair.first]->Config_kP(1, pair.second.vel_gains.k_p);
+    can_talon_srxs_[pair.first]->Config_kI(1, pair.second.vel_gains.k_i);
+    can_talon_srxs_[pair.first]->Config_kD(1, pair.second.vel_gains.k_d);
+    can_talon_srxs_[pair.first]->Config_kF(1, pair.second.vel_gains.k_f);
+    can_talon_srxs_[pair.first]->ConfigMaxIntegralAccumulator(1, pair.second.vel_gains.i_clamp);
+
+    // Load effort PID gains
+    can_talon_srxs_[pair.first]->Config_kP(1, pair.second.eff_gains.k_p);
+    can_talon_srxs_[pair.first]->Config_kI(1, pair.second.eff_gains.k_i);
+    can_talon_srxs_[pair.first]->Config_kD(1, pair.second.eff_gains.k_d);
+    can_talon_srxs_[pair.first]->Config_kF(1, pair.second.eff_gains.k_f);
+    can_talon_srxs_[pair.first]->ConfigMaxIntegralAccumulator(1, pair.second.eff_gains.i_clamp);
+
+    // Select the sensor
+    switch (pair.second.feedback) {
+      case hardware_template::CANTalonSrx::FeedbackType::kQuadEncoder:
+        can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder);
+        break;
+      case hardware_template::CANTalonSrx::FeedbackType::kAnalog:
+        can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::Analog);
+        break;
+      case hardware_template::CANTalonSrx::FeedbackType::kTachometer:
+        can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::Tachometer);
+        break;
+      case hardware_template::CANTalonSrx::FeedbackType::kPulseWidth:
+        can_talon_srxs_[pair.first]->ConfigSelectedFeedbackSensor(FeedbackDevice::PulseWidthEncodedPosition);
+        break;
+      case hardware_template::CANTalonSrx::FeedbackType::kNone:
+        // No built-in feedback
+        // TODO: Support this case
+        break;
+    }
+  }
+
+  // Setup CANTalonSRX followers
+  for (const auto& pair : can_talon_srx_templates_) {
+    if (!pair.second.follow.empty()) {
+      ROS_DEBUG_STREAM_NAMED(name_, "Setting CANTalonSrx " << pair.first << " to follow " << pair.second.follow);
+      can_talon_srxs_[pair.first]->Follow(*can_talon_srxs_[pair.second.follow]);
+    }
+  }
+
+#endif
 
   // =*=*=*=*=*=*=*= Misc =*=*=*=*=*=*=*=
 
@@ -513,34 +580,53 @@ void FRCRobotHWReal::doSwitch(const std::list<hardware_interface::ControllerInfo
 
   using Mode = MultiPIDController::Mode;
 
-  // Disable PID for simple speed controllers claimed by stopping controllers
+  // Disable PID for speed controllers claimed by stopping controllers
   for (const auto& controller : stop_list) {
     for (const auto& claimed : controller.claimed_resources) {
       for (const auto& resource : claimed.resources) {
-        if (simple_speed_controller_pids_.find(resource) == simple_speed_controller_pids_.end())
-          continue;
+        if (simple_speed_controller_pids_.find(resource) != simple_speed_controller_pids_.end()) {
+          simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+        }
 
-        simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+#if USE_CTRE
+        else if (can_talon_srxs_.find(resource) != can_talon_srxs_.end()) {
+          // Do nothing
+        }
+#endif
       }
     }
   }
 
-  // Set PID mode for simple speed controllers claimed by starting controllers
+  // Set PID mode for speed controllers claimed by starting controllers
   for (const auto& controller : start_list) {
     for (const auto& claimed : controller.claimed_resources) {
       for (const auto& resource : claimed.resources) {
-        if (simple_speed_controller_pids_.find(resource) == simple_speed_controller_pids_.end())
-          continue;
-
-        if (claimed.hardware_interface == "hardware_interface::PositionJointInterface") {
-          simple_speed_controller_pids_[resource]->setMode(Mode::position);
-        } else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
-          simple_speed_controller_pids_[resource]->setMode(Mode::velocity);
-        } else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
-          simple_speed_controller_pids_[resource]->setMode(Mode::effort);
-        } else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
-          simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+        if (simple_speed_controller_pids_.find(resource) != simple_speed_controller_pids_.end()) {
+          if (claimed.hardware_interface == "hardware_interface::PositionJointInterface") {
+            simple_speed_controller_pids_[resource]->setMode(Mode::position);
+          } else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
+            simple_speed_controller_pids_[resource]->setMode(Mode::velocity);
+          } else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
+            simple_speed_controller_pids_[resource]->setMode(Mode::effort);
+          } else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
+            simple_speed_controller_pids_[resource]->setMode(Mode::disabled);
+          }
         }
+
+
+#if USE_CTRE
+        else if (can_talon_srxs_.find(resource) != can_talon_srxs_.end()) {
+          if (claimed.hardware_interface == "hardware_interface::PositionJointInterface") {
+            can_talon_srxs_[resource]->SelectProfileSlot(0, 0);
+          } else if (claimed.hardware_interface == "hardware_interface::VelocityJointInterface") {
+            can_talon_srxs_[resource]->SelectProfileSlot(1, 0);
+          } else if (claimed.hardware_interface == "hardware_interface::EffortJointInterface") {
+            can_talon_srxs_[resource]->SelectProfileSlot(2, 0);
+          } else if (claimed.hardware_interface == "hardware_interface::VoltageJointInterface") {
+            // Do nothing
+          }
+        }
+#endif
       }
     }
   }
@@ -723,10 +809,22 @@ void FRCRobotHWReal::read(const ros::Time& time, const ros::Duration& period) {
     binary_states_[pair.first] = pair.second->Get();
   }
 
-  // Read current smart SpeedController states
-  // for (const auto& pair : smart_speed_controllers_) {
-  //   // TODO
-  // }
+#if USE_CTRE
+
+  // Read current CANTalonSRX states
+  for (const auto& pair : can_talon_srxs_) {
+    if (!can_talon_srx_templates_[pair.first].follow.empty()) {
+      continue;
+    }
+
+    if (can_talon_srx_templates_[pair.first].feedback != hardware_template::CANTalonSrx::FeedbackType::kNone) {
+      joint_states_[pair.first].pos = pair.second->GetSelectedSensorPosition();
+      joint_states_[pair.first].vel = pair.second->GetSelectedSensorVelocity() / 10.0;  // Units/100ms to units/sec
+    }
+    joint_states_[pair.first].eff = pair.second->GetOutputCurrent() * can_talon_srx_templates_[pair.first].k_eff;
+  }
+#endif
+
 
   // Notice we don't read from the simple_speed_controllers, since they have no feedback.
   // We rely on merging other sensors together to form the JointState
@@ -851,15 +949,41 @@ void FRCRobotHWReal::write(const ros::Time& time, const ros::Duration& period) {
     pair.second->Set(output);
   }
 
-  // Write smart SpeedController commands
-  // for (const auto& pair : smart_speed_controllers_) {
-  //   // TODO
-  // }
-
   // Write Compressor commands
   for (const auto& pair : compressors_) {
     pair.second->SetClosedLoopControl(binary_commands_[pair.first]);
   }
+
+#if USE_CTRE
+
+  // Write CANTalonSrx commands
+  for (const auto& pair : can_talon_srxs_) {
+    using ctre::phoenix::motorcontrol::ControlMode;
+
+    if (!can_talon_srx_templates_[pair.first].follow.empty()) {
+      continue;
+    }
+
+    switch (joint_commands_[pair.first].type) {
+      case JointCmd::Type::kNone:
+        pair.second->Set(ControlMode::Disabled, 0.0);
+        break;
+      case JointCmd::Type::kPos:
+        pair.second->Set(ControlMode::Position, joint_commands_[pair.first].data);
+        break;
+      case JointCmd::Type::kVel:
+        pair.second->Set(ControlMode::Velocity, joint_commands_[pair.first].data * 10.0);  // Units/sec to units/100ms
+        break;
+      case JointCmd::Type::kEff:
+        pair.second->Set(ControlMode::Current,
+                         joint_commands_[pair.first].data / can_talon_srx_templates_[pair.first].k_eff);
+        break;
+      case JointCmd::Type::kVolt:
+        pair.second->Set(ControlMode::PercentOutput, joint_commands_[pair.first].data / pair.second->GetBusVoltage());
+        break;
+    }
+  }
+#endif
 };
 
 }  // namespace frc_robot_hw

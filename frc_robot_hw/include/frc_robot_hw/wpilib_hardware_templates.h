@@ -27,11 +27,11 @@
 
 #pragma once
 
+#include <boost/bimap.hpp>
 #include <boost/variant.hpp>
 #include <ostream>
+#include <set>
 #include <string>
-
-// TODO: This file is a mess
 
 namespace frc_robot_hw {
 namespace hardware_template {
@@ -43,61 +43,6 @@ struct PIDGains {
   double k_f;
   double i_clamp;
   bool   has_i_clamp;
-};
-
-// "Smart" indicates that these controllers have built-in feedback
-// TODO: Might need custom templates for these since they're smart and therefore have more config data
-// TODO: Add field for feedback type. Internal, External, or None
-struct SmartSpeedController {
-  enum class Type {
-  // CANJaguar,   ///< Luminary Micro / Vex Robotics Jaguar with CAN control. Deprecated.
-
-#if USE_MINDSENSORS
-  // CANSD540,    ///< Mindsensors SD540 with CAN control
-#endif
-
-#if USE_CTRE
-    CANTalonSRX,  ///< CTRE Talon SRX with CAN control
-#endif
-  };
-
-  /**
-   * @brief Convert the string representation of the Type to its enum equivalent.
-   * @throws std::runtime_error if the input string is not a valid Type
-   */
-  static Type stringToType(const std::string& string) {
-    if (false) {
-      // TODO: This is ugly :(
-    }
-#if USE_MINDSENSORS
-    // else if (string == "can_sd540")
-    //   return Type::CANSD540;
-#endif
-#if USE_CTRE
-    else if (string == "can_talon_spx")
-      return Type::CANTalonSRX;
-#endif
-    else
-      throw std::runtime_error("Invalid smart SpeedController type '" + string + "'.");
-  }
-
-  /// Convert a Type enum to its string representation
-  static std::string typeToString(const Type& type) {
-    switch (type) {
-#if USE_MINDSENSORS
-      // case Type::CANSD540:      return "can_sd540";
-#endif
-#if USE_CTRE
-      case Type::CANTalonSRX:
-        return "can_talon_spx";
-#endif
-        // Note: No default case - Generates compile-time error if a case is missed
-    }
-  }
-
-  Type type;      ///< The type of the controller, corresponding with WPILib & vendor SpeedControllers
-  int  id;        ///< The ID/channel of the controller. Typically CAN id, based on controller type
-  bool inverted;  ///< Whether to invert the direction of the motor
 };
 
 // "Simple" indicates that these controllers do not have feedback.
@@ -128,48 +73,10 @@ struct SimpleSpeedController {
    * @brief Convert the string representation of the Type to its enum equivalent.
    * @throws std::runtime_error if the input string is not a valid Type
    */
-  static Type stringToType(const std::string& string) {
-
-    // clang-format off
-    if (string == "dmc60")                return Type::DMC60;
-    else if (string == "jaguar")          return Type::Jaguar;
-    else if (string == "pwm_talon_srx")   return Type::PWMTalonSRX;
-    else if (string == "pwm_victor_spx")  return Type::PWMVictorSPX;
-    else if (string == "sd540")           return Type::SD540;
-    else if (string == "spark")           return Type::Spark;
-    else if (string == "talon")           return Type::Talon;
-    else if (string == "victor")          return Type::Victor;
-    else if (string == "victor_sp")       return Type::VictorSP;
-    else if (string == "nidec")           return Type::Nidec;
-#if USE_CTRE
-    else if (string == "can_victor_spx")  return Type::CANVictorSPX;
-#endif
-    // clang-format on
-    else
-      throw std::runtime_error("Invalid simple SpeedController type '" + string + "'.");
-  }
+  static Type stringToType(const std::string& string);
 
   /// Convert a Type enum to its string representation
-  static std::string typeToString(const Type& type) {
-    switch (type) {
-      // clang-format off
-      case Type::DMC60:         return "dmc60";
-      case Type::Jaguar:        return "jaguar";
-      case Type::PWMTalonSRX:   return "pwm_talon_srx";
-      case Type::PWMVictorSPX:  return "pwm_victor_spx";
-      case Type::SD540:         return "sd540";
-      case Type::Spark:         return "spark";
-      case Type::Talon:         return "talon";
-      case Type::Victor:        return "victor";
-      case Type::VictorSP:      return "victor_sp";
-      case Type::Nidec:         return "nidex";
-#if USE_CTRE
-      case Type::CANVictorSPX:  return "can_victor_spx";
-#endif
-        // clang-format on
-        // Note: No default case - Generates compile-time error if a case is missed
-    }
-  }
+  static std::string typeToString(const Type& type);
 
   Type        type;       ///< The type of the controller, corresponding with WPILib & vendor SpeedControllers
   int         id;         ///< The ID/channel of the controller. Can be PWM channel or CAN id, based on controller type
@@ -189,32 +96,17 @@ struct SimpleSpeedController {
 struct Relay {
   enum class Direction { kBoth, kForward, kReverse };
 
-  static Direction stringToDirection(const std::string& string) {
-    if (string == "both")
-      return Direction::kBoth;
-    else if (string == "forward")
-      return Direction::kForward;
-    else if (string == "reverse")
-      return Direction::kReverse;
-    else
-      throw std::runtime_error("Invalid relay direction '" + string
-                               + "', must be one of 'both', 'forward', 'reverse'.");
-  }
+  /**
+   * @brief Convert the string representation of the Direction to its enum equivalent.
+   * @throws std::runtime_error if the input string is not a valid Direction
+   */
+  static Direction stringToDirection(const std::string& string);
 
-  static std::string directionToString(const Direction& direction) {
-    switch (direction) {
-      case Direction::kBoth:
-        return "both";
-      case Direction::kForward:
-        return "forward";
-      case Direction::kReverse:
-        return "reverse";
-        // Note: No default case - Generates compile-time error if a case is missed
-    }
-  }
+  /// Convert a Direction enum to its string representation
+  static std::string directionToString(const Direction& direction);
 
-  int       id;
-  Direction direction;
+  int       id;         ///< The relay channel
+  Direction direction;  ///< The direction: kForward, kReverse, or kBoth
 };
 
 struct Solenoid {
@@ -264,6 +156,33 @@ struct NavX {
 #endif
 
 #if USE_CTRE
+
+struct CANTalonSrx {
+  enum class FeedbackType { kNone, kQuadEncoder, kAnalog, kTachometer, kPulseWidth };
+  enum class LimitSwitchMode { kNone, kNormallyOpen, kNormallyClosed };
+
+  using FeedbackTypeBimap    = boost::bimap<FeedbackType, std::string>;
+  using LimitSwitchModeBimap = boost::bimap<LimitSwitchMode, std::string>;
+
+  static const FeedbackTypeBimap    FEEDBACK_TYPE_BIMAP;
+  static const LimitSwitchModeBimap LIMIT_SWITCH_MODE_BIMAP;
+
+  int             id;                  ///< The CAN ID of the controller
+  bool            inverted;            ///< Whether to invert the direction of the motor
+  std::string     follow;              ///< The name of another CANTalonSrx to follow, or empty for none
+  FeedbackType    feedback;            ///< The type of feedback sensor attached to the Talon
+  bool            feedback_inverted;   ///< Whether to invert the direction of the feedback sensor
+  LimitSwitchMode forward_lim_switch;  ///< The mode of the forward limit switch
+  LimitSwitchMode reverse_lim_switch;  ///< The mode of the reverse limit switch
+  double          k_eff;          ///< Scale of current to effort/torque, in N or Nm. Based on motor type and gearing.
+  PIDGains        pos_gains;      ///< The set of PID gains for position control
+  PIDGains        vel_gains;      ///< The set of PID gains for velocity control
+  PIDGains        eff_gains;      ///< The set of PID gains for effort control
+  bool            has_pos_gains;  ///< Whether the controller specified gains for position control
+  bool            has_vel_gains;  ///< Whether the controller specified gains for velocity control
+  bool            has_eff_gains;  ///< Whether the controller specified gains for effort control
+};
+
 struct PigeonIMU {
   boost::variant<int, std::string> interface;  ///< The interface on which the PigeonIMU is connected.
                                                ///< If an int, the CAN ID of the IMU.
