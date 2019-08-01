@@ -143,15 +143,14 @@ struct Encoder {
 };
 
 struct BuiltInAccelerometer {
-  std::string frame_id;  ///< For TF2 TODO: Doc better
-  // TODO: Range? tbh not sure why this is a feature of the wpilib and if it's worth implementing
+  std::string frame_id;  ///< The coordinate frame of the sensor
 };
 
 #if USE_KAUAI
 struct NavX {
   std::string interface;  ///< The interface on which the NavX is connected. Must be 'i2c', 'serial', or 'spi'
   int         id;         ///< The port number on whichever interface is specified above
-  std::string frame_id;   ///< For TF2 TODO: Doc better
+  std::string frame_id;   ///< The coordinate frame of the sensor
 };
 #endif
 
@@ -187,7 +186,7 @@ struct PigeonIMU {
   boost::variant<int, std::string> interface;  ///< The interface on which the PigeonIMU is connected.
                                                ///< If an int, the CAN ID of the IMU.
                                                ///< If a string, the can_talon_srx name the IMU is riding on.
-  std::string frame_id;                        ///< For TF2 TODO: Doc better
+  std::string frame_id;                        ///< The coordinate frame of the sensor
 };
 #endif
 

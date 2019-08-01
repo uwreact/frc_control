@@ -185,7 +185,7 @@ Key|Type|Required?|Value/Description
 Key|Type|Required?|Value/Description
 ---|----|---------|-----------------
 `type`|string|required|Must be 'pigeon_imu'
-`frame_id`|string|required|The tf2 frame of the sensor. **TODO**
+`frame_id`|string|required|The coordinate frame of the sensor.
 `id`|int|optional|Used if the `PigeonIMU` is connected to the CAN bus. The CAN ID of the sensor.
 `talon`|string|optional|Used if the `PigeonIMU` is piggybacking on a TalonSRX. The name of the attached TalonSRX.
 
@@ -196,7 +196,7 @@ Key|Type|Required?|Value/Description
 Key|Type|Required?|Value/Description
 ---|----|---------|-----------------
 `type`|string|required|Must be 'navx'
-`frame_id`|string|required|The tf2 frame of the sensor. **TODO**
+`frame_id`|string|required|The coordinate frame of the sensor.
 `interface`|string|required|The interface used to connect to the navX. Must be one of 'spi', 'serial', or 'i2c'
 `id`|int|required|The ID of the device on the specified interface
 

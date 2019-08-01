@@ -29,6 +29,7 @@
 
 #include <frc_robot_hw/frc_robot_hw.h>
 #include <gazebo/physics/physics.hh>
+#include <gazebo/sensors/sensors.hh>
 
 namespace frc_robot_sim {
 
@@ -42,7 +43,8 @@ public:
   void write(const ros::Time& time, const ros::Duration& period) override;
 
 private:
-  gazebo::physics::ModelPtr model_;
+  gazebo::physics::ModelPtr       model_;
+  gazebo::sensors::SensorManager* sensor_manager_;
 };
 
 }  // namespace frc_robot_sim
