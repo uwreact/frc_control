@@ -31,12 +31,27 @@
 
 namespace frc_robot_sim {
 
+template <typename T>
+void vector3ToArray(T (&arr)[3], const ignition::math::Vector3<T>& vec) {
+  arr[0] = vec.X();
+  arr[1] = vec.Y();
+  arr[2] = vec.Z();
+}
+
+template <typename T>
+void quaternionToArray(T (&arr)[4], const ignition::math::Quaternion<T>& vec) {
+  arr[0] = vec.X();
+  arr[1] = vec.Y();
+  arr[2] = vec.Z();
+  arr[3] = vec.W();
+}
+
 bool FRCRobotHWSim::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh) {
   if (!FRCRobotHW::init(root_nh, robot_hw_nh)) {
-    return false;  // NOLINT(readability-simplify-boolean-expr)
+    return false;
   }
 
-  // TODO: Any other require initialization
+  sensor_manager_ = gazebo::sensors::SensorManager::Instance();
 
   return true;
 }
@@ -82,10 +97,79 @@ void FRCRobotHWSim::read(const ros::Time& /*time*/, const ros::Duration& /*perio
     ternary_states_[pair.first] = (pos > mid) ? TernaryState::kForward : TernaryState::kReverse;
   }
 
-  // TODO: Support DigitalInput, AnalogInput, IMUs
+  // TODO: Support DigitalInput, AnalogInput
+
+  // Read all built-in IMUs
+  for (const auto& pair : built_in_accelerometer_templates_) {
+    const auto& sensor = sensor_manager_->GetSensor(pair.first);
+    if (sensor == nullptr) {
+      ROS_WARN_STREAM_ONCE_NAMED(name_, "Sensor '" << pair.first << "' not found in URDF.");
+      imu_states_[pair.first].angular_velocity_covariance[0]    = -1.0;
+      imu_states_[pair.first].linear_acceleration_covariance[0] = -1.0;
+      imu_states_[pair.first].orientation_covariance[0]         = -1.0;
+    } else if (sensor->Type() != "imu") {
+      ROS_WARN_STREAM_ONCE_NAMED(name_, "Sensor '" << pair.first << "' not an IMU.");
+      imu_states_[pair.first].angular_velocity_covariance[0]    = -1.0;
+      imu_states_[pair.first].linear_acceleration_covariance[0] = -1.0;
+      imu_states_[pair.first].orientation_covariance[0]         = -1.0;
+    } else {
+      const auto& imu = std::dynamic_pointer_cast<gazebo::sensors::ImuSensor, gazebo::sensors::Sensor>(sensor);
+      vector3ToArray(imu_states_[pair.first].linear_acceleration, imu->LinearAcceleration());
+
+      // Angular velocity, orientation are not reported
+      imu_states_[pair.first].angular_velocity_covariance[0] = -1.0;
+      imu_states_[pair.first].orientation_covariance[0]      = -1.0;
+    }
+  }
+
+#if USE_KAUAI
+
+  // Read all NavX IMUs
+  for (const auto& pair : navx_templates_) {
+    const auto& sensor = sensor_manager_->GetSensor(pair.first);
+    if (sensor == nullptr) {
+      ROS_WARN_STREAM_ONCE_NAMED(name_, "Sensor '" << pair.first << "' not found in URDF.");
+      imu_states_[pair.first].angular_velocity_covariance[0]    = -1.0;
+      imu_states_[pair.first].linear_acceleration_covariance[0] = -1.0;
+      imu_states_[pair.first].orientation_covariance[0]         = -1.0;
+    } else if (sensor->Type() != "imu") {
+      ROS_WARN_STREAM_ONCE_NAMED(name_, "Sensor '" << pair.first << "' not an IMU.");
+      imu_states_[pair.first].angular_velocity_covariance[0]    = -1.0;
+      imu_states_[pair.first].linear_acceleration_covariance[0] = -1.0;
+      imu_states_[pair.first].orientation_covariance[0]         = -1.0;
+    } else {
+      const auto& imu = std::dynamic_pointer_cast<gazebo::sensors::ImuSensor, gazebo::sensors::Sensor>(sensor);
+      vector3ToArray(imu_states_[pair.first].angular_velocity, imu->AngularVelocity());
+      vector3ToArray(imu_states_[pair.first].linear_acceleration, imu->LinearAcceleration());
+      quaternionToArray(imu_states_[pair.first].orientation, imu->Orientation());
+    }
+  }
+#endif
+
+#if USE_CTRE
+
+  // Read all Pigeon IMUs
+  for (const auto& pair : pigeon_templates_) {
+    const auto& sensor = sensor_manager_->GetSensor(pair.first);
+    if (sensor == nullptr) {
+      ROS_WARN_STREAM_ONCE_NAMED(name_, "Sensor '" << pair.first << "' not found in URDF.");
+      imu_states_[pair.first].angular_velocity_covariance[0]    = -1.0;
+      imu_states_[pair.first].linear_acceleration_covariance[0] = -1.0;
+      imu_states_[pair.first].orientation_covariance[0]         = -1.0;
+    } else if (sensor->Type() != "imu") {
+      ROS_WARN_STREAM_ONCE_NAMED(name_, "Sensor '" << pair.first << "' not an IMU.");
+      imu_states_[pair.first].angular_velocity_covariance[0]    = -1.0;
+      imu_states_[pair.first].linear_acceleration_covariance[0] = -1.0;
+      imu_states_[pair.first].orientation_covariance[0]         = -1.0;
+    } else {
+      const auto& imu = std::dynamic_pointer_cast<gazebo::sensors::ImuSensor, gazebo::sensors::Sensor>(sensor);
+      vector3ToArray(imu_states_[pair.first].angular_velocity, imu->AngularVelocity());
+      vector3ToArray(imu_states_[pair.first].linear_acceleration, imu->LinearAcceleration());
+      quaternionToArray(imu_states_[pair.first].orientation, imu->Orientation());
+    }
+  }
 
   // Read current CANTalonSRX states
-#if USE_CTRE
   for (const auto& pair : can_talon_srx_templates_) {
     if (!can_talon_srx_templates_[pair.first].follow.empty()) {
       continue;
